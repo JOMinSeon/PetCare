@@ -1,0 +1,7 @@
+{
+  "buildCommand": "cd pet-project && npm run build",
+  "outputDirectory": "pet-project/.next",
+  "installCommand": "cd pet-project && npm install",
+  "devCommand": "cd pet-project && npm run dev",
+  "framework": "nextjs"
+}
