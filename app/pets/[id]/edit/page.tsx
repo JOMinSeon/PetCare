@@ -76,7 +76,7 @@ export default async function EditPetPage({
           />
           <label htmlFor="neutered" className="text-sm font-medium">중성화</label>
         </div>
-        <button type="submit" className="w-full rounded-lg bg-blue-500 py-2 text-sm text-white">
+        <button type="submit" className="w-full rounded-lg bg-indigo-600 py-2 text-sm text-white hover:bg-indigo-500">
           수정하기
         </button>
       </form>

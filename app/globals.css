@@ -2,12 +2,12 @@
 
 /* ─── Design Tokens ─────────────────────────────────── */
 :root {
-  /* Primary — Healing Emerald */
-  --color-primary-50:  #ecfdf5;
-  --color-primary-100: #d1fae5;
-  --color-primary-400: #34d399;
-  --color-primary-500: #10b981;
-  --color-primary-600: #059669;
+  /* Primary — Indigo */
+  --color-primary-50:  #eef2ff;
+  --color-primary-100: #e0e7ff;
+  --color-primary-400: #818cf8;
+  --color-primary-500: #6366f1;
+  --color-primary-600: #4f46e5;
 
   /* Secondary — Warm Amber */
   --color-accent-400: #fbbf24;
