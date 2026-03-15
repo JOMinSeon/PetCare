@@ -38,6 +38,7 @@ export default async function Home() {
   const db = await getServerDb();
   const { data: { user } } = await db.auth.getUser();
   if (user) redirect('/pets');
+  redirect('/landing');
 
   return (
     <main className="min-h-screen" style={{ background: 'var(--color-bg)' }}>
