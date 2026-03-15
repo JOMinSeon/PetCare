@@ -52,7 +52,7 @@ function DonutCard({
               ))}
             </Pie>
             <Tooltip
-              formatter={(v: number) => `${v}%`}
+              formatter={(v) => `${v}%`}
               contentStyle={{
                 background: 'var(--color-surface)',
                 border: '1px solid var(--color-border)',
