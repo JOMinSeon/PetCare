@@ -1,0 +1,425 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PetCare Design - Option 1: Warm & Friendly</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Comic Sans MS', cursive, sans-serif;
+            background-color: #FFF8F0;
+            color: #3D2817;
+            line-height: 1.6;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        /* Navigation Bar */
+        nav {
+            background: linear-gradient(135deg, #FFB347 0%, #FF9970 100%);
+            padding: 16px 24px;
+            border-radius: 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        
+        nav .logo {
+            font-size: 24px;
+            font-weight: bold;
+            color: white;
+        }
+        
+        nav button {
+            background: rgba(255,255,255,0.3);
+            color: white;
+            border: 2px solid white;
+            padding: 8px 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-family: 'Comic Sans MS', cursive;
+        }
+        
+        /* Header Section */
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+        
+        .header h1 {
+            font-size: 32px;
+            color: #FF6B6B;
+        }
+        
+        .header-actions {
+            display: flex;
+            gap: 12px;
+        }
+        
+        .btn {
+            padding: 12px 24px;
+            border-radius: 12px;
+            border: none;
+            font-family: 'Comic Sans MS', cursive;
+            font-weight: bold;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+        
+        .btn:hover {
+            transform: translateY(-2px);
+        }
+        
+        .btn-primary {
+            background: #FF6B6B;
+            color: white;
+        }
+        
+        .btn-secondary {
+            background: white;
+            color: #FF6B6B;
+            border: 2px solid #FF6B6B;
+        }
+        
+        /* Pet Cards Grid */
+        .pet-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 24px;
+            margin-bottom: 40px;
+        }
+        
+        .pet-card {
+            background: white;
+            border-radius: 20px;
+            padding: 24px;
+            box-shadow: 0 4px 12px rgba(255, 107, 107, 0.15);
+            border: 3px solid #FFD93D;
+            transition: transform 0.3s;
+        }
+        
+        .pet-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 8px 20px rgba(255, 107, 107, 0.25);
+        }
+        
+        .pet-avatar {
+            width: 80px;
+            height: 80px;
+            background: linear-gradient(135deg, #FFB347 0%, #FF9970 100%);
+            border-radius: 50%;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 40px;
+        }
+        
+        .pet-card h3 {
+            font-size: 22px;
+            color: #3D2817;
+            margin-bottom: 8px;
+        }
+        
+        .pet-info {
+            font-size: 14px;
+            color: #7D6B63;
+            margin-bottom: 16px;
+            line-height: 1.8;
+        }
+        
+        .pet-actions {
+            display: flex;
+            gap: 8px;
+        }
+        
+        .pet-actions button {
+            flex: 1;
+            padding: 8px;
+            border-radius: 8px;
+            border: none;
+            font-family: 'Comic Sans MS', cursive;
+            font-size: 12px;
+            cursor: pointer;
+        }
+        
+        /* Dashboard Section */
+        .dashboard {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 24px;
+            margin-bottom: 40px;
+        }
+        
+        .dashboard-section {
+            background: white;
+            border-radius: 16px;
+            padding: 24px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        
+        .dashboard-section h2 {
+            font-size: 20px;
+            color: #FF6B6B;
+            margin-bottom: 16px;
+            border-bottom: 3px solid #FFD93D;
+            padding-bottom: 12px;
+        }
+        
+        .chart-placeholder {
+            background: linear-gradient(135deg, #FFF8F0 0%, #FFE8D0 100%);
+            height: 250px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #C9A876;
+            font-style: italic;
+            border: 2px dashed #FFB347;
+        }
+        
+        .stat-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 12px 0;
+            border-bottom: 1px solid #FFE8D0;
+        }
+        
+        .stat-item:last-child {
+            border-bottom: none;
+        }
+        
+        .stat-label {
+            color: #7D6B63;
+        }
+        
+        .stat-value {
+            font-weight: bold;
+            color: #FF6B6B;
+            font-size: 18px;
+        }
+        
+        /* Forms */
+        .form-section {
+            background: white;
+            border-radius: 16px;
+            padding: 24px;
+            margin-bottom: 24px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        
+        .form-section h2 {
+            font-size: 20px;
+            color: #FF6B6B;
+            margin-bottom: 16px;
+        }
+        
+        .form-group {
+            margin-bottom: 16px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #3D2817;
+            font-weight: bold;
+        }
+        
+        .form-group input,
+        .form-group select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #FFD93D;
+            border-radius: 8px;
+            font-family: 'Comic Sans MS', cursive;
+            font-size: 14px;
+        }
+        
+        /* Responsive */
+        @media (max-width: 768px) {
+            .dashboard {
+                grid-template-columns: 1fr;
+            }
+            
+            .pet-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            body {
+                font-size: 14px;
+            }
+        }
+        
+        .component-badge {
+            position: absolute;
+            top: 4px;
+            right: 4px;
+            background: #4CAF50;
+            color: white;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-size: 10px;
+            font-family: Arial, sans-serif;
+            font-weight: bold;
+            z-index: 10;
+        }
+        
+        .component-badge.new {
+            background: #FF9800;
+        }
+        
+        .relative-wrap {
+            position: relative;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1 style="text-align: center; margin-bottom: 40px; font-size: 36px; color: #FF6B6B;">🐾 PetCare Design System</h1>
+        
+        <h2 style="margin-top: 40px; margin-bottom: 20px; color: #FF6B6B; border-bottom: 3px solid #FFD93D; padding-bottom: 10px;">Option 1: Warm & Friendly Design</h2>
+        <p style="margin-bottom: 30px; color: #7D6B63; font-style: italic;">A warm, inviting design with playful colors and comfortable typography. Perfect for pet owners who value emotional connection and ease of use.</p>
+        
+        <!-- Navigation -->
+        <div class="relative-wrap">
+            <span class="component-badge">[REUSE] NavBar</span>
+            <nav>
+                <div class="logo">🐾 PetCare</div>
+                <button>Logout</button>
+            </nav>
+        </div>
+        
+        <!-- Main Header -->
+        <div class="header">
+            <h1>My Pets</h1>
+            <div class="header-actions">
+                <div class="relative-wrap">
+                    <span class="component-badge">[REUSE] Button</span>
+                    <button class="btn btn-primary">+ Add Pet</button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Pet Cards -->
+        <div class="pet-grid">
+            <div class="pet-card relative-wrap">
+                <span class="component-badge">[NEW] PetCard</span>
+                <div class="pet-avatar">🐕</div>
+                <h3>Buddy</h3>
+                <div class="pet-info">
+                    Dog • 3 years • 25kg<br>
+                    Neutered
+                </div>
+                <div class="pet-actions">
+                    <button style="background: #FFB347; color: white;">View</button>
+                    <button style="background: #FF9970; color: white;">Edit</button>
+                </div>
+            </div>
+            
+            <div class="pet-card relative-wrap">
+                <span class="component-badge">[NEW] PetCard</span>
+                <div class="pet-avatar">🐈</div>
+                <h3>Luna</h3>
+                <div class="pet-info">
+                    Cat • 2 years • 4kg<br>
+                    Not neutered
+                </div>
+                <div class="pet-actions">
+                    <button style="background: #FFB347; color: white;">View</button>
+                    <button style="background: #FF9970; color: white;">Edit</button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Dashboard Section -->
+        <div class="dashboard">
+            <div class="dashboard-section relative-wrap">
+                <span class="component-badge">[REUSE] HealthChart</span>
+                <h2>Health Trend</h2>
+                <div class="chart-placeholder">[Weight Chart Visualization]</div>
+            </div>
+            
+            <div class="dashboard-section relative-wrap">
+                <span class="component-badge">[NEW] HealthStats</span>
+                <h2>Quick Stats</h2>
+                <div class="stat-item">
+                    <span class="stat-label">Last Weight</span>
+                    <span class="stat-value">25.0 kg</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">RER</span>
+                    <span class="stat-value">850 kcal</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">MER</span>
+                    <span class="stat-value">1020 kcal</span>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Health Logging Form -->
+        <div class="form-section relative-wrap">
+            <span class="component-badge">[NEW] HealthLogger</span>
+            <h2>Log Health Update</h2>
+            <div class="form-group">
+                <label>Weight (kg)</label>
+                <input type="number" placeholder="Enter weight" step="0.1">
+            </div>
+            <div class="form-group">
+                <label>Notes</label>
+                <input type="text" placeholder="Any observations?">
+            </div>
+            <button class="btn btn-primary">Save Log</button>
+        </div>
+        
+        <!-- Food Analyzer -->
+        <div class="form-section relative-wrap">
+            <span class="component-badge">[REUSE] FoodAnalyzer</span>
+            <h2>Food Analysis</h2>
+            <div class="form-group">
+                <label>Upload Food Photo</label>
+                <input type="file" accept="image/*">
+            </div>
+            <button class="btn btn-primary">Analyze Food</button>
+        </div>
+        
+        <!-- AI Chat -->
+        <div class="form-section relative-wrap">
+            <span class="component-badge">[REUSE] GeminiAdvicePanel</span>
+            <h2>Ask AI Vet</h2>
+            <div style="background: #FFF8F0; padding: 16px; border-radius: 8px; margin-bottom: 16px; min-height: 100px;">
+                [Chat messages appear here]
+            </div>
+            <div class="form-group" style="margin-bottom: 0;">
+                <input type="text" placeholder="Ask about your pet's health...">
+            </div>
+            <button class="btn btn-primary" style="margin-top: 12px; width: 100%;">Send</button>
+        </div>
+        
+        <div style="margin-top: 60px; padding: 30px; background: #FFF3E0; border-radius: 16px; border: 2px dashed #FFB347;">
+            <h3 style="color: #FF6B6B; margin-bottom: 12px;">🎨 Design Highlights</h3>
+            <ul style="color: #7D6B63; margin-left: 20px;">
+                <li><strong>Color Palette:</strong> Warm oranges (#FFB347, #FF9970), soft reds (#FF6B6B), golden yellows (#FFD93D)</li>
+                <li><strong>Typography:</strong> Playful Comic Sans MS for friendly feel, strong visual hierarchy</li>
+                <li><strong>Spacing:</strong> Generous padding (24px) for comfort and breathing room</li>
+                <li><strong>Components:</strong> Rounded corners (16-20px), soft shadows, emotional color accents</li>
+                <li><strong>Interaction:</strong> Hover animations (translateY), card elevation on hover</li>
+            </ul>
+        </div>
+    </div>
+</body>
+</html>
