@@ -34,7 +34,8 @@ export default function SignupPage() {
     const { data, error } = await supabase.auth.signUp({ email, password });
 
     if (error) {
-      setError(error.message);
+      // 에러 원문 노출 방지 (이메일 열거 공격 차단)
+      setError('회원가입 중 오류가 발생했습니다. 다시 시도해주세요.');
       setLoading(false);
     } else if (data.session) {
       router.push('/pets');

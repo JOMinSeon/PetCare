@@ -23,7 +23,8 @@ export default function LoginPage() {
     const { error } = await supabase.auth.signInWithPassword({ email, password });
 
     if (error) {
-      setError(error.message);
+      // 에러 원문 노출 방지 (이메일 열거 공격 차단)
+      setError('이메일 또는 비밀번호가 올바르지 않습니다.');
       setLoading(false);
     } else {
       router.push('/pets');

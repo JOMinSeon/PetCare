@@ -3,6 +3,7 @@ export const runtime = 'nodejs';
 import { createGoogleGenerativeAI } from '@ai-sdk/google';
 import { generateText } from 'ai';
 import { getServerDb } from '@/lib/supabase-server';
+import { checkRateLimit } from '@/lib/rate-limit';
 
 const google = createGoogleGenerativeAI({
   apiKey: process.env.GEMINI_API_KEY,
@@ -10,6 +11,23 @@ const google = createGoogleGenerativeAI({
 
 const MAX_FILE_SIZE = 5 * 1024 * 1024;
 const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
+
+// 10 requests per minute per user
+const RATE_LIMIT = 10;
+const RATE_WINDOW_MS = 60 * 1000;
+
+const ALLOWED_SPECIES = ['dog', 'cat'];
+
+function validatePetInfo(raw: unknown): { species: string; age: number; weight: number } | null {
+  if (!raw || typeof raw !== 'object') return null;
+  const p = raw as Record<string, unknown>;
+  if (!ALLOWED_SPECIES.includes(p.species as string)) return null;
+  const age = Number(p.age);
+  const weight = Number(p.weight);
+  if (!Number.isFinite(age) || age < 0 || age > 30) return null;
+  if (!Number.isFinite(weight) || weight <= 0 || weight > 200) return null;
+  return { species: p.species as string, age, weight };
+}
 
 function buildPrompt(petInfo: { species: string; age: number; weight: number }) {
   const ageStage =
@@ -97,6 +115,11 @@ export async function POST(req: Request) {
       return Response.json({ error: '로그인이 필요합니다.' }, { status: 401 });
     }
 
+    // #4 Rate limiting
+    if (!checkRateLimit(`analyze:${user.id}`, RATE_LIMIT, RATE_WINDOW_MS)) {
+      return Response.json({ error: '요청이 너무 많습니다. 잠시 후 다시 시도해주세요.' }, { status: 429 });
+    }
+
     const formData = await req.formData();
     const image = formData.get('image') as File | null;
     const ingredientsText = formData.get('ingredientsText') as string | null;
@@ -118,7 +141,18 @@ export async function POST(req: Request) {
       }
     }
 
-    const petInfo = JSON.parse(petInfoRaw);
+    // #2 입력 검증: JSON.parse + 스키마 검증
+    let petInfoParsed: unknown;
+    try {
+      petInfoParsed = JSON.parse(petInfoRaw);
+    } catch {
+      return Response.json({ error: '반려동물 정보 형식이 올바르지 않습니다.' }, { status: 400 });
+    }
+    const petInfo = validatePetInfo(petInfoParsed);
+    if (!petInfo) {
+      return Response.json({ error: '반려동물 정보가 유효하지 않습니다.' }, { status: 400 });
+    }
+
     const prompt = buildPrompt(petInfo);
 
     let result: string;

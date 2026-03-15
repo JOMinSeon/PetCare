@@ -29,6 +29,7 @@ export default async function PetDetailPage({
     .from('pets')
     .select('*, health_logs(*)')
     .eq('id', id)
+    .eq('user_id', user.id)  // IDOR 방지: 소유자 검증
     .single();
 
   if (!pet) {

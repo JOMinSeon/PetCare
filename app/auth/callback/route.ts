@@ -29,10 +29,12 @@ export async function GET(request: NextRequest) {
 
     const { error } = await supabase.auth.exchangeCodeForSession(code);
     if (!error) {
-      return NextResponse.redirect(new URL('/pets', request.url));
+      // #3 Open Redirect 방지: 신뢰할 수 있는 origin만 사용
+      const origin = process.env.NEXT_PUBLIC_SITE_URL || `${requestUrl.protocol}//${requestUrl.host}`;
+      return NextResponse.redirect(new URL('/pets', origin));
     }
   }
 
-  // return the user to an error page with some instructions
-  return NextResponse.redirect(new URL('/auth/login?error=auth_failed', request.url));
+  const origin = process.env.NEXT_PUBLIC_SITE_URL || `${requestUrl.protocol}//${requestUrl.host}`;
+  return NextResponse.redirect(new URL('/auth/login?error=auth_failed', origin));
 }
