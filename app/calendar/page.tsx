@@ -2,7 +2,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { getBrowserDb } from '@/lib/supabase-browser';
-import { Syringe, Pill, Scissors, Stethoscope, Plus, ChevronLeft, ChevronRight, Bell } from 'lucide-react';
+import { Syringe, Pill, Scissors, Stethoscope, Plus, Bell } from 'lucide-react';
 
 type EventType = 'vaccine' | 'deworming' | 'grooming' | 'hospital';
 
@@ -17,56 +17,75 @@ interface ScheduleEvent {
 }
 
 const TYPE_META: Record<EventType, { icon: typeof Syringe; color: string; bg: string; label: string }> = {
-  vaccine:   { icon: Syringe,       color: 'var(--color-primary-500)', bg: 'var(--color-primary-50)',  label: '예방접종' },
-  deworming: { icon: Pill,          color: 'var(--color-accent-500)',  bg: '#fffbeb',                  label: '구충제' },
-  grooming:  { icon: Scissors,      color: 'var(--color-info)',        bg: '#eff6ff',                  label: '미용' },
-  hospital:  { icon: Stethoscope,   color: 'var(--color-rose)',        bg: 'var(--color-rose-light)',  label: '병원' },
+  vaccine:   { icon: Syringe,     color: 'var(--color-primary-500)', bg: 'var(--color-primary-50)', label: '예방접종' },
+  deworming: { icon: Pill,        color: 'var(--color-accent-500)',  bg: '#fffbeb',                 label: '구충제'   },
+  grooming:  { icon: Scissors,    color: 'var(--color-info)',        bg: '#eff6ff',                 label: '미용'     },
+  hospital:  { icon: Stethoscope, color: 'var(--color-rose)',        bg: 'var(--color-rose-light)', label: '병원'     },
 };
-
-const MOCK_EVENTS: ScheduleEvent[] = [
-  { id: '1', type: 'vaccine',   title: '종합 예방접종 5차', date: '2026-03-20', pet: '뭉치', done: false },
-  { id: '2', type: 'deworming', title: '내부 구충제 투여',  date: '2026-03-22', pet: '나비', done: false },
-  { id: '3', type: 'grooming',  title: '정기 미용',          date: '2026-03-25', pet: '뭉치', done: false },
-  { id: '4', type: 'hospital',  title: '건강검진',           date: '2026-04-01', pet: '나비', done: false },
-  { id: '5', type: 'vaccine',   title: '광견병 예방접종',    date: '2026-03-10', pet: '뭉치', done: true  },
-  { id: '6', type: 'deworming', title: '외부 구충제 처리',   date: '2026-03-05', pet: '나비', done: true  },
-];
 
 const FILTER_TYPES: (EventType | 'all')[] = ['all', 'vaccine', 'deworming', 'grooming', 'hospital'];
 
 export default function CalendarPage() {
   const router = useRouter();
-  const [authChecked, setAuthChecked] = useState(false);
+  const [userId, setUserId] = useState<string | null>(null);
+  const [events, setEvents] = useState<ScheduleEvent[]>([]);
+  const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<EventType | 'all'>('all');
-  const [events, setEvents] = useState<ScheduleEvent[]>(MOCK_EVENTS);
   const [showAdd, setShowAdd] = useState(false);
   const [newEvent, setNewEvent] = useState({ type: 'vaccine' as EventType, title: '', date: '', pet: '' });
+  const [saving, setSaving] = useState(false);
 
   useEffect(() => {
-    const checkAuth = async () => {
+    const init = async () => {
       const supabase = getBrowserDb();
       const { data: { user } } = await supabase.auth.getUser();
-      if (!user) router.replace('/auth/login');
-      else setAuthChecked(true);
+      if (!user) { router.replace('/auth/login'); return; }
+      setUserId(user.id);
+
+      const { data } = await supabase
+        .from('schedule_events')
+        .select('*')
+        .eq('user_id', user.id)
+        .order('date', { ascending: true });
+
+      setEvents(data ?? []);
+      setLoading(false);
     };
-    checkAuth();
+    init();
   }, [router]);
 
-  if (!authChecked) return null;
+  if (loading) return (
+    <div className="flex min-h-screen items-center justify-center" style={{ background: 'var(--color-bg)' }}>
+      <p className="text-sm" style={{ color: 'var(--color-text-muted)' }}>불러오는 중...</p>
+    </div>
+  );
 
   const today = new Date().toISOString().split('T')[0];
   const filtered = filter === 'all' ? events : events.filter((e) => e.type === filter);
   const upcoming = filtered.filter((e) => !e.done && e.date >= today).sort((a, b) => a.date.localeCompare(b.date));
   const past     = filtered.filter((e) => e.done || e.date < today).sort((a, b) => b.date.localeCompare(a.date));
 
-  const toggleDone = (id: string) =>
+  const toggleDone = async (id: string) => {
+    const event = events.find((e) => e.id === id);
+    if (!event) return;
+    const supabase = getBrowserDb();
+    await supabase.from('schedule_events').update({ done: !event.done }).eq('id', id);
     setEvents((prev) => prev.map((e) => e.id === id ? { ...e, done: !e.done } : e));
+  };
 
-  const addEvent = () => {
-    if (!newEvent.title || !newEvent.date || !newEvent.pet) return;
-    setEvents((prev) => [...prev, { ...newEvent, id: Date.now().toString(), done: false }]);
+  const addEvent = async () => {
+    if (!newEvent.title || !newEvent.date || !newEvent.pet || !userId) return;
+    setSaving(true);
+    const supabase = getBrowserDb();
+    const { data, error } = await supabase
+      .from('schedule_events')
+      .insert({ user_id: userId, ...newEvent, done: false })
+      .select()
+      .single();
+    if (!error && data) setEvents((prev) => [...prev, data]);
     setNewEvent({ type: 'vaccine', title: '', date: '', pet: '' });
     setShowAdd(false);
+    setSaving(false);
   };
 
   const getDday = (date: string) => {
@@ -321,11 +340,11 @@ export default function CalendarPage() {
               </button>
               <button
                 onClick={addEvent}
-                disabled={!newEvent.title || !newEvent.date || !newEvent.pet}
+                disabled={!newEvent.title || !newEvent.date || !newEvent.pet || saving}
                 className="flex-1 rounded-xl py-2.5 text-sm font-medium text-white transition-opacity disabled:opacity-40"
                 style={{ background: 'var(--color-primary-500)' }}
               >
-                추가
+                {saving ? '저장 중...' : '추가'}
               </button>
             </div>
           </div>

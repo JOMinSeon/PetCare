@@ -30,51 +30,96 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gray-50">
-      <div className="w-full max-w-sm rounded-2xl border bg-white p-8 shadow-sm space-y-6">
-         <h1 className="text-2xl font-bold text-center">로그인</h1>
-         <GoogleAuthButton mode="login" />
-         <div className="relative">
-           <div className="absolute inset-0 flex items-center">
-             <div className="w-full border-t border-gray-300" />
-           </div>
-           <div className="relative flex justify-center text-sm">
-             <span className="bg-white px-2 text-gray-500">또는</span>
-           </div>
-         </div>
-         <form onSubmit={handleSubmit} className="space-y-4">
+    <div
+      className="flex min-h-screen items-center justify-center px-4"
+      style={{ background: 'var(--color-bg)' }}
+    >
+      <div
+        className="w-full max-w-sm rounded-2xl border p-8 shadow-sm space-y-6"
+        style={{ background: 'var(--color-surface)', borderColor: 'var(--color-border)' }}
+      >
+        <div className="text-center space-y-1">
+          <h1 className="text-2xl font-bold" style={{ color: 'var(--color-text-primary)' }}>로그인</h1>
+          <p className="text-sm" style={{ color: 'var(--color-text-muted)' }}>펫헬스에 오신 걸 환영해요 🐾</p>
+        </div>
+
+        <GoogleAuthButton mode="login" />
+
+        <div className="relative">
+          <div className="absolute inset-0 flex items-center">
+            <div className="w-full border-t" style={{ borderColor: 'var(--color-border)' }} />
+          </div>
+          <div className="relative flex justify-center text-sm">
+            <span
+              className="px-2 text-sm"
+              style={{ background: 'var(--color-surface)', color: 'var(--color-text-muted)' }}
+            >
+              또는
+            </span>
+          </div>
+        </div>
+
+        <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label className="block text-sm font-medium mb-1">이메일</label>
+            <label
+              className="block text-xs font-medium mb-1.5"
+              style={{ color: 'var(--color-text-muted)' }}
+            >
+              이메일
+            </label>
             <input
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
-              className="w-full rounded-lg border px-3 py-2 text-sm"
+              className="w-full rounded-xl border px-4 py-2.5 text-sm outline-none transition-all focus:border-[var(--color-primary-500)]"
+              style={{
+                background: 'var(--color-bg)',
+                borderColor: 'var(--color-border)',
+                color: 'var(--color-text-primary)',
+              }}
             />
           </div>
           <div>
-            <label className="block text-sm font-medium mb-1">비밀번호</label>
+            <label
+              className="block text-xs font-medium mb-1.5"
+              style={{ color: 'var(--color-text-muted)' }}
+            >
+              비밀번호
+            </label>
             <input
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
-              className="w-full rounded-lg border px-3 py-2 text-sm"
+              className="w-full rounded-xl border px-4 py-2.5 text-sm outline-none transition-all focus:border-[var(--color-primary-500)]"
+              style={{
+                background: 'var(--color-bg)',
+                borderColor: 'var(--color-border)',
+                color: 'var(--color-text-primary)',
+              }}
             />
           </div>
-          {error && <p className="text-sm text-red-500">{error}</p>}
+          {error && (
+            <p className="text-sm" style={{ color: 'var(--color-danger)' }}>{error}</p>
+          )}
           <button
             type="submit"
             disabled={loading}
-            className="w-full rounded-lg bg-blue-500 py-2 text-sm text-white disabled:opacity-50"
+            className="w-full rounded-xl py-2.5 text-sm font-medium text-white transition-all disabled:opacity-50"
+            style={{ background: 'var(--color-primary-500)' }}
           >
             {loading ? '로그인 중...' : '로그인'}
           </button>
         </form>
-        <p className="text-center text-sm text-gray-500">
+
+        <p className="text-center text-sm" style={{ color: 'var(--color-text-muted)' }}>
           계정이 없으신가요?{' '}
-          <Link href="/auth/signup" className="text-blue-500 hover:underline">
+          <Link
+            href="/auth/signup"
+            className="font-medium hover:underline"
+            style={{ color: 'var(--color-primary-500)' }}
+          >
             회원가입
           </Link>
         </p>

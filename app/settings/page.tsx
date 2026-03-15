@@ -35,6 +35,9 @@ const PLAN_OPTIONS = [
 export default function SettingsPage() {
   const router = useRouter();
   const [authChecked, setAuthChecked] = useState(false);
+  const [userId, setUserId] = useState('');
+  const [userEmail, setUserEmail] = useState('');
+  const [nickname, setNickname] = useState('보호자');
   const [notifications, setNotifications] = useState({
     vaccination: true,
     weight: true,
@@ -42,29 +45,73 @@ export default function SettingsPage() {
     marketing: false,
   });
   const [currentPlan, setCurrentPlan] = useState('free');
-  const [profile, setProfile] = useState({ name: '보호자', email: 'user@example.com' });
   const [savedProfile, setSavedProfile] = useState(false);
 
   useEffect(() => {
-    const checkAuth = async () => {
+    const init = async () => {
       const supabase = getBrowserDb();
       const { data: { user } } = await supabase.auth.getUser();
-      if (!user) router.replace('/auth/login');
-      else setAuthChecked(true);
+      if (!user) { router.replace('/auth/login'); return; }
+
+      setUserId(user.id);
+      setUserEmail(user.email ?? '');
+
+      const { data } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('user_id', user.id)
+        .single();
+
+      if (data) {
+        setNickname(data.nickname ?? user.email?.split('@')[0] ?? '보호자');
+        setNotifications({
+          vaccination: data.notif_vaccination,
+          weight: data.notif_weight,
+          community: data.notif_community,
+          marketing: data.notif_marketing,
+        });
+        setCurrentPlan(data.subscription_plan);
+      } else {
+        setNickname(user.email?.split('@')[0] ?? '보호자');
+      }
+
+      setAuthChecked(true);
     };
-    checkAuth();
+    init();
   }, [router]);
+
+  const upsertProfile = async (patch: Record<string, unknown>) => {
+    const supabase = getBrowserDb();
+    await supabase.from('profiles').upsert({ user_id: userId, ...patch });
+  };
+
+  const saveProfile = async () => {
+    await upsertProfile({ nickname });
+    setSavedProfile(true);
+    setTimeout(() => setSavedProfile(false), 2000);
+  };
+
+  const toggleNotification = async (key: keyof typeof notifications) => {
+    const newNotifs = { ...notifications, [key]: !notifications[key] };
+    setNotifications(newNotifs);
+    await upsertProfile({
+      notif_vaccination: newNotifs.vaccination,
+      notif_weight: newNotifs.weight,
+      notif_community: newNotifs.community,
+      notif_marketing: newNotifs.marketing,
+    });
+  };
+
+  const selectPlan = async (planId: string) => {
+    setCurrentPlan(planId);
+    await upsertProfile({ subscription_plan: planId });
+  };
 
   const handleLogout = async () => {
     const supabase = getBrowserDb();
     await supabase.auth.signOut();
     router.push('/');
     router.refresh();
-  };
-
-  const saveProfile = () => {
-    setSavedProfile(true);
-    setTimeout(() => setSavedProfile(false), 2000);
   };
 
   if (!authChecked) return null;
@@ -103,8 +150,8 @@ export default function SettingsPage() {
                 🧑
               </div>
               <div>
-                <p className="font-semibold" style={{ color: 'var(--color-text-primary)' }}>{profile.name}</p>
-                <p className="text-sm" style={{ color: 'var(--color-text-muted)' }}>{profile.email}</p>
+                <p className="font-semibold" style={{ color: 'var(--color-text-primary)' }}>{nickname}</p>
+                <p className="text-sm" style={{ color: 'var(--color-text-muted)' }}>{userEmail}</p>
               </div>
             </div>
 
@@ -112,8 +159,8 @@ export default function SettingsPage() {
               <div>
                 <label className="block text-xs font-medium mb-1.5" style={{ color: 'var(--color-text-muted)' }}>닉네임</label>
                 <input
-                  value={profile.name}
-                  onChange={(e) => setProfile({ ...profile, name: e.target.value })}
+                  value={nickname}
+                  onChange={(e) => setNickname(e.target.value)}
                   className="w-full rounded-xl border px-4 py-2.5 text-sm outline-none transition-all focus:border-[var(--color-primary-500)]"
                   style={{
                     background: 'var(--color-bg)',
@@ -167,7 +214,7 @@ export default function SettingsPage() {
                 </div>
                 <Toggle
                   checked={notifications[key]}
-                  onChange={() => setNotifications((prev) => ({ ...prev, [key]: !prev[key] }))}
+                  onChange={() => toggleNotification(key)}
                 />
               </div>
             ))}
@@ -186,7 +233,7 @@ export default function SettingsPage() {
               return (
                 <button
                   key={plan.id}
-                  onClick={() => setCurrentPlan(plan.id)}
+                  onClick={() => selectPlan(plan.id)}
                   className="rounded-2xl border p-4 text-left space-y-3 transition-all hover:shadow-md"
                   style={{
                     background: active ? 'var(--color-primary-50)' : 'var(--color-surface)',
