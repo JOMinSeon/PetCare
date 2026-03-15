@@ -47,11 +47,11 @@ export default function LandingPage() {
       {/* Hero Section */}
       <section className="pt-32 pb-20 px-4 sm:px-6 lg:px-8">
         <div className="max-w-7xl mx-auto">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+          <div style={{ display: 'flex', flexDirection: 'row', gap: '3rem', alignItems: 'center' }}>
             {/* Left Content */}
-            <div>
+            <div style={{ flex: 1 }}>
               <h1 className="text-5xl lg:text-6xl font-bold text-slate-900 leading-tight mb-6">
-                반려동물의 건강을 <span className="text-blue-600">지키세요</span>
+                오늘따라 아이가 순한가요? 아니면, <span className="text-blue-600">아픈 걸 참고 있나요?</span>
               </h1>
               <p className="text-xl text-slate-700 mb-8">
                 AI 기반 건강 분석과 실시간 모니터링으로 당신의 소중한 반려동물을 더 오래 함께하세요.
@@ -73,10 +73,10 @@ export default function LandingPage() {
             </div>
 
             {/* Right Image */}
-            <div className="rounded-2xl overflow-hidden shadow-2xl">
+            <div style={{ flex: 1 }} className="rounded-2xl overflow-hidden shadow-2xl">
               <img
-                src="https://images.pexels.com/photos/7468980/pexels-photo-7468980.jpeg"
-                alt="Caring veterinarian with happy dog by Mikhail Nilov on Pexels"
+                src="https://octapi.lxzin.com/imageBlockProp/image/202412/18/720/0/807bc680-45a7-47e7-8f5a-4c4c3ba17d2a.jpg"
+                alt="거실 한구석에 가만히 앉아 보호자를 바라보는 차분한 반려동물"
                 width={600}
                 height={400}
                 loading="eager"
@@ -90,9 +90,18 @@ export default function LandingPage() {
       {/* Features Section */}
       <section id="features" className="py-20 px-4 sm:px-6 lg:px-8 bg-white">
         <div className="max-w-7xl mx-auto">
-          <div className="text-center mb-16">
-            <h2 className="text-4xl font-bold text-slate-900 mb-4">주요 기능</h2>
-            <p className="text-xl text-slate-600">반려동물의 건강을 위해 준비한 완벽한 기능들</p>
+          <div className="text-center mb-16" style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', gap: '2rem', justifyContent: 'center' }}>
+            <img
+              src="https://octapi.lxzin.com/imageBlockProp/image/202412/18/720/0/807bc680-45a7-47e7-8f5a-4c4c3ba17d2a.jpg"
+              alt="차분한 반려동물"
+              width={200}
+              height={200}
+              className="rounded-xl object-cover"
+            />
+            <div>
+              <h2 className="text-4xl font-bold text-slate-900 mb-4">주요 기능</h2>
+              <p className="text-xl text-slate-600">반려동물의 건강을 위해 준비한 완벽한 기능들</p>
+            </div>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
