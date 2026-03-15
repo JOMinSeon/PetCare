@@ -3,6 +3,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { getBrowserDb } from '@/lib/supabase-browser';
+import { GoogleAuthButton } from '@/components/GoogleAuthButton';
 
 export default function SignupPage() {
   const router = useRouter();
@@ -60,8 +61,17 @@ export default function SignupPage() {
   return (
     <div className="flex min-h-screen items-center justify-center bg-gray-50">
       <div className="w-full max-w-sm rounded-2xl border bg-white p-8 shadow-sm space-y-6">
-        <h1 className="text-2xl font-bold text-center">회원가입</h1>
-        <form onSubmit={handleSubmit} className="space-y-4">
+         <h1 className="text-2xl font-bold text-center">회원가입</h1>
+         <GoogleAuthButton mode="signup" />
+         <div className="relative">
+           <div className="absolute inset-0 flex items-center">
+             <div className="w-full border-t border-gray-300" />
+           </div>
+           <div className="relative flex justify-center text-sm">
+             <span className="bg-white px-2 text-gray-500">또는</span>
+           </div>
+         </div>
+         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
             <label className="block text-sm font-medium mb-1">이메일</label>
             <input

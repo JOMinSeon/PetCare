@@ -22,7 +22,7 @@ export function NavBar() {
   const router   = useRouter();
   const pathname = usePathname();
 
-  if (pathname === '/' || pathname.startsWith('/auth')) return null;
+  if (pathname === '/' || pathname === '/landing' || pathname.startsWith('/auth')) return null;
 
   const handleLogout = async () => {
     const supabase = getBrowserDb();

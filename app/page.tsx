@@ -92,6 +92,13 @@ export default async function Home() {
               <ChevronRight size={18} />
             </Link>
             <Link
+              href="/landing"
+              className="inline-flex items-center justify-center gap-2 rounded-xl px-8 py-3.5 text-base font-semibold transition-all hover:opacity-80 glass-card"
+              style={{ color: 'var(--color-text-primary)' }}
+            >
+              자세히 보기
+            </Link>
+            <Link
               href="/auth/login"
               className="inline-flex items-center justify-center gap-2 rounded-xl px-8 py-3.5 text-base font-semibold transition-all hover:opacity-80 glass-card"
               style={{ color: 'var(--color-text-primary)' }}
