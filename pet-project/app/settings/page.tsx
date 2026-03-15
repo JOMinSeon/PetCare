@@ -151,7 +151,7 @@ export default function SettingsPage() {
             <h2 className="text-sm font-semibold" style={{ color: 'var(--color-text-muted)' }}>알림 설정</h2>
           </div>
           <div
-            className="rounded-2xl border divide-y"
+            className="rounded-2xl border divide-y divide-[var(--color-border)]"
             style={{ background: 'var(--color-surface)', borderColor: 'var(--color-border)' }}
           >
             {([
