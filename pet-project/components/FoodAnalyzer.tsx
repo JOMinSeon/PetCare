@@ -16,7 +16,18 @@ export function FoodAnalyzer({ petInfo }: { petInfo: PetInfo }) {
   const [dragging, setDragging] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
+  const MAX_SIZE = 5 * 1024 * 1024; // 5MB
+  const ALLOWED = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
+
   const applyFile = (f: File) => {
+    if (!ALLOWED.includes(f.type)) {
+      setAnalysis('JPG, PNG, WEBP, GIF 형식만 지원합니다.');
+      return;
+    }
+    if (f.size > MAX_SIZE) {
+      setAnalysis('파일 크기는 5MB 이하여야 합니다.');
+      return;
+    }
     setFile(f);
     setPreview(URL.createObjectURL(f));
     setAnalysis('');

@@ -1,5 +1,7 @@
 'use client';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import { getBrowserDb } from '@/lib/supabase-browser';
 import { Heart, MessageCircle, Search, Plus, Stethoscope, BookOpen, TrendingUp } from 'lucide-react';
 
 type TabKey = 'feed' | 'qa';
@@ -99,9 +101,23 @@ const MOCK_QA: QAItem[] = [
 ];
 
 export default function CommunityPage() {
+  const router = useRouter();
+  const [authChecked, setAuthChecked] = useState(false);
   const [activeTab, setActiveTab] = useState<TabKey>('feed');
   const [posts, setPosts] = useState<Post[]>(MOCK_POSTS);
   const [search, setSearch] = useState('');
+
+  useEffect(() => {
+    const checkAuth = async () => {
+      const supabase = getBrowserDb();
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) router.replace('/auth/login');
+      else setAuthChecked(true);
+    };
+    checkAuth();
+  }, [router]);
+
+  if (!authChecked) return null;
 
   const toggleLike = (id: string) =>
     setPosts((prev) =>

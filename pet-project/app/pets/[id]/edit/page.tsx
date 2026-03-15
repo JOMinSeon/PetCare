@@ -1,6 +1,7 @@
 import { redirect } from 'next/navigation';
 import { getServerDb } from '@/lib/supabase-server';
-import { updatePet } from '@/app/actions/pet';
+import { updatePet, deletePet } from '@/app/actions/pet';
+import DeletePetButton from '@/components/DeletePetButton';
 
 export default async function EditPetPage({
   params,
@@ -12,7 +13,7 @@ export default async function EditPetPage({
   const { data: { user } } = await db.auth.getUser();
   if (!user) redirect('/auth/login');
 
-  const { data: pet } = await db.from('pets').select('*').eq('id', id).single();
+  const { data: pet } = await db.from('pets').select('*').eq('id', id).eq('user_id', user.id).single();
   if (!pet) redirect('/pets');
 
   return (
@@ -79,6 +80,11 @@ export default async function EditPetPage({
           수정하기
         </button>
       </form>
+
+      <div className="mt-8 pt-6 border-t border-gray-200">
+        <p className="text-xs text-gray-400 mb-3">위험 구역</p>
+        <DeletePetButton petId={id} petName={pet.name} deletePet={deletePet} />
+      </div>
     </div>
   );
 }

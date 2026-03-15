@@ -1,5 +1,7 @@
 'use client';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import { getBrowserDb } from '@/lib/supabase-browser';
 import { Syringe, Pill, Scissors, Stethoscope, Plus, ChevronLeft, ChevronRight, Bell } from 'lucide-react';
 
 type EventType = 'vaccine' | 'deworming' | 'grooming' | 'hospital';
@@ -33,10 +35,24 @@ const MOCK_EVENTS: ScheduleEvent[] = [
 const FILTER_TYPES: (EventType | 'all')[] = ['all', 'vaccine', 'deworming', 'grooming', 'hospital'];
 
 export default function CalendarPage() {
+  const router = useRouter();
+  const [authChecked, setAuthChecked] = useState(false);
   const [filter, setFilter] = useState<EventType | 'all'>('all');
   const [events, setEvents] = useState<ScheduleEvent[]>(MOCK_EVENTS);
   const [showAdd, setShowAdd] = useState(false);
   const [newEvent, setNewEvent] = useState({ type: 'vaccine' as EventType, title: '', date: '', pet: '' });
+
+  useEffect(() => {
+    const checkAuth = async () => {
+      const supabase = getBrowserDb();
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) router.replace('/auth/login');
+      else setAuthChecked(true);
+    };
+    checkAuth();
+  }, [router]);
+
+  if (!authChecked) return null;
 
   const today = new Date().toISOString().split('T')[0];
   const filtered = filter === 'all' ? events : events.filter((e) => e.type === filter);

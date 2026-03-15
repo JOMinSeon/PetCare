@@ -39,7 +39,9 @@ export async function updatePet(formData: FormData) {
   const weight = Number(formData.get('weight'));
   const neutered = formData.get('neutered') === 'on';
 
-  await db.from('pets').update({ name, species, age, weight, neutered }).eq('id', id);
+  await db.from('pets').update({ name, species, age, weight, neutered })
+    .eq('id', id)
+    .eq('user_id', user.id);
 
   revalidatePath('/pets');
   revalidatePath(`/pets/${id}`);
@@ -48,7 +50,10 @@ export async function updatePet(formData: FormData) {
 
 export async function deletePet(petId: string) {
   const db = await getServerDb();
-  await db.from('pets').delete().eq('id', petId);
+  const { data: { user } } = await db.auth.getUser();
+  if (!user) redirect('/auth/login');
+
+  await db.from('pets').delete().eq('id', petId).eq('user_id', user.id);
   revalidatePath('/pets');
   redirect('/pets');
 }

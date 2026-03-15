@@ -1,5 +1,5 @@
 'use client';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Bell, CreditCard, User, Shield, ChevronRight, Check, LogOut } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { getBrowserDb } from '@/lib/supabase-browser';
@@ -13,6 +13,8 @@ function Toggle({ checked, onChange }: ToggleProps) {
   return (
     <button
       onClick={onChange}
+      role="switch"
+      aria-checked={checked}
       className="relative h-6 w-11 rounded-full transition-colors duration-200"
       style={{ background: checked ? 'var(--color-primary-500)' : 'var(--color-border)' }}
     >
@@ -32,6 +34,7 @@ const PLAN_OPTIONS = [
 
 export default function SettingsPage() {
   const router = useRouter();
+  const [authChecked, setAuthChecked] = useState(false);
   const [notifications, setNotifications] = useState({
     vaccination: true,
     weight: true,
@@ -41,6 +44,16 @@ export default function SettingsPage() {
   const [currentPlan, setCurrentPlan] = useState('free');
   const [profile, setProfile] = useState({ name: '보호자', email: 'user@example.com' });
   const [savedProfile, setSavedProfile] = useState(false);
+
+  useEffect(() => {
+    const checkAuth = async () => {
+      const supabase = getBrowserDb();
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) router.replace('/auth/login');
+      else setAuthChecked(true);
+    };
+    checkAuth();
+  }, [router]);
 
   const handleLogout = async () => {
     const supabase = getBrowserDb();
@@ -53,6 +66,8 @@ export default function SettingsPage() {
     setSavedProfile(true);
     setTimeout(() => setSavedProfile(false), 2000);
   };
+
+  if (!authChecked) return null;
 
   return (
     <div className="min-h-screen pb-24 md:pb-8" style={{ background: 'var(--color-bg)' }}>
