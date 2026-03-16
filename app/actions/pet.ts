@@ -14,7 +14,7 @@ export async function createPet(formData: FormData) {
   const weight = Number(formData.get('weight'));
   const neutered = formData.get('neutered') === 'on';
 
-  await db.from('pets').insert({
+  const { error } = await db.from('pets').insert({
     user_id: user.id,
     name,
     species,
@@ -22,6 +22,8 @@ export async function createPet(formData: FormData) {
     weight,
     neutered,
   });
+
+  if (error) throw new Error(error.message);
 
   revalidatePath('/pets');
   redirect('/pets');

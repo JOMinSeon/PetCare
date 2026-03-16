@@ -56,11 +56,13 @@ export default function CommunityPage() {
   const [showWritePost, setShowWritePost] = useState(false);
   const [newPost, setNewPost] = useState({ pet: '', content: '', tags: '' });
   const [postSaving, setPostSaving] = useState(false);
+  const [postError, setPostError] = useState('');
 
   // Q&A 작성 모달
   const [showWriteQA, setShowWriteQA] = useState(false);
   const [newQuestion, setNewQuestion] = useState('');
   const [qaSaving, setQaSaving] = useState(false);
+  const [qaError, setQaError] = useState('');
 
   useEffect(() => {
     const init = async () => {
@@ -68,7 +70,12 @@ export default function CommunityPage() {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) { router.replace('/auth/login'); return; }
       setUserId(user.id);
-      setUserNick(user.email?.split('@')[0] ?? '보호자');
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('nickname')
+        .eq('user_id', user.id)
+        .single();
+      setUserNick(profile?.nickname || user.email?.split('@')[0] || '보호자');
 
       const [{ data: postsData }, { data: qaData }] = await Promise.all([
         supabase
@@ -118,6 +125,7 @@ export default function CommunityPage() {
   const submitPost = async () => {
     if (!newPost.content.trim() || !userId) return;
     setPostSaving(true);
+    setPostError('');
     const supabase = getBrowserDb();
     const tags = newPost.tags
       .split(/[,\s#]+/)
@@ -133,9 +141,14 @@ export default function CommunityPage() {
         content: newPost.content.trim(),
         tags,
       })
-      .select('*, post_likes(user_id)')
+      .select('id, user_id, author, avatar, pet, content, tags, created_at')
       .single();
-    if (!error && data) setPosts((prev) => [data, ...prev]);
+    if (error || !data) {
+      setPostError('게시글 등록에 실패했습니다. 다시 시도해주세요.');
+      setPostSaving(false);
+      return;
+    }
+    setPosts((prev) => [{ ...data, post_likes: [] }, ...prev]);
     setNewPost({ pet: '', content: '', tags: '' });
     setShowWritePost(false);
     setPostSaving(false);
@@ -145,6 +158,7 @@ export default function CommunityPage() {
   const submitQA = async () => {
     if (!newQuestion.trim() || !userId) return;
     setQaSaving(true);
+    setQaError('');
     const supabase = getBrowserDb();
     const { data, error } = await supabase
       .from('qa_items')
@@ -157,7 +171,12 @@ export default function CommunityPage() {
       })
       .select()
       .single();
-    if (!error && data) setQaItems((prev) => [data, ...prev]);
+    if (error || !data) {
+      setQaError('질문 등록에 실패했습니다. 다시 시도해주세요.');
+      setQaSaving(false);
+      return;
+    }
+    setQaItems((prev) => [data, ...prev]);
     setNewQuestion('');
     setShowWriteQA(false);
     setQaSaving(false);
@@ -386,14 +405,14 @@ export default function CommunityPage() {
       {/* 글쓰기 모달 */}
       {showWritePost && (
         <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-4">
-          <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={() => setShowWritePost(false)} />
+          <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={() => { setShowWritePost(false); setPostError(''); }} />
           <div
             className="relative w-full max-w-md rounded-2xl p-6 space-y-4 shadow-2xl"
             style={{ background: 'var(--color-surface)' }}
           >
             <div className="flex items-center justify-between">
               <h3 className="font-bold text-lg" style={{ color: 'var(--color-text-primary)' }}>글쓰기</h3>
-              <button onClick={() => setShowWritePost(false)}>
+              <button onClick={() => { setShowWritePost(false); setPostError(''); }}>
                 <X size={18} style={{ color: 'var(--color-text-muted)' }} />
               </button>
             </div>
@@ -432,9 +451,13 @@ export default function CommunityPage() {
               />
             </div>
 
+            {postError && (
+              <p className="text-xs text-center" style={{ color: '#ef4444' }}>{postError}</p>
+            )}
+
             <div className="flex gap-2 pt-1">
               <button
-                onClick={() => setShowWritePost(false)}
+                onClick={() => { setShowWritePost(false); setPostError(''); }}
                 className="flex-1 rounded-xl py-2.5 text-sm font-medium"
                 style={{ background: 'var(--color-bg)', color: 'var(--color-text-secondary)' }}
               >
@@ -456,14 +479,14 @@ export default function CommunityPage() {
       {/* Q&A 작성 모달 */}
       {showWriteQA && (
         <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-4">
-          <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={() => setShowWriteQA(false)} />
+          <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={() => { setShowWriteQA(false); setQaError(''); }} />
           <div
             className="relative w-full max-w-md rounded-2xl p-6 space-y-4 shadow-2xl"
             style={{ background: 'var(--color-surface)' }}
           >
             <div className="flex items-center justify-between">
               <h3 className="font-bold text-lg" style={{ color: 'var(--color-text-primary)' }}>질문하기</h3>
-              <button onClick={() => setShowWriteQA(false)}>
+              <button onClick={() => { setShowWriteQA(false); setQaError(''); }}>
                 <X size={18} style={{ color: 'var(--color-text-muted)' }} />
               </button>
             </div>
@@ -480,9 +503,13 @@ export default function CommunityPage() {
               />
             </div>
 
+            {qaError && (
+              <p className="text-xs text-center" style={{ color: '#ef4444' }}>{qaError}</p>
+            )}
+
             <div className="flex gap-2 pt-1">
               <button
-                onClick={() => setShowWriteQA(false)}
+                onClick={() => { setShowWriteQA(false); setQaError(''); }}
                 className="flex-1 rounded-xl py-2.5 text-sm font-medium"
                 style={{ background: 'var(--color-bg)', color: 'var(--color-text-secondary)' }}
               >

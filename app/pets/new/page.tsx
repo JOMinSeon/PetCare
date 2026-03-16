@@ -134,7 +134,10 @@ export default function NewPetPage() {
 
       const { createPet } = await import('@/app/actions/pet');
       await createPet(formData);
-    } finally {
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : String(err);
+      if (msg.includes('NEXT_REDIRECT')) return;
+      alert('반려동물 등록에 실패했습니다: ' + msg);
       setLoading(false);
     }
   };
