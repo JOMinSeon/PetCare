@@ -162,7 +162,7 @@ export async function POST(req: Request) {
       const base64 = Buffer.from(imageBytes).toString('base64');
 
       const { text } = await generateText({
-        model: google('gemini-2.0-flash'),
+        model: google('gemini-1.5-flash'),
         messages: [
           {
             role: 'user',
@@ -176,7 +176,7 @@ export async function POST(req: Request) {
       result = text;
     } else {
       const { text } = await generateText({
-        model: google('gemini-2.0-flash'),
+        model: google('gemini-1.5-flash'),
         messages: [
           {
             role: 'user',
@@ -197,6 +197,10 @@ export async function POST(req: Request) {
     return Response.json({ analysis });
   } catch (error) {
     console.error('Food analysis error:', error);
+    const err = error as { statusCode?: number; message?: string };
+    if (err?.statusCode === 429) {
+      return Response.json({ error: 'AI 분석 서비스 요청 한도를 초과했습니다. 잠시 후 다시 시도해주세요.' }, { status: 429 });
+    }
     return Response.json({ error: '분석 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.' }, { status: 500 });
   }
 }
