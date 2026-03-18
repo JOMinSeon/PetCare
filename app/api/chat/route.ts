@@ -27,12 +27,12 @@ export async function POST(req: Request) {
     // 플랜별 월 사용량 제한 (Free: 10회/월)
     const currentMonth = new Date().toISOString().slice(0, 7);
     const { data: profile } = await db.from('profiles')
-      .select('subscription_plan, ai_monthly_usage, ai_usage_reset_month')
+      .select('subscription_plan, ai_monthly_usage, ai_usage_reset_month, is_admin')
       .eq('user_id', user.id)
       .single();
 
     const plan = profile?.subscription_plan ?? 'free';
-    if (plan === 'free') {
+    if (plan === 'free' && !profile?.is_admin) {
       const sameMonth = profile?.ai_usage_reset_month === currentMonth;
       const usage = sameMonth ? (profile?.ai_monthly_usage ?? 0) : 0;
       if (usage >= 10) {

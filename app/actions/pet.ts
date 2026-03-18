@@ -21,11 +21,11 @@ export async function createPet(formData: FormData) {
   if (!user) redirect('/auth/login');
 
   // 플랜별 반려동물 수 제한
-  const { data: profile } = await db.from('profiles').select('subscription_plan').eq('user_id', user.id).single();
+  const { data: profile } = await db.from('profiles').select('subscription_plan, is_admin').eq('user_id', user.id).single();
   const plan = profile?.subscription_plan ?? 'free';
   const limit = PLAN_PET_LIMITS[plan] ?? 1;
 
-  if (isFinite(limit)) {
+  if (!profile?.is_admin && isFinite(limit)) {
     const { count } = await db.from('pets').select('*', { count: 'exact', head: true }).eq('user_id', user.id);
     if ((count ?? 0) >= limit) {
       throw new Error(
