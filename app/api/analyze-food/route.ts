@@ -180,34 +180,48 @@ export async function POST(req: Request) {
 
     let result: string;
 
-    if (image) {
-      const imageBytes = await image.arrayBuffer();
-      const base64 = Buffer.from(imageBytes).toString('base64');
+    try {
+      if (image) {
+        const imageBytes = await image.arrayBuffer();
+        const imageData = new Uint8Array(imageBytes);
 
-      const { text } = await generateText({
-        model: google('gemini-1.5-flash'),
-        messages: [
-          {
-            role: 'user',
-            content: [
-              { type: 'image', image: base64 },
-              { type: 'text', text: prompt },
-            ],
-          },
-        ],
-      });
-      result = text;
-    } else {
-      const { text } = await generateText({
-        model: google('gemini-1.5-flash'),
-        messages: [
-          {
-            role: 'user',
-            content: `성분표:\n${ingredientsText}\n\n${prompt}`,
-          },
-        ],
-      });
-      result = text;
+        const { text } = await generateText({
+          model: google('gemini-2.0-flash'),
+          messages: [
+            {
+              role: 'user',
+              content: [
+                { type: 'image', image: imageData },
+                { type: 'text', text: prompt },
+              ],
+            },
+          ],
+        });
+        result = text;
+      } else {
+        const { text } = await generateText({
+          model: google('gemini-2.0-flash'),
+          messages: [
+            {
+              role: 'user',
+              content: `성분표:\n${ingredientsText}\n\n${prompt}`,
+            },
+          ],
+        });
+        result = text;
+      }
+    } catch (aiError) {
+      console.error('Gemini API error:', aiError);
+      const ae = aiError as { statusCode?: number; status?: number; message?: string; reason?: string; lastError?: { statusCode?: number } };
+      const isQuota =
+        ae?.statusCode === 429 || ae?.status === 429 ||
+        ae?.lastError?.statusCode === 429 ||
+        ae?.reason === 'maxRetriesExceeded';
+      if (isQuota) {
+        return Response.json({ error: 'AI 분석 서비스 요청 한도를 초과했습니다. 잠시 후 다시 시도해주세요.' }, { status: 429 });
+      }
+      const detail = process.env.NODE_ENV === 'development' ? (ae?.message ?? String(aiError)) : undefined;
+      return Response.json({ error: 'AI 분석 호출 중 오류가 발생했습니다.', detail }, { status: 500 });
     }
 
     // JSON 파싱 시도
@@ -225,10 +239,12 @@ export async function POST(req: Request) {
     return Response.json({ analysis });
   } catch (error) {
     console.error('Food analysis error:', error);
-    const err = error as { statusCode?: number; message?: string };
-    if (err?.statusCode === 429) {
+    const err = error as { statusCode?: number; status?: number; message?: string; cause?: unknown };
+    const isQuota = err?.statusCode === 429 || err?.status === 429;
+    if (isQuota) {
       return Response.json({ error: 'AI 분석 서비스 요청 한도를 초과했습니다. 잠시 후 다시 시도해주세요.' }, { status: 429 });
     }
-    return Response.json({ error: '분석 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.' }, { status: 500 });
+    const detail = process.env.NODE_ENV === 'development' ? (err?.message ?? String(error)) : undefined;
+    return Response.json({ error: '분석 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.', detail }, { status: 500 });
   }
 }
