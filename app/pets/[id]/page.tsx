@@ -118,7 +118,7 @@ export default async function PetDetailPage({
 
             {/* 건강 기록 추가 */}
             <form
-              action={saveHealthLog}
+              action={async (formData) => { await saveHealthLog(formData); }}
               className="rounded-2xl border p-5 space-y-3"
               style={{ background: 'var(--color-surface)', borderColor: 'var(--color-border)' }}
             >
