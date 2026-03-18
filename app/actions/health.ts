@@ -93,6 +93,10 @@ export async function saveHealthLogFromTracking(
   return { ok: true };
 }
 
+export async function saveHealthLogAction(formData: FormData): Promise<void> {
+  await saveHealthLog(formData);
+}
+
 export async function saveHealthLog(formData: FormData) {
   const db = await getServerDb();
   const { data: { user } } = await db.auth.getUser();

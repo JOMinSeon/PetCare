@@ -8,7 +8,7 @@ import { FoodAnalyzer } from '@/components/FoodAnalyzer';
 import { PetDetailTabs } from '@/components/PetDetailTabs';
 import { VaccinationStepper } from '@/components/VaccinationStepper';
 import { HealthDonut } from '@/components/HealthDonut';
-import { saveHealthLog } from '@/app/actions/health';
+import { saveHealthLogAction } from '@/app/actions/health';
 
 export default async function PetDetailPage({
   params,
@@ -156,7 +156,7 @@ export default async function PetDetailPage({
 
             {/* 건강 기록 추가 */}
             <form
-              action={async (formData) => { await saveHealthLog(formData); }}
+              action={saveHealthLogAction}
               className="rounded-2xl border p-5 space-y-3"
               style={{ background: 'var(--color-surface)', borderColor: 'var(--color-border)' }}
             >
