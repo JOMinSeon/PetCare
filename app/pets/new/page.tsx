@@ -1,5 +1,5 @@
 'use client';
-import { useState } from 'react';
+import { Suspense, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { ChevronLeft, ChevronRight, Check } from 'lucide-react';
 
@@ -88,7 +88,7 @@ function SliderInput({
   );
 }
 
-export default function NewPetPage() {
+function NewPetPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const initialSpecies = ['dog', 'cat', 'other'].includes(searchParams.get('species') ?? '')
@@ -458,5 +458,13 @@ export default function NewPetPage() {
         )}
       </div>
     </div>
+  );
+}
+
+export default function NewPetPageWrapper() {
+  return (
+    <Suspense>
+      <NewPetPage />
+    </Suspense>
   );
 }

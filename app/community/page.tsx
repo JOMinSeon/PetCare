@@ -162,7 +162,7 @@ export default function CommunityPage() {
       setPostSaving(false);
       return;
     }
-    setPosts((prev) => [{ ...data, post_likes: [] }, ...prev]);
+    setPosts((prev) => [{ ...data, post_likes: [], post_comments: [] }, ...prev]);
     setNewPost({ pet: '', content: '', tags: '' });
     setShowWritePost(false);
     setPostSaving(false);
