@@ -193,7 +193,12 @@ export async function POST(req: Request) {
       return Response.json({ error: '분석 결과를 파싱할 수 없습니다.' }, { status: 500 });
     }
 
-    const analysis = JSON.parse(jsonMatch[0]);
+    let analysis: unknown;
+    try {
+      analysis = JSON.parse(jsonMatch[0]);
+    } catch {
+      return Response.json({ error: '분석 결과 형식이 올바르지 않습니다.' }, { status: 500 });
+    }
     return Response.json({ analysis });
   } catch (error) {
     console.error('Food analysis error:', error);

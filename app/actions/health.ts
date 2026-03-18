@@ -7,6 +7,13 @@ const MER_MULTIPLIER: Record<string, number> = {
   cat: 1.2,
 };
 
+function calcRer(weight: number) {
+  return 70 * Math.pow(weight, 0.75);
+}
+function calcMer(weight: number, species: string) {
+  return calcRer(weight) * (MER_MULTIPLIER[species] ?? 1.6);
+}
+
 export async function getUserPets() {
   const db = await getServerDb();
   const { data: { user } } = await db.auth.getUser();
@@ -29,7 +36,7 @@ export async function getHealthLogs(petId: string) {
   // IDOR 방지: petId가 해당 유저 소유인지 확인
   const { data: pet } = await db
     .from('pets')
-    .select('id')
+    .select('id, species')
     .eq('id', petId)
     .eq('user_id', user.id)
     .single();
@@ -37,11 +44,17 @@ export async function getHealthLogs(petId: string) {
 
   const { data } = await db
     .from('health_logs')
-    .select('*')
+    .select('id, pet_id, weight, recorded_at')
     .eq('pet_id', petId)
     .order('recorded_at', { ascending: true });
 
-  return data ?? [];
+  if (!data) return [];
+
+  return data.map((log) => ({
+    ...log,
+    rer: calcRer(log.weight),
+    mer: calcMer(log.weight, pet.species),
+  }));
 }
 
 export async function saveHealthLogFromTracking(
@@ -49,6 +62,10 @@ export async function saveHealthLogFromTracking(
   weight: number,
   recordedAt: string,
 ) {
+  if (!Number.isFinite(weight) || weight <= 0 || weight > 200) {
+    return { error: '유효하지 않은 체중 값입니다.' };
+  }
+
   const db = await getServerDb();
   const { data: { user } } = await db.auth.getUser();
   if (!user) return { error: 'Unauthorized' };
@@ -61,14 +78,9 @@ export async function saveHealthLogFromTracking(
     .single();
   if (!pet) return { error: 'Pet not found' };
 
-  const rer = 70 * Math.pow(weight, 0.75);
-  const mer = rer * (MER_MULTIPLIER[pet.species] ?? 1.6);
-
   const { error } = await db.from('health_logs').insert({
     pet_id: petId,
     weight,
-    rer,
-    mer,
     recorded_at: new Date(recordedAt).toISOString(),
   });
 
@@ -79,10 +91,14 @@ export async function saveHealthLogFromTracking(
 export async function saveHealthLog(formData: FormData) {
   const db = await getServerDb();
   const { data: { user } } = await db.auth.getUser();
-  if (!user) return;
+  if (!user) return { error: 'Unauthorized' };
 
   const weight = Number(formData.get('weight'));
   const petId = formData.get('petId') as string;
+
+  if (!Number.isFinite(weight) || weight <= 0 || weight > 200) {
+    return { error: '유효하지 않은 체중 값입니다.' };
+  }
 
   const { data: pet } = await db
     .from('pets')
@@ -90,18 +106,16 @@ export async function saveHealthLog(formData: FormData) {
     .eq('id', petId)
     .eq('user_id', user.id)
     .single();
-  if (!pet) return;
+  if (!pet) return { error: 'Pet not found' };
 
-  const rer = 70 * Math.pow(weight, 0.75);
-  const mer = rer * (MER_MULTIPLIER[pet.species] ?? 1.6);
-
-  await db.from('health_logs').insert({
+  const { error } = await db.from('health_logs').insert({
     pet_id: petId,
     weight,
-    rer,
-    mer,
     recorded_at: new Date().toISOString(),
   });
 
+  if (error) return { error: error.message };
+
   revalidatePath(`/pets/${petId}`);
+  return { ok: true };
 }

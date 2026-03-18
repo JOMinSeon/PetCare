@@ -78,6 +78,7 @@ export default function TrackingPage() {
   const [weight, setWeight] = useState('');
   const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
   const [saving, setSaving] = useState(false);
+  const [saveError, setSaveError] = useState<string | null>(null);
   const [showHistory, setShowHistory] = useState(false);
 
   const fetchLogs = useCallback(async (petId: string) => {
@@ -112,11 +113,16 @@ export default function TrackingPage() {
     e.preventDefault();
     if (!selectedPetId || !weight) return;
     setSaving(true);
+    setSaveError(null);
 
-    await saveHealthLogFromTracking(selectedPetId, parseFloat(weight), date);
+    const result = await saveHealthLogFromTracking(selectedPetId, parseFloat(weight), date);
 
-    setWeight('');
-    await fetchLogs(selectedPetId);
+    if (result?.error) {
+      setSaveError(result.error);
+    } else {
+      setWeight('');
+      await fetchLogs(selectedPetId);
+    }
     setSaving(false);
   };
 
@@ -333,6 +339,12 @@ export default function TrackingPage() {
                     RER {Math.round(calcRer(parseFloat(weight)))} / MER {Math.round(calcMer(parseFloat(weight), selectedPet.species))} kcal
                   </span>
                 </div>
+              )}
+
+              {saveError && (
+                <p className="text-xs font-medium" style={{ color: 'var(--color-rose)' }}>
+                  {saveError}
+                </p>
               )}
 
               <button

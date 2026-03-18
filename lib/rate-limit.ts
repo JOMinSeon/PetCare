@@ -8,6 +8,15 @@ interface Entry {
 
 const store = new Map<string, Entry>();
 
+// 만료된 항목 정리 (메모리 누수 방지)
+const CLEANUP_INTERVAL_MS = 5 * 60 * 1000; // 5분마다
+setInterval(() => {
+  const now = Date.now();
+  for (const [key, entry] of store.entries()) {
+    if (now > entry.resetAt) store.delete(key);
+  }
+}, CLEANUP_INTERVAL_MS);
+
 /**
  * Returns true if the request is allowed, false if rate limit exceeded.
  * @param key      Unique key (e.g. `chat:userId`)
