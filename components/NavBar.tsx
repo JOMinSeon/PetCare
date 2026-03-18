@@ -1,20 +1,21 @@
 'use client';
 import Link from 'next/link';
 import { useRouter, usePathname } from 'next/navigation';
-import { Home, PawPrint, Calendar, Users, Settings, LogOut, Utensils } from 'lucide-react';
+import { Home, PawPrint, Calendar, Users, Settings, LogOut, Utensils, Scale } from 'lucide-react';
 import { getBrowserDb } from '@/lib/supabase-browser';
 
 const tabs = [
   { href: '/pets',           icon: Home,      label: '홈' },
   { href: '/pets',           icon: PawPrint,  label: '내 아이' },
+  { href: '/tracking',       icon: Scale,     label: '체중' },
   { href: '/analyze-food',   icon: Utensils,  label: 'AI분석' },
   { href: '/calendar',       icon: Calendar,  label: '캘린더' },
-  { href: '/community',      icon: Users,     label: '커뮤니티' },
   { href: '/settings',       icon: Settings,  label: '설정' },
 ];
 
 const desktopLinks = [
   { href: '/pets',           label: '내 반려동물' },
+  { href: '/tracking',       label: '체중 & 칼로리' },
   { href: '/analyze-food',   label: 'AI 사료 분석' },
   { href: '/calendar',       label: '캘린더' },
   { href: '/community',      label: '커뮤니티' },
