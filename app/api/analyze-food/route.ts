@@ -120,6 +120,29 @@ export async function POST(req: Request) {
       return Response.json({ error: '요청이 너무 많습니다. 잠시 후 다시 시도해주세요.' }, { status: 429 });
     }
 
+    // 플랜별 월 사용량 제한 (Free: 10회/월, chat과 공유)
+    const currentMonth = new Date().toISOString().slice(0, 7);
+    const { data: profile } = await db.from('profiles')
+      .select('subscription_plan, ai_monthly_usage, ai_usage_reset_month')
+      .eq('user_id', user.id)
+      .single();
+
+    const plan = profile?.subscription_plan ?? 'free';
+    if (plan === 'free') {
+      const sameMonth = profile?.ai_usage_reset_month === currentMonth;
+      const usage = sameMonth ? (profile?.ai_monthly_usage ?? 0) : 0;
+      if (usage >= 10) {
+        return Response.json({
+          error: 'AI 분석 월 10회 한도를 초과했습니다. Plus 플랜으로 업그레이드하면 무제한으로 이용할 수 있어요.',
+        }, { status: 429 });
+      }
+      await db.from('profiles').upsert({
+        user_id: user.id,
+        ai_monthly_usage: sameMonth ? usage + 1 : 1,
+        ai_usage_reset_month: currentMonth,
+      });
+    }
+
     const formData = await req.formData();
     const image = formData.get('image') as File | null;
     const ingredientsText = formData.get('ingredientsText') as string | null;

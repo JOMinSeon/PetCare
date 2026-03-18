@@ -45,6 +45,8 @@ export default function SettingsPage() {
     marketing: false,
   });
   const [currentPlan, setCurrentPlan] = useState('free');
+  const [planStartedAt, setPlanStartedAt] = useState<string | null>(null);
+  const [aiUsage, setAiUsage] = useState(0);
   const [savedProfile, setSavedProfile] = useState(false);
 
   // 비밀번호 변경
@@ -76,7 +78,10 @@ export default function SettingsPage() {
           community: data.notif_community,
           marketing: data.notif_marketing,
         });
-        setCurrentPlan(data.subscription_plan);
+        setCurrentPlan(data.subscription_plan ?? 'free');
+        setPlanStartedAt(data.plan_started_at ?? null);
+        const currentMonth = new Date().toISOString().slice(0, 7);
+        setAiUsage(data.ai_usage_reset_month === currentMonth ? (data.ai_monthly_usage ?? 0) : 0);
       } else {
         setNickname(user.email?.split('@')[0] ?? '보호자');
       }
@@ -109,8 +114,20 @@ export default function SettingsPage() {
   };
 
   const selectPlan = async (planId: string) => {
+    const now = new Date().toISOString();
     setCurrentPlan(planId);
-    await upsertProfile({ subscription_plan: planId });
+    setPlanStartedAt(now);
+    await upsertProfile({ subscription_plan: planId, plan_started_at: now });
+  };
+
+  const getNextBillingDate = (startedAt: string | null): string => {
+    if (!startedAt) return '';
+    const start = new Date(startedAt);
+    const now = new Date();
+    const next = new Date(start);
+    next.setMonth(next.getMonth() + 1);
+    while (next <= now) next.setMonth(next.getMonth() + 1);
+    return next.toLocaleDateString('ko-KR', { year: 'numeric', month: 'long', day: 'numeric' });
   };
 
   const changePassword = async () => {
@@ -294,11 +311,18 @@ export default function SettingsPage() {
               );
             })}
           </div>
-          {currentPlan !== 'free' && (
-            <p className="text-xs text-center" style={{ color: 'var(--color-text-muted)' }}>
-              현재 플랜: <strong>{PLAN_OPTIONS.find((p) => p.id === currentPlan)?.label}</strong> · 다음 결제일: 2026년 4월 15일
-            </p>
-          )}
+          <div className="space-y-1.5">
+            {currentPlan === 'free' && (
+              <p className="text-xs text-center" style={{ color: 'var(--color-text-muted)' }}>
+                이번 달 AI 상담 사용: <strong>{aiUsage} / 10회</strong>
+              </p>
+            )}
+            {currentPlan !== 'free' && planStartedAt && (
+              <p className="text-xs text-center" style={{ color: 'var(--color-text-muted)' }}>
+                현재 플랜: <strong>{PLAN_OPTIONS.find((p) => p.id === currentPlan)?.label}</strong> · 다음 결제일: <strong>{getNextBillingDate(planStartedAt)}</strong>
+              </p>
+            )}
+          </div>
         </section>
 
         {/* Account */}
