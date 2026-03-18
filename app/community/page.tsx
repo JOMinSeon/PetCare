@@ -6,6 +6,14 @@ import { Heart, MessageCircle, Search, Plus, Stethoscope, BookOpen, X } from 'lu
 
 type TabKey = 'feed' | 'qa';
 
+interface Comment {
+  id: string;
+  user_id: string;
+  author: string;
+  content: string;
+  created_at: string;
+}
+
 interface Post {
   id: string;
   user_id: string;
@@ -16,6 +24,7 @@ interface Post {
   tags: string[];
   created_at: string;
   post_likes: { user_id: string }[];
+  post_comments: Comment[];
 }
 
 interface QAItem {
@@ -64,6 +73,11 @@ export default function CommunityPage() {
   const [qaSaving, setQaSaving] = useState(false);
   const [qaError, setQaError] = useState('');
 
+  // 댓글
+  const [expandedPost, setExpandedPost] = useState<string | null>(null);
+  const [newComment, setNewComment] = useState('');
+  const [commentSaving, setCommentSaving] = useState(false);
+
   useEffect(() => {
     const init = async () => {
       const supabase = getBrowserDb();
@@ -80,7 +94,7 @@ export default function CommunityPage() {
       const [{ data: postsData }, { data: qaData }] = await Promise.all([
         supabase
           .from('posts')
-          .select('*, post_likes(user_id)')
+          .select('*, post_likes(user_id), post_comments(id, user_id, author, content, created_at)')
           .order('created_at', { ascending: false }),
         supabase
           .from('qa_items')
@@ -180,6 +194,25 @@ export default function CommunityPage() {
     setNewQuestion('');
     setShowWriteQA(false);
     setQaSaving(false);
+  };
+
+  // 댓글 작성
+  const submitComment = async (postId: string) => {
+    if (!newComment.trim() || !userId) return;
+    setCommentSaving(true);
+    const supabase = getBrowserDb();
+    const { data, error } = await supabase
+      .from('post_comments')
+      .insert({ post_id: postId, user_id: userId, author: userNick, content: newComment.trim() })
+      .select('id, user_id, author, content, created_at')
+      .single();
+    if (!error && data) {
+      setPosts((prev) => prev.map((p) =>
+        p.id === postId ? { ...p, post_comments: [...p.post_comments, data] } : p
+      ));
+      setNewComment('');
+    }
+    setCommentSaving(false);
   };
 
   // 투표
@@ -320,11 +353,70 @@ export default function CommunityPage() {
                       <Heart size={16} fill={liked ? 'var(--color-rose)' : 'none'} />
                       {post.post_likes.length}
                     </button>
-                    <span className="flex items-center gap-1.5 text-sm" style={{ color: 'var(--color-text-muted)' }}>
+                    <button
+                      onClick={() => {
+                        setExpandedPost(expandedPost === post.id ? null : post.id);
+                        setNewComment('');
+                      }}
+                      className="flex items-center gap-1.5 text-sm transition-all hover:scale-110"
+                      style={{ color: expandedPost === post.id ? 'var(--color-primary-500)' : 'var(--color-text-muted)' }}
+                    >
                       <MessageCircle size={16} />
-                      0
-                    </span>
+                      {post.post_comments.length}
+                    </button>
                   </div>
+
+                  {/* 댓글 섹션 */}
+                  {expandedPost === post.id && (
+                    <div className="space-y-3 pt-1">
+                      {post.post_comments.length > 0 && (
+                        <div className="space-y-2">
+                          {post.post_comments.map((c) => (
+                            <div key={c.id} className="flex gap-2">
+                              <div
+                                className="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-full text-xs"
+                                style={{ background: 'var(--color-primary-50)' }}
+                              >
+                                🐾
+                              </div>
+                              <div
+                                className="flex-1 rounded-xl px-3 py-2"
+                                style={{ background: 'var(--color-bg)' }}
+                              >
+                                <span className="text-xs font-semibold mr-2" style={{ color: 'var(--color-text-primary)' }}>
+                                  {c.author}
+                                </span>
+                                <span className="text-xs" style={{ color: 'var(--color-text-secondary)' }}>
+                                  {c.content}
+                                </span>
+                                <p className="text-xs mt-0.5" style={{ color: 'var(--color-text-muted)' }}>
+                                  {timeAgo(c.created_at)}
+                                </p>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                      <div className="flex gap-2">
+                        <input
+                          value={newComment}
+                          onChange={(e) => setNewComment(e.target.value)}
+                          onKeyDown={(e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); submitComment(post.id); } }}
+                          placeholder="댓글을 입력하세요..."
+                          className="flex-1 rounded-xl border px-3 py-2 text-sm outline-none"
+                          style={{ background: 'var(--color-bg)', borderColor: 'var(--color-border)', color: 'var(--color-text-primary)' }}
+                        />
+                        <button
+                          onClick={() => submitComment(post.id)}
+                          disabled={!newComment.trim() || commentSaving}
+                          className="rounded-xl px-4 py-2 text-sm font-medium text-white transition-opacity disabled:opacity-40"
+                          style={{ background: 'var(--color-primary-500)' }}
+                        >
+                          {commentSaving ? '...' : '등록'}
+                        </button>
+                      </div>
+                    </div>
+                  )}
                 </div>
               );
             })

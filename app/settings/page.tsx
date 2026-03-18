@@ -1,6 +1,6 @@
 'use client';
 import { useState, useEffect } from 'react';
-import { Bell, CreditCard, User, Shield, ChevronRight, Check, LogOut } from 'lucide-react';
+import { Bell, CreditCard, User, Shield, ChevronRight, Check, LogOut, X } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { getBrowserDb } from '@/lib/supabase-browser';
 
@@ -46,6 +46,12 @@ export default function SettingsPage() {
   });
   const [currentPlan, setCurrentPlan] = useState('free');
   const [savedProfile, setSavedProfile] = useState(false);
+
+  // 비밀번호 변경
+  const [showPwModal, setShowPwModal] = useState(false);
+  const [newPassword, setNewPassword] = useState('');
+  const [pwSaving, setPwSaving] = useState(false);
+  const [pwMessage, setPwMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
 
   useEffect(() => {
     const init = async () => {
@@ -105,6 +111,25 @@ export default function SettingsPage() {
   const selectPlan = async (planId: string) => {
     setCurrentPlan(planId);
     await upsertProfile({ subscription_plan: planId });
+  };
+
+  const changePassword = async () => {
+    if (newPassword.length < 6) {
+      setPwMessage({ type: 'error', text: '비밀번호는 6자 이상이어야 합니다.' });
+      return;
+    }
+    setPwSaving(true);
+    setPwMessage(null);
+    const supabase = getBrowserDb();
+    const { error } = await supabase.auth.updateUser({ password: newPassword });
+    if (error) {
+      setPwMessage({ type: 'error', text: '변경 실패: ' + error.message });
+    } else {
+      setPwMessage({ type: 'success', text: '비밀번호가 변경되었습니다.' });
+      setNewPassword('');
+      setTimeout(() => { setShowPwModal(false); setPwMessage(null); }, 1500);
+    }
+    setPwSaving(false);
   };
 
   const handleLogout = async () => {
@@ -287,7 +312,7 @@ export default function SettingsPage() {
             style={{ background: 'var(--color-surface)', borderColor: 'var(--color-border)' }}
           >
             {[
-              { label: '비밀번호 변경', action: () => {} },
+              { label: '비밀번호 변경', action: () => { setShowPwModal(true); setPwMessage(null); setNewPassword(''); } },
               { label: '개인정보 처리방침', action: () => {} },
               { label: '이용약관', action: () => {} },
             ].map(({ label, action }) => (
@@ -304,6 +329,61 @@ export default function SettingsPage() {
           </div>
         </section>
 
+      </div>
+
+      {/* 비밀번호 변경 모달 */}
+      {showPwModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={() => setShowPwModal(false)} />
+          <div
+            className="relative w-full max-w-sm rounded-2xl p-6 space-y-4 shadow-2xl"
+            style={{ background: 'var(--color-surface)' }}
+          >
+            <div className="flex items-center justify-between">
+              <h3 className="font-bold text-lg" style={{ color: 'var(--color-text-primary)' }}>비밀번호 변경</h3>
+              <button onClick={() => setShowPwModal(false)}>
+                <X size={18} style={{ color: 'var(--color-text-muted)' }} />
+              </button>
+            </div>
+            <div>
+              <label className="block text-xs font-medium mb-1.5" style={{ color: 'var(--color-text-muted)' }}>새 비밀번호</label>
+              <input
+                type="password"
+                value={newPassword}
+                onChange={(e) => setNewPassword(e.target.value)}
+                onKeyDown={(e) => { if (e.key === 'Enter') changePassword(); }}
+                placeholder="6자 이상 입력"
+                className="w-full rounded-xl border px-4 py-2.5 text-sm outline-none"
+                style={{ background: 'var(--color-bg)', borderColor: 'var(--color-border)', color: 'var(--color-text-primary)' }}
+              />
+            </div>
+            {pwMessage && (
+              <p className="text-xs text-center" style={{ color: pwMessage.type === 'success' ? '#22c55e' : '#ef4444' }}>
+                {pwMessage.text}
+              </p>
+            )}
+            <div className="flex gap-2">
+              <button
+                onClick={() => setShowPwModal(false)}
+                className="flex-1 rounded-xl py-2.5 text-sm font-medium"
+                style={{ background: 'var(--color-bg)', color: 'var(--color-text-secondary)' }}
+              >
+                취소
+              </button>
+              <button
+                onClick={changePassword}
+                disabled={!newPassword || pwSaving}
+                className="flex-1 rounded-xl py-2.5 text-sm font-medium text-white transition-opacity disabled:opacity-40"
+                style={{ background: 'var(--color-primary-500)' }}
+              >
+                {pwSaving ? '변경 중...' : '변경'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      <div className="max-w-2xl mx-auto px-6 pb-6">
         {/* Logout */}
         <button
           onClick={handleLogout}
