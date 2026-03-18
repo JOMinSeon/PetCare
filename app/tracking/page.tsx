@@ -2,6 +2,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { getBrowserDb } from '@/lib/supabase-browser';
+import { getUserPets, getHealthLogs, saveHealthLogFromTracking } from '@/app/actions/health';
 import { Scale, Flame, TrendingUp, TrendingDown, Minus, Plus, ChevronDown } from 'lucide-react';
 import {
   LineChart,
@@ -80,13 +81,8 @@ export default function TrackingPage() {
   const [showHistory, setShowHistory] = useState(false);
 
   const fetchLogs = useCallback(async (petId: string) => {
-    const supabase = getBrowserDb();
-    const { data } = await supabase
-      .from('health_logs')
-      .select('*')
-      .eq('pet_id', petId)
-      .order('recorded_at', { ascending: true });
-    setLogs(data ?? []);
+    const data = await getHealthLogs(petId);
+    setLogs(data);
   }, []);
 
   useEffect(() => {
@@ -95,13 +91,7 @@ export default function TrackingPage() {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) { router.replace('/auth/login'); return; }
 
-      const { data: petData } = await supabase
-        .from('pets')
-        .select('id, name, species, age, weight')
-        .eq('user_id', user.id)
-        .order('name');
-
-      const petList = petData ?? [];
+      const petList = await getUserPets();
       setPets(petList);
       if (petList.length > 0) {
         setSelectedPetId(petList[0].id);
@@ -123,19 +113,7 @@ export default function TrackingPage() {
     if (!selectedPetId || !weight) return;
     setSaving(true);
 
-    const supabase = getBrowserDb();
-    const pet = pets.find((p) => p.id === selectedPetId);
-    const w = parseFloat(weight);
-    const rer = calcRer(w);
-    const mer = calcMer(w, pet?.species ?? 'dog');
-
-    await supabase.from('health_logs').insert({
-      pet_id: selectedPetId,
-      weight: w,
-      rer,
-      mer,
-      recorded_at: new Date(date).toISOString(),
-    });
+    await saveHealthLogFromTracking(selectedPetId, parseFloat(weight), date);
 
     setWeight('');
     await fetchLogs(selectedPetId);
