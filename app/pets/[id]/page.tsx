@@ -79,6 +79,44 @@ export default async function PetDetailPage({
         {/* ── Tab: 건강기록 ── */}
         {activeTab === 'health' && (
           <>
+            {/* 기본 정보 카드 */}
+            <div
+              className="rounded-2xl border p-5"
+              style={{ background: 'var(--color-surface)', borderColor: 'var(--color-border)' }}
+            >
+              <div className="flex items-center gap-4 mb-4">
+                <div
+                  className="flex h-16 w-16 items-center justify-center rounded-2xl text-3xl flex-shrink-0"
+                  style={{ background: 'linear-gradient(135deg, var(--color-primary-50) 0%, var(--color-primary-100) 100%)' }}
+                >
+                  {pet.species === 'dog' ? '🐕' : '🐈'}
+                </div>
+                <div>
+                  <p className="text-xl font-bold" style={{ color: 'var(--color-text-primary)' }}>{pet.name}</p>
+                  <p className="text-sm mt-0.5" style={{ color: 'var(--color-text-secondary)' }}>
+                    {pet.species === 'dog' ? '강아지' : '고양이'}
+                    {pet.breed ? ` · ${pet.breed}` : ''}
+                  </p>
+                </div>
+              </div>
+              <div className="grid grid-cols-3 gap-2">
+                {[
+                  { label: '나이', value: `${pet.age}세` },
+                  { label: '체중', value: `${pet.weight}kg` },
+                  { label: '중성화', value: pet.neutered ? '완료 ✅' : '미완료' },
+                ].map(({ label, value }) => (
+                  <div
+                    key={label}
+                    className="rounded-xl p-3 text-center"
+                    style={{ background: 'var(--color-bg)' }}
+                  >
+                    <p className="text-xs mb-1" style={{ color: 'var(--color-text-muted)' }}>{label}</p>
+                    <p className="text-sm font-semibold" style={{ color: 'var(--color-text-primary)' }}>{value}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+
             {/* 핵심 수치 카드 */}
             {latest ? (
               <div className="grid grid-cols-2 gap-3">

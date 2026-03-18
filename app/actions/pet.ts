@@ -53,19 +53,19 @@ export async function createPet(formData: FormData) {
     throw new Error('체중은 0~200kg 사이여야 합니다.');
   }
 
-  const { error } = await db.from('pets').insert({
+  const { data: newPet, error } = await db.from('pets').insert({
     user_id: user.id,
     name,
     species,
     age,
     weight,
     neutered,
-  });
+  }).select('id').single();
 
   if (error) throw new Error(error.message);
 
   revalidatePath('/pets');
-  redirect('/pets');
+  redirect(`/pets/${newPet.id}`);
 }
 
 export async function updatePet(formData: FormData) {
