@@ -158,7 +158,7 @@ export default async function PetDetailPage({
               <h2 className="text-base font-semibold" style={{ color: 'var(--color-text-primary)' }}>
                 예방접종 & 진료 현황
               </h2>
-              <VaccinationStepper species={pet.species} />
+              <VaccinationStepper species={pet.species} petId={id} />
             </div>
 
             {/* 차트 */}

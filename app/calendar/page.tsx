@@ -29,6 +29,7 @@ export default function CalendarPage() {
   const router = useRouter();
   const [userId, setUserId] = useState<string | null>(null);
   const [events, setEvents] = useState<ScheduleEvent[]>([]);
+  const [pets, setPets] = useState<{ id: string; name: string }[]>([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<EventType | 'all'>('all');
   const [showAdd, setShowAdd] = useState(false);
@@ -42,13 +43,24 @@ export default function CalendarPage() {
       if (!user) { router.replace('/auth/login'); return; }
       setUserId(user.id);
 
-      const { data } = await supabase
-        .from('schedule_events')
-        .select('*')
-        .eq('user_id', user.id)
-        .order('date', { ascending: true });
+      const [{ data: eventsData }, { data: petsData }] = await Promise.all([
+        supabase
+          .from('schedule_events')
+          .select('*')
+          .eq('user_id', user.id)
+          .order('date', { ascending: true }),
+        supabase
+          .from('pets')
+          .select('id, name')
+          .eq('user_id', user.id)
+          .order('name'),
+      ]);
 
-      setEvents(data ?? []);
+      setEvents(eventsData ?? []);
+      setPets(petsData ?? []);
+      if (petsData && petsData.length > 0) {
+        setNewEvent((prev) => ({ ...prev, pet: petsData[0].name }));
+      }
       setLoading(false);
     };
     init();
@@ -316,17 +328,21 @@ export default function CalendarPage() {
               </div>
               <div>
                 <label className="block text-xs font-medium mb-1.5" style={{ color: 'var(--color-text-muted)' }}>반려동물</label>
-                <input
+                <select
                   value={newEvent.pet}
                   onChange={(e) => setNewEvent({ ...newEvent, pet: e.target.value })}
-                  placeholder="이름 입력"
                   className="w-full rounded-xl border px-4 py-2.5 text-sm outline-none"
                   style={{
                     background: 'var(--color-bg)',
                     borderColor: 'var(--color-border)',
-                    color: 'var(--color-text-primary)',
+                    color: newEvent.pet ? 'var(--color-text-primary)' : 'var(--color-text-muted)',
                   }}
-                />
+                >
+                  <option value="">반려동물 선택</option>
+                  {pets.map((p) => (
+                    <option key={p.id} value={p.name}>{p.name}</option>
+                  ))}
+                </select>
               </div>
             </div>
 

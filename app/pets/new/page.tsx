@@ -1,6 +1,6 @@
 'use client';
 import { useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { ChevronLeft, ChevronRight, Check } from 'lucide-react';
 
 const STEPS = ['기본 정보', '나이 & 체중', '건강 상태', '완료'];
@@ -90,11 +90,15 @@ function SliderInput({
 
 export default function NewPetPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const initialSpecies = ['dog', 'cat', 'other'].includes(searchParams.get('species') ?? '')
+    ? (searchParams.get('species') as string)
+    : 'dog';
   const [step, setStep]       = useState(0);
   const [loading, setLoading] = useState(false);
   const [form, setForm]       = useState({
     name:       '',
-    species:    'dog',
+    species:    initialSpecies,
     age:        '',
     weight:     '',
     neutered:   false,

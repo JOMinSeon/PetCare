@@ -1,8 +1,9 @@
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
-import { Plus, Calendar, Syringe, AlertCircle } from 'lucide-react';
+import { Plus, Calendar, AlertCircle } from 'lucide-react';
 import { getServerDb } from '@/lib/supabase-server';
 import { PetCard } from '@/components/PetCard';
+import { PetTypeOnboarding } from '@/components/PetTypeOnboarding';
 
 export default async function PetsPage() {
   const db = await getServerDb();
@@ -21,6 +22,14 @@ export default async function PetsPage() {
     hour < 18 ? '안녕하세요' : '좋은 저녁이에요';
 
   const petCount = pets?.length ?? 0;
+
+  const todayISO = new Date().toISOString().split('T')[0];
+  const { count: upcomingCount } = await db
+    .from('schedule_events')
+    .select('*', { count: 'exact', head: true })
+    .eq('user_id', user.id)
+    .eq('done', false)
+    .gte('date', todayISO);
 
   // Quick stat: pets missing today's log
   const today = new Date().toDateString();
@@ -145,7 +154,7 @@ export default async function PetsPage() {
                 {[
                   { label: '관리 중인 아이', value: `${petCount}마리`, icon: '🐾' },
                   { label: '오늘 기록 완료', value: `${petCount - petsWithoutLog.length}마리`, icon: '✅' },
-                  { label: '예정 일정', value: '2건', icon: '📅' },
+                  { label: '예정 일정', value: `${upcomingCount ?? 0}건`, icon: '📅' },
                 ].map(({ label, value, icon }) => (
                   <div
                     key={label}
@@ -169,62 +178,8 @@ export default async function PetsPage() {
             </div>
           </>
         ) : (
-          /* Empty State */
-          <div className="space-y-8">
-            <div
-              className="rounded-2xl border-2 border-dashed p-14 text-center space-y-5"
-              style={{ borderColor: 'var(--color-border)' }}
-            >
-              <div className="space-y-1">
-                <p className="text-6xl">🐾</p>
-                <p className="text-2xl">🐕 🐈</p>
-              </div>
-              <div className="space-y-2">
-                <p className="font-bold text-lg" style={{ color: 'var(--color-text-primary)' }}>
-                  아직 등록된 아이가 없어요
-                </p>
-                <p className="text-sm leading-relaxed" style={{ color: 'var(--color-text-muted)' }}>
-                  첫 번째 반려동물을 등록하고<br />
-                  AI와 함께 건강을 관리해보세요!
-                </p>
-              </div>
-              <Link
-                href="/pets/new"
-                className="inline-flex items-center gap-2 rounded-2xl px-7 py-3 text-sm font-semibold shadow-md transition-all hover:opacity-90 hover:shadow-lg hover:-translate-y-0.5"
-                style={{ background: 'var(--color-primary-500)', color: '#fff' }}
-              >
-                <Plus size={16} />
-                첫 번째 반려동물 등록하기
-              </Link>
-            </div>
-
-            {/* Feature hints */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              {[
-                { icon: '📊', title: '체중 & 칼로리 추적', desc: '자동으로 MER을 계산해드려요' },
-                { icon: '🤖', title: 'AI 사료 분석',       desc: '사진 한 장으로 즉시 분석' },
-                { icon: Syringe, title: '예방접종 일정 알림', desc: 'D-day를 절대 놓치지 마세요' },
-                { icon: '👥', title: '보호자 커뮤니티',    desc: '경험을 나누고 조언을 받아요' },
-              ].map(({ icon, title, desc }) => (
-                <div
-                  key={title}
-                  className="rounded-2xl border p-4 flex items-center gap-3"
-                  style={{ background: 'var(--color-surface)', borderColor: 'var(--color-border)' }}
-                >
-                  <div
-                    className="flex h-10 w-10 items-center justify-center rounded-xl flex-shrink-0 text-xl"
-                    style={{ background: 'var(--color-primary-50)' }}
-                  >
-                    {typeof icon === 'string' ? icon : <Syringe size={18} style={{ color: 'var(--color-primary-500)' }} />}
-                  </div>
-                  <div>
-                    <p className="text-sm font-semibold" style={{ color: 'var(--color-text-primary)' }}>{title}</p>
-                    <p className="text-xs" style={{ color: 'var(--color-text-muted)' }}>{desc}</p>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
+          /* Empty State — 온보딩 단계형 */
+          <PetTypeOnboarding />
         )}
       </div>
     </main>
