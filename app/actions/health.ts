@@ -78,10 +78,15 @@ export async function saveHealthLogFromTracking(
     .single();
   if (!pet) return { error: 'Pet not found' };
 
+  const parsedDate = new Date(recordedAt);
+  if (isNaN(parsedDate.getTime())) {
+    return { error: '유효하지 않은 날짜 형식입니다.' };
+  }
+
   const { error } = await db.from('health_logs').insert({
     pet_id: petId,
     weight,
-    recorded_at: new Date(recordedAt).toISOString(),
+    recorded_at: parsedDate.toISOString(),
   });
 
   if (error) return { error: error.message };

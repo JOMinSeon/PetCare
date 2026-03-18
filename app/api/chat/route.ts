@@ -52,6 +52,14 @@ export async function POST(req: Request) {
     if (!messages || !Array.isArray(messages)) {
       return Response.json({ error: '잘못된 요청입니다.' }, { status: 400 });
     }
+    if (messages.length > 50) {
+      return Response.json({ error: '메시지 수가 너무 많습니다.' }, { status: 400 });
+    }
+    for (const msg of messages) {
+      if (typeof msg?.content === 'string' && msg.content.length > 4000) {
+        return Response.json({ error: '메시지가 너무 깁니다.' }, { status: 400 });
+      }
+    }
 
     // #1 Prompt Injection 방지: 클라이언트 petContext 대신 서버에서 DB 조회
     let petSystemInfo = '';

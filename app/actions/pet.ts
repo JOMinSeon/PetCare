@@ -34,11 +34,24 @@ export async function createPet(formData: FormData) {
     }
   }
 
-  const name = formData.get('name') as string;
+  const name = (formData.get('name') as string)?.trim();
   const species = formData.get('species') as string;
   const age = Number(formData.get('age'));
   const weight = Number(formData.get('weight'));
   const neutered = formData.get('neutered') === 'on';
+
+  if (!name || name.length < 1 || name.length > 50) {
+    throw new Error('이름은 1~50자 사이여야 합니다.');
+  }
+  if (!['dog', 'cat'].includes(species)) {
+    throw new Error('종류는 dog 또는 cat이어야 합니다.');
+  }
+  if (!Number.isFinite(age) || age < 0 || age > 30) {
+    throw new Error('나이는 0~30 사이여야 합니다.');
+  }
+  if (!Number.isFinite(weight) || weight <= 0 || weight > 200) {
+    throw new Error('체중은 0~200kg 사이여야 합니다.');
+  }
 
   const { error } = await db.from('pets').insert({
     user_id: user.id,
@@ -61,11 +74,24 @@ export async function updatePet(formData: FormData) {
   if (!user) redirect('/auth/login');
 
   const id = formData.get('id') as string;
-  const name = formData.get('name') as string;
+  const name = (formData.get('name') as string)?.trim();
   const species = formData.get('species') as string;
   const age = Number(formData.get('age'));
   const weight = Number(formData.get('weight'));
   const neutered = formData.get('neutered') === 'on';
+
+  if (!name || name.length < 1 || name.length > 50) {
+    throw new Error('이름은 1~50자 사이여야 합니다.');
+  }
+  if (!['dog', 'cat'].includes(species)) {
+    throw new Error('종류는 dog 또는 cat이어야 합니다.');
+  }
+  if (!Number.isFinite(age) || age < 0 || age > 30) {
+    throw new Error('나이는 0~30 사이여야 합니다.');
+  }
+  if (!Number.isFinite(weight) || weight <= 0 || weight > 200) {
+    throw new Error('체중은 0~200kg 사이여야 합니다.');
+  }
 
   await db.from('pets').update({ name, species, age, weight, neutered })
     .eq('id', id)
