@@ -86,11 +86,33 @@ export function FoodAnalyzer({ petInfo }: { petInfo: PetInfo }) {
   const MAX_SIZE = 5 * 1024 * 1024;
   const ALLOWED = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
 
-  const applyFile = (f: File) => {
+  const compressImage = (f: File): Promise<File> =>
+    new Promise((resolve) => {
+      const url = URL.createObjectURL(f);
+      const img = new Image();
+      img.onload = () => {
+        URL.revokeObjectURL(url);
+        const MAX_PX = 1024;
+        const scale = Math.min(1, MAX_PX / Math.max(img.width, img.height));
+        const canvas = document.createElement('canvas');
+        canvas.width = Math.round(img.width * scale);
+        canvas.height = Math.round(img.height * scale);
+        canvas.getContext('2d')!.drawImage(img, 0, 0, canvas.width, canvas.height);
+        canvas.toBlob(
+          (blob) => resolve(blob ? new File([blob], f.name, { type: 'image/jpeg' }) : f),
+          'image/jpeg',
+          0.85,
+        );
+      };
+      img.src = url;
+    });
+
+  const applyFile = async (f: File) => {
     if (!ALLOWED.includes(f.type)) { setError('JPG, PNG, WEBP, GIF 형식만 지원합니다.'); return; }
     if (f.size > MAX_SIZE) { setError('파일 크기는 5MB 이하여야 합니다.'); return; }
-    setFile(f);
-    setPreview(URL.createObjectURL(f));
+    const compressed = await compressImage(f);
+    setFile(compressed);
+    setPreview(URL.createObjectURL(compressed));
     setError('');
     setAnalysis(null);
   };
