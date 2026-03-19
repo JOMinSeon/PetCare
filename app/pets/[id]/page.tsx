@@ -36,10 +36,20 @@ export default async function PetDetailPage({
     return <div className="p-8">반려동물을 찾을 수 없습니다.</div>;
   }
 
-  const sortedLogs = (pet.health_logs ?? []).sort(
-    (a: { recorded_at: string }, b: { recorded_at: string }) =>
-      new Date(a.recorded_at).getTime() - new Date(b.recorded_at).getTime()
-  );
+  const calcRer = (weight: number) => 70 * Math.pow(weight, 0.75);
+  const merMultiplier: Record<string, number> = { dog: 1.6, cat: 1.2 };
+  const calcMer = (weight: number) => calcRer(weight) * (merMultiplier[pet.species] ?? 1.6);
+
+  const sortedLogs = (pet.health_logs ?? [])
+    .sort(
+      (a: { recorded_at: string }, b: { recorded_at: string }) =>
+        new Date(a.recorded_at).getTime() - new Date(b.recorded_at).getTime()
+    )
+    .map((log: { id: string; weight: number; recorded_at: string }) => ({
+      ...log,
+      rer: calcRer(log.weight),
+      mer: calcMer(log.weight),
+    }));
 
   const latest = sortedLogs[sortedLogs.length - 1];
 
@@ -238,7 +248,7 @@ export default async function PetDetailPage({
                           {log.weight}kg
                         </span>
                         <span className="text-xs" style={{ color: 'var(--color-text-muted)' }}>
-                          RER {log.rer.toFixed(0)} / MER {log.mer.toFixed(0)} kcal
+                          RER {log.rer != null ? Number(log.rer).toFixed(0) : '-'} / MER {log.mer != null ? Number(log.mer).toFixed(0) : '-'} kcal
                         </span>
                       </li>
                     ))}

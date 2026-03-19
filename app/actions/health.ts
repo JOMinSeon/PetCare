@@ -44,7 +44,7 @@ export async function getHealthLogs(petId: string) {
 
   const { data } = await db
     .from('health_logs')
-    .select('id, pet_id, weight, recorded_at')
+    .select('id, pet_id, weight, rer, mer, recorded_at')
     .eq('pet_id', petId)
     .order('recorded_at', { ascending: true });
 
@@ -52,8 +52,8 @@ export async function getHealthLogs(petId: string) {
 
   return data.map((log) => ({
     ...log,
-    rer: calcRer(log.weight),
-    mer: calcMer(log.weight, pet.species),
+    rer: log.rer ?? calcRer(log.weight),
+    mer: log.mer ?? calcMer(log.weight, pet.species),
   }));
 }
 
@@ -86,6 +86,8 @@ export async function saveHealthLogFromTracking(
   const { error } = await db.from('health_logs').insert({
     pet_id: petId,
     weight,
+    rer: calcRer(weight),
+    mer: calcMer(weight, pet.species),
     recorded_at: parsedDate.toISOString(),
   });
 
@@ -120,6 +122,8 @@ export async function saveHealthLog(formData: FormData) {
   const { error } = await db.from('health_logs').insert({
     pet_id: petId,
     weight,
+    rer: calcRer(weight),
+    mer: calcMer(weight, pet.species),
     recorded_at: new Date().toISOString(),
   });
 

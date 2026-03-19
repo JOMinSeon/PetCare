@@ -1,4 +1,5 @@
 'use client';
+import { useState, useEffect } from 'react';
 import {
   LineChart,
   Line,
@@ -20,6 +21,11 @@ interface HealthLog {
 }
 
 export function HealthChart({ data }: { data: HealthLog[] }) {
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => { setMounted(true); }, []);
+
+  if (!mounted) return null;
+
   if (!data || data.length === 0) {
     return (
       <p className="text-sm py-4 text-center" style={{ color: 'var(--color-text-muted)' }}>
@@ -45,7 +51,7 @@ export function HealthChart({ data }: { data: HealthLog[] }) {
   return (
     <div className="space-y-6" aria-label={`건강 기록 차트`}>
       {/* Weight chart */}
-      <div>
+      <div style={{ minWidth: 0 }}>
         <h3 className="text-sm font-medium mb-3" style={{ color: 'var(--color-text-secondary)' }}>
           체중 변화 (kg)
         </h3>
@@ -75,7 +81,7 @@ export function HealthChart({ data }: { data: HealthLog[] }) {
       </div>
 
       {/* Calorie chart */}
-      <div>
+      <div style={{ minWidth: 0 }}>
         <h3 className="text-sm font-medium mb-3" style={{ color: 'var(--color-text-secondary)' }}>
           권장 칼로리 (kcal)
         </h3>
