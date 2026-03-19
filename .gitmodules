@@ -1,0 +1,3 @@
+[submodule "PetCare"]
+	path = PetCare
+	url = https://github.com/JOMinSeon/PetCare.git
