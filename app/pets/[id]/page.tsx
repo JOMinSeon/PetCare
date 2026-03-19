@@ -238,7 +238,7 @@ export default async function PetDetailPage({
                           {log.weight}kg
                         </span>
                         <span className="text-xs" style={{ color: 'var(--color-text-muted)' }}>
-                          RER {log.rer.toFixed(0)} / MER {log.mer.toFixed(0)} kcal
+                          RER {log.rer != null ? Number(log.rer).toFixed(0) : '-'} / MER {log.mer != null ? Number(log.mer).toFixed(0) : '-'} kcal
                         </span>
                       </li>
                     ))}
