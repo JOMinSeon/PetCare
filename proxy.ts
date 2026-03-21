@@ -23,7 +23,18 @@ export async function proxy(request: NextRequest) {
     }
   );
 
-  const { data: { user } } = await supabase.auth.getUser();
+  const { data: { user }, error } = await supabase.auth.getUser();
+
+  // 만료된 리프레시 토큰 → 쿠키 초기화 후 로그인 페이지로
+  if (error?.code === 'refresh_token_not_found') {
+    const response = NextResponse.redirect(new URL('/auth/login', request.url));
+    request.cookies.getAll().forEach((cookie) => {
+      if (cookie.name.startsWith('sb-')) {
+        response.cookies.delete(cookie.name);
+      }
+    });
+    return response;
+  }
 
   const isAuthPage = request.nextUrl.pathname.startsWith('/auth');
   const isPublicPage =
