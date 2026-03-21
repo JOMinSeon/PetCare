@@ -1,8 +1,24 @@
 'use client';
-import { useState, useEffect } from 'react';
-import { Bell, CreditCard, User, Shield, ChevronRight, Check, LogOut, X } from 'lucide-react';
-import { useRouter } from 'next/navigation';
+import { useState, useEffect, Suspense } from 'react';
+import { Bell, CreditCard, User, Shield, ChevronRight, Check, LogOut, X, AlertCircle } from 'lucide-react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { getBrowserDb } from '@/lib/supabase-browser';
+
+declare global {
+  interface Window {
+    AUTHNICE?: {
+      requestPay: (params: {
+        clientId: string;
+        method: string;
+        orderId: string;
+        amount: number;
+        goodsName: string;
+        returnUrl: string;
+        fnError?: (result: { resultMsg?: string }) => void;
+      }) => void;
+    };
+  }
+}
 
 interface ToggleProps {
   checked: boolean;
@@ -32,8 +48,9 @@ const PLAN_OPTIONS = [
   { id: 'premium', label: 'Premium', price: '₩9,900/월', features: ['반려동물 무제한', '수의사 Q&A 우선 답변', '건강 리포트 PDF', '모든 기능'] },
 ];
 
-export default function SettingsPage() {
+function SettingsContent() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [authChecked, setAuthChecked] = useState(false);
   const [userId, setUserId] = useState('');
   const [userEmail, setUserEmail] = useState('');
@@ -48,12 +65,36 @@ export default function SettingsPage() {
   const [planStartedAt, setPlanStartedAt] = useState<string | null>(null);
   const [aiUsage, setAiUsage] = useState(0);
   const [savedProfile, setSavedProfile] = useState(false);
+  const [paymentMsg, setPaymentMsg] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
+  const [showCancelModal, setShowCancelModal] = useState(false);
+  const [cancelling, setCancelling] = useState(false);
 
   // 비밀번호 변경
   const [showPwModal, setShowPwModal] = useState(false);
   const [newPassword, setNewPassword] = useState('');
   const [pwSaving, setPwSaving] = useState(false);
   const [pwMessage, setPwMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
+
+  // NicePay JS SDK 로드
+  useEffect(() => {
+    const script = document.createElement('script');
+    script.src = 'https://pay.nicepay.co.kr/v1/js/';
+    script.async = true;
+    document.head.appendChild(script);
+    return () => { document.head.removeChild(script); };
+  }, []);
+
+  // 결제 결과 처리 (returnUrl 리다이렉트 후)
+  useEffect(() => {
+    const payment = searchParams.get('payment');
+    if (payment === 'success') {
+      setPaymentMsg({ type: 'success', text: '결제가 완료되었습니다. 플랜이 업그레이드되었어요!' });
+      router.replace('/settings');
+    } else if (payment === 'failed') {
+      setPaymentMsg({ type: 'error', text: '결제에 실패했습니다. 다시 시도해 주세요.' });
+      router.replace('/settings');
+    }
+  }, [searchParams, router]);
 
   useEffect(() => {
     const init = async () => {
@@ -113,11 +154,54 @@ export default function SettingsPage() {
     });
   };
 
-  const selectPlan = async (planId: string) => {
-    const now = new Date().toISOString();
-    setCurrentPlan(planId);
-    setPlanStartedAt(now);
-    await upsertProfile({ subscription_plan: planId, plan_started_at: now });
+  const handlePlanSelect = (planId: string) => {
+    if (planId === currentPlan) return;
+
+    if (planId === 'free') {
+      setShowCancelModal(true);
+      return;
+    }
+
+    const plan = PLAN_OPTIONS.find((p) => p.id === planId);
+    if (!plan || !userId) return;
+
+    if (!window.AUTHNICE) {
+      setPaymentMsg({ type: 'error', text: '결제 모듈을 불러오는 중입니다. 잠시 후 다시 시도해 주세요.' });
+      return;
+    }
+
+    const amount = planId === 'plus' ? 4900 : 9900;
+    const orderId = `${planId}-${userId.replace(/-/g, '')}-${Date.now()}`;
+    const returnUrl = `${window.location.origin}/api/nicepay/auth?userId=${userId}&planId=${planId}`;
+
+    window.AUTHNICE.requestPay({
+      clientId: process.env.NEXT_PUBLIC_NICEPAY_CLIENT_ID!,
+      method: 'card',
+      orderId,
+      amount,
+      goodsName: `펫헬스 ${plan.label} 구독`,
+      returnUrl,
+      fnError: (result) => {
+        setPaymentMsg({ type: 'error', text: result.resultMsg || '결제 중 오류가 발생했습니다.' });
+      },
+    });
+  };
+
+  const cancelSubscription = async () => {
+    setCancelling(true);
+    try {
+      const res = await fetch('/api/nicepay/cancel', { method: 'POST' });
+      if (res.ok) {
+        setCurrentPlan('free');
+        setPlanStartedAt(null);
+        setShowCancelModal(false);
+        setPaymentMsg({ type: 'success', text: '구독이 취소되었습니다.' });
+      } else {
+        setPaymentMsg({ type: 'error', text: '구독 취소에 실패했습니다. 다시 시도해 주세요.' });
+      }
+    } finally {
+      setCancelling(false);
+    }
   };
 
   const getNextBillingDate = (startedAt: string | null): string => {
@@ -172,6 +256,24 @@ export default function SettingsPage() {
       </div>
 
       <div className="max-w-2xl mx-auto px-6 py-6 space-y-6">
+        {/* 결제 결과 메시지 */}
+        {paymentMsg && (
+          <div
+            className="flex items-center gap-3 rounded-xl px-4 py-3 text-sm"
+            style={{
+              background: paymentMsg.type === 'success' ? 'var(--color-primary-50)' : '#fef2f2',
+              color: paymentMsg.type === 'success' ? 'var(--color-primary-600)' : '#dc2626',
+              border: `1px solid ${paymentMsg.type === 'success' ? 'var(--color-primary-200)' : '#fecaca'}`,
+            }}
+          >
+            {paymentMsg.type === 'error' && <AlertCircle size={16} style={{ flexShrink: 0 }} />}
+            {paymentMsg.type === 'success' && <Check size={16} style={{ flexShrink: 0 }} />}
+            <span className="flex-1">{paymentMsg.text}</span>
+            <button onClick={() => setPaymentMsg(null)}>
+              <X size={14} />
+            </button>
+          </div>
+        )}
 
         {/* Profile */}
         <section className="space-y-3">
@@ -275,7 +377,7 @@ export default function SettingsPage() {
               return (
                 <button
                   key={plan.id}
-                  onClick={() => selectPlan(plan.id)}
+                  onClick={() => handlePlanSelect(plan.id)}
                   className="rounded-2xl border p-4 text-left space-y-3 transition-all hover:shadow-md"
                   style={{
                     background: active ? 'var(--color-primary-50)' : 'var(--color-surface)',
@@ -355,6 +457,44 @@ export default function SettingsPage() {
 
       </div>
 
+      {/* 구독 취소 확인 모달 */}
+      {showCancelModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={() => setShowCancelModal(false)} />
+          <div
+            className="relative w-full max-w-sm rounded-2xl p-6 space-y-4 shadow-2xl"
+            style={{ background: 'var(--color-surface)' }}
+          >
+            <div className="flex items-center justify-between">
+              <h3 className="font-bold text-lg" style={{ color: 'var(--color-text-primary)' }}>구독 취소</h3>
+              <button onClick={() => setShowCancelModal(false)}>
+                <X size={18} style={{ color: 'var(--color-text-muted)' }} />
+              </button>
+            </div>
+            <p className="text-sm" style={{ color: 'var(--color-text-secondary)' }}>
+              구독을 취소하면 즉시 무료 플랜으로 전환됩니다. 계속하시겠습니까?
+            </p>
+            <div className="flex gap-2">
+              <button
+                onClick={() => setShowCancelModal(false)}
+                className="flex-1 rounded-xl py-2.5 text-sm font-medium"
+                style={{ background: 'var(--color-bg)', color: 'var(--color-text-secondary)' }}
+              >
+                돌아가기
+              </button>
+              <button
+                onClick={cancelSubscription}
+                disabled={cancelling}
+                className="flex-1 rounded-xl py-2.5 text-sm font-medium text-white transition-opacity disabled:opacity-40"
+                style={{ background: 'var(--color-danger)' }}
+              >
+                {cancelling ? '취소 중...' : '구독 취소'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* 비밀번호 변경 모달 */}
       {showPwModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
@@ -429,5 +569,13 @@ export default function SettingsPage() {
         </p>
       </div>
     </div>
+  );
+}
+
+export default function SettingsPage() {
+  return (
+    <Suspense fallback={null}>
+      <SettingsContent />
+    </Suspense>
   );
 }
