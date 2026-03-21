@@ -55,9 +55,25 @@ export async function POST(req: Request) {
     if (messages.length > 50) {
       return Response.json({ error: '메시지 수가 너무 많습니다.' }, { status: 400 });
     }
+    const ALLOWED_ROLES = new Set(['user', 'assistant']);
     for (const msg of messages) {
-      if (typeof msg?.content === 'string' && msg.content.length > 4000) {
+      if (!msg || typeof msg !== 'object') {
+        return Response.json({ error: '잘못된 메시지 형식입니다.' }, { status: 400 });
+      }
+      // role 화이트리스트 검증 (system 역할 주입 방지)
+      if (!ALLOWED_ROLES.has(msg.role)) {
+        return Response.json({ error: '허용되지 않는 메시지 역할입니다.' }, { status: 400 });
+      }
+      // content 길이 검증 (문자열 및 배열 파트 모두 커버)
+      if (typeof msg.content === 'string' && msg.content.length > 4000) {
         return Response.json({ error: '메시지가 너무 깁니다.' }, { status: 400 });
+      }
+      if (Array.isArray(msg.content)) {
+        for (const part of msg.content) {
+          if (part?.type === 'text' && typeof part.text === 'string' && part.text.length > 4000) {
+            return Response.json({ error: '메시지가 너무 깁니다.' }, { status: 400 });
+          }
+        }
       }
     }
 

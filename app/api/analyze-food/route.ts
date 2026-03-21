@@ -157,6 +157,9 @@ export async function POST(req: Request) {
     if (!image && !ingredientsText) {
       return Response.json({ error: '이미지 또는 성분표 텍스트가 필요합니다.' }, { status: 400 });
     }
+    if (ingredientsText && ingredientsText.length > 5000) {
+      return Response.json({ error: '성분표 텍스트가 너무 깁니다. (최대 5,000자)' }, { status: 400 });
+    }
 
     if (image) {
       if (!ALLOWED_TYPES.includes(image.type)) {
