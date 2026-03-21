@@ -186,7 +186,7 @@ export default function CalendarPage() {
                     <meta.icon size={20} style={{ color: meta.color }} />
                   </div>
                   <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-2 flex-wrap">
                       <p className="font-medium truncate" style={{ color: 'var(--color-text-primary)' }}>
                         {event.title}
                       </p>
@@ -200,15 +200,15 @@ export default function CalendarPage() {
                         {dday}
                       </span>
                     </div>
-                    <p className="text-xs mt-0.5" style={{ color: 'var(--color-text-muted)' }}>
+                    <p className="text-sm mt-1 leading-snug" style={{ color: 'var(--color-text-muted)' }}>
                       {event.pet} · {new Date(event.date).toLocaleDateString('ko-KR')} · {meta.label}
                     </p>
                   </div>
-                  <div className="flex items-center gap-2">
-                    <Bell size={14} style={{ color: 'var(--color-text-muted)' }} />
+                  <div className="flex items-center gap-2 flex-shrink-0">
+                    <Bell size={14} className="hidden sm:block" style={{ color: 'var(--color-text-muted)' }} />
                     <button
                       onClick={() => toggleDone(event.id)}
-                      className="rounded-lg px-3 py-1 text-xs font-medium transition-all hover:opacity-80"
+                      className="rounded-lg px-3 py-1.5 text-sm font-medium transition-all hover:opacity-80"
                       style={{ background: 'var(--color-primary-50)', color: 'var(--color-primary-600)' }}
                     >
                       완료
@@ -242,7 +242,7 @@ export default function CalendarPage() {
                     <p className="font-medium line-through truncate" style={{ color: 'var(--color-text-secondary)' }}>
                       {event.title}
                     </p>
-                    <p className="text-xs mt-0.5" style={{ color: 'var(--color-text-muted)' }}>
+                    <p className="text-sm mt-1 leading-snug" style={{ color: 'var(--color-text-muted)' }}>
                       {event.pet} · {new Date(event.date).toLocaleDateString('ko-KR')} · {meta.label}
                     </p>
                   </div>

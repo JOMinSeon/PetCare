@@ -34,7 +34,7 @@ export function GeminiAdvicePanel({ petId }: { petId: string }) {
       style={{
         background: 'var(--color-surface)',
         borderColor: 'var(--color-border)',
-        minHeight: '480px',
+        minHeight: '420px',
       }}
     >
       {/* Header */}
@@ -51,7 +51,7 @@ export function GeminiAdvicePanel({ petId }: { petId: string }) {
       {/* Messages */}
       <div
         className="flex-1 overflow-y-auto p-4 space-y-3"
-        style={{ maxHeight: '320px' }}
+        style={{ maxHeight: 'clamp(200px, 40vh, 360px)' }}
         aria-live="polite"
         aria-atomic="false"
       >
@@ -124,9 +124,9 @@ export function GeminiAdvicePanel({ petId }: { petId: string }) {
         <input
           value={input}
           onChange={(e) => setInput(e.target.value)}
-          placeholder="질문을 입력하세요"
+          placeholder="증상이나 궁금한 점을 입력하세요"
           disabled={isLoading}
-          className="flex-1 rounded-lg border px-3 py-2 text-sm outline-none"
+          className="flex-1 rounded-lg border px-3 py-2.5 text-base outline-none"
           style={{
             background: 'var(--color-bg)',
             borderColor: 'var(--color-border)',
@@ -136,11 +136,11 @@ export function GeminiAdvicePanel({ petId }: { petId: string }) {
         <button
           type="submit"
           disabled={isLoading || !input.trim()}
-          className="flex h-10 w-10 items-center justify-center rounded-lg transition-opacity disabled:opacity-40"
+          className="flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-lg transition-opacity disabled:opacity-40"
           style={{ background: 'var(--color-info)', color: '#fff' }}
           aria-label="전송"
         >
-          <Send size={16} />
+          <Send size={18} />
         </button>
       </form>
     </div>

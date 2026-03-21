@@ -305,8 +305,8 @@ function AnalysisDisplay({ result }: { result: AnalysisResult }) {
             <p className="text-xs font-medium" style={{ color: '#2E7D32' }}>✅ 강점</p>
             {result.summary.strengths.map((s, i) => (
               <div key={i} className="flex items-start gap-1.5">
-                <CheckCircle2 size={13} style={{ color: '#81C784', marginTop: 2, flexShrink: 0 }} />
-                <p className="text-xs" style={{ color: 'var(--color-text-secondary)' }}>{s}</p>
+                <CheckCircle2 size={14} style={{ color: '#81C784', marginTop: 2, flexShrink: 0 }} />
+                <p className="text-sm leading-snug" style={{ color: 'var(--color-text-secondary)' }}>{s}</p>
               </div>
             ))}
           </div>
@@ -316,8 +316,8 @@ function AnalysisDisplay({ result }: { result: AnalysisResult }) {
             <p className="text-xs font-medium" style={{ color: '#E65100' }}>⚠️ 주의사항</p>
             {result.summary.warnings.map((w, i) => (
               <div key={i} className="flex items-start gap-1.5">
-                <XCircle size={13} style={{ color: '#FFB74D', marginTop: 2, flexShrink: 0 }} />
-                <p className="text-xs" style={{ color: 'var(--color-text-secondary)' }}>{w}</p>
+                <XCircle size={14} style={{ color: '#FFB74D', marginTop: 2, flexShrink: 0 }} />
+                <p className="text-sm leading-snug" style={{ color: 'var(--color-text-secondary)' }}>{w}</p>
               </div>
             ))}
           </div>
@@ -353,10 +353,10 @@ function AnalysisDisplay({ result }: { result: AnalysisResult }) {
                       {st.label}
                     </span>
                   </div>
-                  <p className="text-xs" style={{ color: 'var(--color-text-muted)' }}>
+                  <p className="text-sm mt-0.5" style={{ color: 'var(--color-text-muted)' }}>
                     권장: {n.recommended}
                   </p>
-                  <p className="text-xs mt-0.5" style={{ color: 'var(--color-text-secondary)' }}>
+                  <p className="text-sm mt-0.5 leading-snug" style={{ color: 'var(--color-text-secondary)' }}>
                     {n.detail}
                   </p>
                 </div>
@@ -399,7 +399,7 @@ function AnalysisDisplay({ result }: { result: AnalysisResult }) {
                       위험도 {h.level}
                     </span>
                   </div>
-                  <p className="text-xs ml-4" style={{ color: '#BF360C' }}>{h.reason}</p>
+                  <p className="text-sm ml-4 leading-snug" style={{ color: '#BF360C' }}>{h.reason}</p>
                 </div>
               );
             })}
@@ -437,7 +437,7 @@ function AnalysisDisplay({ result }: { result: AnalysisResult }) {
             {result.suitability.suitable ? '이 반려동물에게 적합한 사료입니다.' : '이 반려동물에게 적합하지 않을 수 있습니다.'}
           </p>
         </div>
-        <p className="text-xs" style={{ color: result.suitability.suitable ? '#388E3C' : '#C62828' }}>
+        <p className="text-sm leading-snug" style={{ color: result.suitability.suitable ? '#388E3C' : '#C62828' }}>
           {result.suitability.reason}
         </p>
         {result.suitability.feedingGuide && (
@@ -445,10 +445,10 @@ function AnalysisDisplay({ result }: { result: AnalysisResult }) {
             className="mt-2 rounded-lg px-3 py-2"
             style={{ background: 'rgba(255,255,255,0.6)' }}
           >
-            <p className="text-xs font-medium mb-0.5" style={{ color: 'var(--color-text-muted)' }}>
+            <p className="text-xs font-medium mb-1" style={{ color: 'var(--color-text-muted)' }}>
               급여 가이드
             </p>
-            <p className="text-xs" style={{ color: 'var(--color-text-secondary)' }}>
+            <p className="text-sm leading-snug" style={{ color: 'var(--color-text-secondary)' }}>
               {result.suitability.feedingGuide}
             </p>
           </div>
