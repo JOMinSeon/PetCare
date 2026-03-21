@@ -673,6 +673,7 @@ export default function LandingPage() {
                 links: [
                   { label: '이용약관', href: '/terms' },
                   { label: '개인정보보호', href: '/privacy' },
+                  { label: '환불 정책', href: '/refund' },
                 ],
               },
             ].map(({ title, links }) => (
@@ -681,13 +682,23 @@ export default function LandingPage() {
                 <ul className="space-y-2.5">
                   {links.map(({ label, href }) => (
                     <li key={label}>
-                      <a
-                        href={href}
-                        className="text-sm transition-colors hover:text-white"
-                        style={{ color: '#4a7c59' }}
-                      >
-                        {label}
-                      </a>
+                      {href.startsWith('/') ? (
+                        <Link
+                          href={href}
+                          className="text-sm transition-colors hover:text-white"
+                          style={{ color: '#4a7c59' }}
+                        >
+                          {label}
+                        </Link>
+                      ) : (
+                        <a
+                          href={href}
+                          className="text-sm transition-colors hover:text-white"
+                          style={{ color: '#4a7c59' }}
+                        >
+                          {label}
+                        </a>
+                      )}
                     </li>
                   ))}
                 </ul>
@@ -695,10 +706,18 @@ export default function LandingPage() {
             ))}
           </div>
           <div
-            className="pt-8 text-center text-sm"
+            className="pt-8 text-sm"
             style={{ borderTop: '1px solid #1E3A2A', color: '#4a7c59' }}
           >
-            <p>&copy; 2026 펫헬스. All rights reserved.</p>
+            <div className="flex flex-wrap gap-x-4 gap-y-1 mb-3 text-xs" style={{ color: '#3d6b4a' }}>
+              <span>상호명: 펫헬스</span>
+              <span>대표자: 조민성</span>
+              <span>업종: 정보통신업</span>
+              <span>사업자등록번호: 297-66-00726</span>
+              <span>전화번호: 010-2714-7196</span>
+              <span>이메일: fjkg33@gmail.com</span>
+            </div>
+            <p className="text-center">&copy; 2026 펫헬스. All rights reserved.</p>
           </div>
         </div>
       </footer>

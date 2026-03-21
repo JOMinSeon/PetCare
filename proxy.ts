@@ -39,7 +39,10 @@ export async function proxy(request: NextRequest) {
   const isAuthPage = request.nextUrl.pathname.startsWith('/auth');
   const isPublicPage =
     request.nextUrl.pathname === '/' ||
-    request.nextUrl.pathname.startsWith('/landing');
+    request.nextUrl.pathname.startsWith('/landing') ||
+    request.nextUrl.pathname === '/terms' ||
+    request.nextUrl.pathname === '/privacy' ||
+    request.nextUrl.pathname === '/refund';
 
   if (!user && !isAuthPage && !isPublicPage) {
     return NextResponse.redirect(new URL('/auth/login', request.url));
