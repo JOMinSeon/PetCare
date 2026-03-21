@@ -33,28 +33,51 @@ export async function getHealthLogs(petId: string) {
   const { data: { user } } = await db.auth.getUser();
   if (!user) return [];
 
-  // IDOR 방지: petId가 해당 유저 소유인지 확인
-  const { data: pet } = await db
-    .from('pets')
-    .select('id, species')
-    .eq('id', petId)
-    .eq('user_id', user.id)
-    .single();
-  if (!pet) return [];
+  // IDOR 방지 + 로그 조회를 병렬 실행
+  const [{ data: pet }, { data }] = await Promise.all([
+    db.from('pets').select('id, species').eq('id', petId).eq('user_id', user.id).single(),
+    db.from('health_logs').select('id, pet_id, weight, rer, mer, recorded_at').eq('pet_id', petId).order('recorded_at', { ascending: true }),
+  ]);
 
-  const { data } = await db
-    .from('health_logs')
-    .select('id, pet_id, weight, rer, mer, recorded_at')
-    .eq('pet_id', petId)
-    .order('recorded_at', { ascending: true });
-
-  if (!data) return [];
+  if (!pet || !data) return [];
 
   return data.map((log) => ({
     ...log,
     rer: log.rer ?? calcRer(log.weight),
     mer: log.mer ?? calcMer(log.weight, pet.species),
   }));
+}
+
+// 초기 데이터를 한 번의 서버 액션으로 가져오는 함수
+export async function getInitialTrackingData() {
+  const db = await getServerDb();
+  const { data: { user } } = await db.auth.getUser();
+  if (!user) return { authenticated: false, pets: [], logs: [], firstPetId: null } as const;
+
+  const { data: pets } = await db
+    .from('pets')
+    .select('id, name, species, age, weight')
+    .eq('user_id', user.id)
+    .order('name');
+
+  if (!pets || pets.length === 0) {
+    return { authenticated: true, pets: [], logs: [], firstPetId: null } as const;
+  }
+
+  const firstPet = pets[0];
+  const { data: logsRaw } = await db
+    .from('health_logs')
+    .select('id, pet_id, weight, rer, mer, recorded_at')
+    .eq('pet_id', firstPet.id)
+    .order('recorded_at', { ascending: true });
+
+  const logs = (logsRaw ?? []).map((log) => ({
+    ...log,
+    rer: log.rer ?? calcRer(log.weight),
+    mer: log.mer ?? calcMer(log.weight, firstPet.species),
+  }));
+
+  return { authenticated: true, pets, logs, firstPetId: firstPet.id } as const;
 }
 
 export async function saveHealthLogFromTracking(

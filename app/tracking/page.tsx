@@ -1,19 +1,11 @@
 'use client';
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, lazy, Suspense } from 'react';
 import { useRouter } from 'next/navigation';
-import { getBrowserDb } from '@/lib/supabase-browser';
-import { getUserPets, getHealthLogs, saveHealthLogFromTracking } from '@/app/actions/health';
+import { getInitialTrackingData, getHealthLogs, saveHealthLogFromTracking } from '@/app/actions/health';
 import { Scale, Flame, TrendingUp, TrendingDown, Minus, Plus, ChevronDown } from 'lucide-react';
-import {
-  LineChart,
-  Line,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  Legend,
-  ResponsiveContainer,
-} from 'recharts';
+
+// Recharts를 lazy load하여 초기 번들 크기 감소
+const TrackingCharts = lazy(() => import('@/components/TrackingCharts'));
 
 interface Pet {
   id: string;
@@ -69,6 +61,58 @@ function WeightTrendBadge({ logs }: { logs: HealthLog[] }) {
   );
 }
 
+function SkeletonCard() {
+  return (
+    <div
+      className="rounded-2xl border p-4 space-y-2 animate-pulse"
+      style={{ background: 'var(--color-surface)', borderColor: 'var(--color-border)' }}
+    >
+      <div className="h-4 w-16 rounded" style={{ background: 'var(--color-border)' }} />
+      <div className="h-7 w-20 rounded" style={{ background: 'var(--color-border)' }} />
+    </div>
+  );
+}
+
+function LoadingSkeleton() {
+  return (
+    <div className="min-h-screen pb-24 md:pb-8" style={{ background: 'var(--color-bg)' }}>
+      <div className="px-6 py-5 border-b" style={{ background: 'var(--color-surface)', borderColor: 'var(--color-border)' }}>
+        <div className="max-w-3xl mx-auto">
+          <div className="h-6 w-40 rounded animate-pulse" style={{ background: 'var(--color-border)' }} />
+          <div className="h-4 w-56 rounded mt-1.5 animate-pulse" style={{ background: 'var(--color-border)' }} />
+        </div>
+      </div>
+      <div className="max-w-3xl mx-auto px-6 py-6 space-y-6">
+        {/* Pet tabs skeleton */}
+        <div className="flex gap-2">
+          {[1, 2].map((i) => (
+            <div key={i} className="h-8 w-20 rounded-full animate-pulse" style={{ background: 'var(--color-border)' }} />
+          ))}
+        </div>
+        {/* Summary cards skeleton */}
+        <div className="grid grid-cols-3 gap-3">
+          <SkeletonCard />
+          <SkeletonCard />
+          <SkeletonCard />
+        </div>
+        {/* Form skeleton */}
+        <div
+          className="rounded-2xl border p-5 space-y-4 animate-pulse"
+          style={{ background: 'var(--color-surface)', borderColor: 'var(--color-border)' }}
+        >
+          <div className="h-5 w-32 rounded" style={{ background: 'var(--color-border)' }} />
+          <div className="h-10 w-full rounded-xl" style={{ background: 'var(--color-border)' }} />
+          <div className="grid grid-cols-2 gap-3">
+            <div className="h-10 rounded-xl" style={{ background: 'var(--color-border)' }} />
+            <div className="h-10 rounded-xl" style={{ background: 'var(--color-border)' }} />
+          </div>
+          <div className="h-10 w-full rounded-xl" style={{ background: 'var(--color-border)' }} />
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function TrackingPage() {
   const router = useRouter();
   const [pets, setPets] = useState<Pet[]>([]);
@@ -87,21 +131,18 @@ export default function TrackingPage() {
   }, []);
 
   useEffect(() => {
-    const init = async () => {
-      const supabase = getBrowserDb();
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) { router.replace('/auth/login'); return; }
-
-      const petList = await getUserPets();
-      setPets(petList);
-      if (petList.length > 0) {
-        setSelectedPetId(petList[0].id);
-        await fetchLogs(petList[0].id);
+    // 단일 서버 액션으로 auth 체크 + 펫 목록 + 첫 번째 펫 로그를 한 번에 가져옴
+    getInitialTrackingData().then((result) => {
+      if (!result.authenticated) {
+        router.replace('/auth/login');
+        return;
       }
+      setPets(result.pets as Pet[]);
+      setSelectedPetId(result.firstPetId);
+      setLogs(result.logs as HealthLog[]);
       setLoading(false);
-    };
-    init();
-  }, [router, fetchLogs]);
+    });
+  }, [router]);
 
   const handlePetChange = async (petId: string) => {
     setSelectedPetId(petId);
@@ -126,20 +167,10 @@ export default function TrackingPage() {
     setSaving(false);
   };
 
-  if (loading) return (
-    <div className="flex min-h-screen items-center justify-center" style={{ background: 'var(--color-bg)' }}>
-      <p className="text-sm" style={{ color: 'var(--color-text-muted)' }}>불러오는 중...</p>
-    </div>
-  );
+  if (loading) return <LoadingSkeleton />;
 
   const selectedPet = pets.find((p) => p.id === selectedPetId);
   const latest = logs[logs.length - 1];
-  const chartData = logs.map((log) => ({
-    date: new Date(log.recorded_at).toLocaleDateString('ko-KR', { month: 'short', day: 'numeric' }),
-    체중: log.weight,
-    RER: Math.round(log.rer),
-    MER: Math.round(log.mer),
-  }));
   const axisStyle = { fontSize: 11, fill: 'var(--color-text-muted)' } as const;
 
   return (
@@ -357,67 +388,20 @@ export default function TrackingPage() {
               </button>
             </form>
 
-            {/* Charts */}
+            {/* Charts - lazy loaded */}
             {logs.length > 1 && (
-              <div
-                className="rounded-2xl border p-5 space-y-6"
-                style={{ background: 'var(--color-surface)', borderColor: 'var(--color-border)' }}
-              >
-                <h2 className="text-base font-semibold" style={{ color: 'var(--color-text-primary)' }}>
-                  {selectedPet?.name} 추세 차트
-                </h2>
-
-                {/* Weight chart */}
-                <div>
-                  <p className="text-xs font-medium mb-3" style={{ color: 'var(--color-text-secondary)' }}>체중 변화 (kg)</p>
-                  <ResponsiveContainer width="100%" height={200}>
-                    <LineChart data={chartData}>
-                      <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border)" />
-                      <XAxis dataKey="date" tick={axisStyle} />
-                      <YAxis tick={axisStyle} />
-                      <Tooltip
-                        contentStyle={{
-                          background: 'var(--color-surface)',
-                          border: '1px solid var(--color-border)',
-                          borderRadius: 8,
-                          fontSize: 12,
-                        }}
-                      />
-                      <Line
-                        type="monotone"
-                        dataKey="체중"
-                        stroke="var(--color-primary-500)"
-                        strokeWidth={2.5}
-                        dot={{ r: 4, fill: 'var(--color-primary-500)' }}
-                        activeDot={{ r: 6 }}
-                      />
-                    </LineChart>
-                  </ResponsiveContainer>
-                </div>
-
-                {/* Calorie chart */}
-                <div>
-                  <p className="text-xs font-medium mb-3" style={{ color: 'var(--color-text-secondary)' }}>권장 칼로리 (kcal)</p>
-                  <ResponsiveContainer width="100%" height={200}>
-                    <LineChart data={chartData}>
-                      <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border)" />
-                      <XAxis dataKey="date" tick={axisStyle} />
-                      <YAxis tick={axisStyle} />
-                      <Tooltip
-                        contentStyle={{
-                          background: 'var(--color-surface)',
-                          border: '1px solid var(--color-border)',
-                          borderRadius: 8,
-                          fontSize: 12,
-                        }}
-                      />
-                      <Legend wrapperStyle={{ fontSize: 12 }} />
-                      <Line type="monotone" dataKey="RER" stroke="var(--color-primary-500)" strokeWidth={2} dot={{ r: 3 }} />
-                      <Line type="monotone" dataKey="MER" stroke="var(--color-accent-500)" strokeWidth={2} dot={{ r: 3 }} />
-                    </LineChart>
-                  </ResponsiveContainer>
-                </div>
-              </div>
+              <Suspense fallback={
+                <div
+                  className="rounded-2xl border p-5 animate-pulse"
+                  style={{ background: 'var(--color-surface)', borderColor: 'var(--color-border)', height: 480 }}
+                />
+              }>
+                <TrackingCharts
+                  logs={logs}
+                  petName={selectedPet?.name ?? ''}
+                  axisStyle={axisStyle}
+                />
+              </Suspense>
             )}
 
             {/* History */}
