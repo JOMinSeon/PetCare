@@ -140,8 +140,7 @@ export async function POST(req: Request) {
           error: 'AI 분석 월 10회 한도를 초과했습니다. Plus 플랜으로 업그레이드하면 무제한으로 이용할 수 있어요.',
         }, { status: 429 });
       }
-      // fire-and-forget: AI 호출을 블로킹하지 않음
-      void db.from('profiles').upsert({
+      await db.from('profiles').upsert({
         user_id: user.id,
         ai_monthly_usage: sameMonth ? usage + 1 : 1,
         ai_usage_reset_month: currentMonth,
