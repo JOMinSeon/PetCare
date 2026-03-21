@@ -29,9 +29,7 @@ export async function GET(request: NextRequest) {
 
     const { error } = await supabase.auth.exchangeCodeForSession(code);
     if (!error) {
-      // #3 Open Redirect 방지: 신뢰할 수 있는 origin만 사용
-      const origin = process.env.NEXT_PUBLIC_SITE_URL || `${requestUrl.protocol}//${requestUrl.host}`;
-      return NextResponse.redirect(new URL('/pets', origin));
+      return NextResponse.redirect(new URL('/', process.env.NEXT_PUBLIC_PETCARE_URL || 'https://petcare.pe.kr'));
     }
   }
 

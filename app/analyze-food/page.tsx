@@ -142,6 +142,17 @@ export default function AnalyzeFoodPage() {
           </div>
         </div>
 
+        {/* Disclaimer */}
+        <div
+          className="rounded-xl border p-4 flex items-start gap-3"
+          style={{ background: 'var(--color-surface)', borderColor: 'var(--color-border)' }}
+        >
+          <AlertCircle size={16} style={{ color: 'var(--color-text-muted)', marginTop: 2, flexShrink: 0 }} />
+          <p className="text-xs leading-relaxed" style={{ color: 'var(--color-text-muted)' }}>
+            제공되는 분석 정보는 참고용이며 실제와 다를 수 있습니다. 반려동물의 건강 상태에 따른 최종 판단은 반드시 수의사 등 전문가의 확인을 거쳐 결정해 주시기 바랍니다.
+          </p>
+        </div>
+
         {/* Pet selector */}
         {pets.length > 1 && (
           <div className="space-y-3">
