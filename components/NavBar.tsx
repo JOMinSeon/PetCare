@@ -107,17 +107,17 @@ export function NavBar() {
               <Link
                 key={label}
                 href={href}
-                className="relative flex flex-col items-center justify-center gap-0.5 rounded-full px-4 py-2 transition-all duration-200"
+                className="relative flex flex-col items-center justify-center gap-0.5 rounded-full px-3 py-2 transition-all duration-200"
                 style={{
                   background: active
                     ? 'linear-gradient(135deg, var(--color-primary-500), var(--color-secondary-600))'
                     : 'transparent',
                   color: active ? '#fff' : 'var(--color-text-muted)',
-                  minWidth: '3.25rem',
+                  minWidth: '3.5rem',
                 }}
               >
                 <Icon size={18} />
-                <span className="text-[9px] font-semibold leading-none">{label}</span>
+                <span className="text-[10px] font-semibold leading-none tracking-tight">{label}</span>
               </Link>
             );
           })}
