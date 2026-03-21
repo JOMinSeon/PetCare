@@ -171,7 +171,7 @@ export default function TermsPage() {
           <section>
             <h2 className="text-lg font-semibold text-white mb-3">제13조 (문의)</h2>
             <ul className="space-y-1">
-              <li>상호명: 펫헬스</li>
+              <li>상호명: 코어넥스트</li>
               <li>대표자: 조민성</li>
               <li>사업자등록번호: 297-66-00726</li>
               <li>전화: 010-2714-7196</li>
