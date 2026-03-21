@@ -674,6 +674,7 @@ export default function LandingPage() {
                   { label: '이용약관', href: '/terms' },
                   { label: '개인정보보호', href: '/privacy' },
                   { label: '환불 정책', href: '/refund' },
+                  { label: '사업자 정보', href: '/business' },
                 ],
               },
             ].map(({ title, links }) => (

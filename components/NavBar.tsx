@@ -24,7 +24,7 @@ export function NavBar() {
   const router   = useRouter();
   const pathname = usePathname();
 
-  if (pathname === '/' || pathname === '/landing' || pathname.startsWith('/auth') || pathname === '/terms' || pathname === '/privacy' || pathname === '/refund') return null;
+  if (pathname === '/' || pathname === '/landing' || pathname.startsWith('/auth') || pathname === '/terms' || pathname === '/privacy' || pathname === '/refund' || pathname === '/business') return null;
 
   const handleLogout = async () => {
     const supabase = getBrowserDb();

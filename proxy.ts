@@ -42,7 +42,8 @@ export async function proxy(request: NextRequest) {
     request.nextUrl.pathname.startsWith('/landing') ||
     request.nextUrl.pathname === '/terms' ||
     request.nextUrl.pathname === '/privacy' ||
-    request.nextUrl.pathname === '/refund';
+    request.nextUrl.pathname === '/refund' ||
+    request.nextUrl.pathname === '/business';
 
   if (!user && !isAuthPage && !isPublicPage) {
     return NextResponse.redirect(new URL('/auth/login', request.url));
