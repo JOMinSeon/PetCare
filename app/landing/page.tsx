@@ -711,12 +711,10 @@ export default function LandingPage() {
             style={{ borderTop: '1px solid #1E3A2A', color: '#4a7c59' }}
           >
             <div className="flex flex-wrap gap-x-4 gap-y-1 mb-3 text-xs" style={{ color: '#3d6b4a' }}>
-              <span>상호명: 코어넥스트</span>
-              <span>대표자: 조민성</span>
-              <span>업종: 정보통신업</span>
-              <span>사업자등록번호: 297-66-00726</span>
-              <span>전화번호: 010-2714-7196</span>
-              <span>이메일: fjkg33@gmail.com</span>
+              <span>상호명: 코어넥스트 | 대표자: 조민성</span>
+              <span>사업장 소재지: 경기도 시흥시 마유로423번길 20-7</span>
+              <span>사업자등록번호: 297-66-00726 | 통신판매업신고: 신청 중</span>
+              <span>이메일: help@petcare.pe.kr</span>
             </div>
             <p className="text-center">&copy; 2026 펫헬스. All rights reserved.</p>
           </div>

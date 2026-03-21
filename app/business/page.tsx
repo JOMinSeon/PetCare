@@ -8,7 +8,7 @@ const INFO = [
   { icon: FileText,  label: '사업자등록번호',          value: '297-66-00726' },
   { icon: FileText,  label: '통신판매업 신고번호',     value: '신청 중' },
   { icon: Phone,     label: '고객센터 전화',          value: '010-2714-7196' },
-  { icon: Mail,      label: '고객센터 이메일',        value: 'fjkg33@gmail.com' },
+  { icon: Mail,      label: '고객센터 이메일',        value: 'help@petcare.pe.kr' },
   { icon: Globe,     label: '서비스명',               value: '펫헬스 (pethealth.com)' },
   { icon: FileText,  label: '개인정보보호책임자',      value: '조민성' },
 ];

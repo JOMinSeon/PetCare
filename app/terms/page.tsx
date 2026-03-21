@@ -163,7 +163,7 @@ export default function TermsPage() {
             <h2 className="text-lg font-semibold text-white mb-3">제12조 (분쟁 해결)</h2>
             <ol className="space-y-2 list-decimal list-inside">
               <li>서비스 이용과 관련한 분쟁은 대한민국 법률을 적용합니다.</li>
-              <li>분쟁 발생 시 먼저 이메일(<a href="mailto:fjkg33@gmail.com" className="text-green-400 hover:underline">fjkg33@gmail.com</a>)을 통해 협의를 시도합니다.</li>
+              <li>분쟁 발생 시 먼저 이메일(<a href="mailto:help@petcare.pe.kr" className="text-green-400 hover:underline">help@petcare.pe.kr</a>)을 통해 협의를 시도합니다.</li>
               <li>협의가 이루어지지 않을 경우 회사 소재지를 관할하는 법원을 전속 관할 법원으로 합니다.</li>
             </ol>
           </section>
@@ -171,11 +171,10 @@ export default function TermsPage() {
           <section>
             <h2 className="text-lg font-semibold text-white mb-3">제13조 (문의)</h2>
             <ul className="space-y-1">
-              <li>상호명: 코어넥스트</li>
-              <li>대표자: 조민성</li>
-              <li>사업자등록번호: 297-66-00726</li>
-              <li>전화: 010-2714-7196</li>
-              <li>이메일: <a href="mailto:fjkg33@gmail.com" className="text-green-400 hover:underline">fjkg33@gmail.com</a></li>
+              <li>상호명: 코어넥스트 | 대표자: 조민성</li>
+              <li>사업장 소재지: 경기도 시흥시 마유로423번길 20-7</li>
+              <li>사업자등록번호: 297-66-00726 | 통신판매업신고: 신청 중</li>
+              <li>이메일: <a href="mailto:help@petcare.pe.kr" className="text-green-400 hover:underline">help@petcare.pe.kr</a></li>
             </ul>
           </section>
 
