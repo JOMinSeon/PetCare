@@ -2,15 +2,15 @@ import Link from 'next/link';
 import { PawPrint, Building2, Phone, Mail, FileText, MapPin, Globe } from 'lucide-react';
 
 const INFO = [
-  { icon: Building2, label: '상호명',          value: '코어넥스트' },
-  { icon: FileText,  label: '사업자등록번호',   value: '297-66-00726' },
-  { icon: FileText,  label: '통신판매업 신고번호', value: '미등록' },
-  { icon: FileText,  label: '업종',            value: '정보통신업' },
-  { icon: FileText,  label: '대표자',          value: '조민성' },
-  { icon: MapPin,    label: '소재지',          value: '대한민국' },
-  { icon: Globe,     label: '서비스명',        value: '펫헬스 (pethealth.com)' },
-  { icon: Phone,     label: '전화번호',        value: '010-2714-7196' },
-  { icon: Mail,      label: '이메일',          value: 'fjkg33@gmail.com' },
+  { icon: Building2, label: '상호명 (업체명)',        value: '코어넥스트' },
+  { icon: FileText,  label: '대표자 성명',            value: '조민성' },
+  { icon: MapPin,    label: '사업장 주소',            value: '(주소 기재 예정)' },
+  { icon: FileText,  label: '사업자등록번호',          value: '297-66-00726' },
+  { icon: FileText,  label: '통신판매업 신고번호',     value: '신청 중' },
+  { icon: Phone,     label: '고객센터 전화',          value: '010-2714-7196' },
+  { icon: Mail,      label: '고객센터 이메일',        value: 'fjkg33@gmail.com' },
+  { icon: Globe,     label: '서비스명',               value: '펫헬스 (pethealth.com)' },
+  { icon: FileText,  label: '개인정보보호책임자',      value: '조민성' },
 ];
 
 export default function BusinessPage() {
