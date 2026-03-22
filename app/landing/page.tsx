@@ -702,6 +702,7 @@ export default function LandingPage() {
               {
                 title: '지원',
                 links: [
+                  { label: '고객센터: 010-2714-7196', href: 'tel:01027147196' },
                   { label: '문의하기', href: 'mailto:help@pethealth.com' },
                   { label: 'FAQ', href: '#how-it-works' },
                   { label: '가이드', href: '#how-it-works' },
