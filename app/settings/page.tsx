@@ -15,21 +15,21 @@ function Toggle({ checked, onChange }: ToggleProps) {
       onClick={onChange}
       role="switch"
       aria-checked={checked}
-      className="relative h-6 w-11 rounded-full transition-colors duration-200"
+      className="relative h-6 w-11 overflow-hidden rounded-full transition-colors duration-200"
       style={{ background: checked ? 'var(--color-primary-500)' : 'var(--color-border)' }}
     >
       <span
-        className="absolute top-0.5 h-5 w-5 rounded-full bg-white shadow transition-transform duration-200"
-        style={{ transform: checked ? 'translateX(20px)' : 'translateX(2px)' }}
+        className="absolute left-0 top-0.5 h-5 w-5 rounded-full bg-white shadow transition-transform duration-200"
+        style={{ transform: checked ? 'translateX(22px)' : 'translateX(2px)' }}
       />
     </button>
   );
 }
 
 const PLAN_OPTIONS = [
-  { id: 'free',    label: '무료', price: '₩0/월',      features: ['반려동물 1마리', 'AI 상담 10회/월', '기본 건강 기록'] },
-  { id: 'plus',    label: 'Plus', price: '₩4,900/월',  features: ['반려동물 3마리', 'AI 상담 무제한', '영양 분석 차트', '캘린더 알림'] },
-  { id: 'premium', label: 'Premium', price: '₩9,900/월', features: ['반려동물 무제한', '수의사 Q&A 우선 답변', '건강 리포트 PDF', '모든 기능'] },
+  { id: 'free',    label: '무료',   price: '₩0/월',      features: ['반려동물 1마리', 'AI 상담 5회/월', '기본 건강 기록'] },
+  { id: 'premium', label: '프리미엄', price: '₩14,900/월', features: ['반려동물 3마리', 'AI 상담 무제한', '수의사 원격 상담 3회/월', '건강 리포트 PDF'] },
+  { id: 'clinic',  label: '병원용', price: '₩49,000/월', features: ['반려동물 무제한', 'EMR 연동', '병원 연동 API', '전담 매니저'] },
 ];
 
 function SettingsContent() {
@@ -330,7 +330,7 @@ function SettingsContent() {
                 </p>
                 <p className="text-xs mt-0.5" style={{ color: 'var(--color-text-muted)' }}>
                   {currentPlan === 'free'
-                    ? `이번 달 AI 상담 ${aiUsage} / 10회`
+                    ? `이번 달 AI 상담 ${aiUsage} / 5회`
                     : planStartedAt
                     ? `다음 결제일: ${getNextBillingDate(planStartedAt)}`
                     : ''}
