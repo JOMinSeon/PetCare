@@ -451,7 +451,7 @@ export default function LandingPage() {
           </div>
 
           {/* Benefits Grid */}
-          <div className="flex flex-wrap gap-5 justify-center">
+          <div className="flex flex-col gap-5">
             {[
               {
                 emoji: '📅',
@@ -480,7 +480,7 @@ export default function LandingPage() {
             ].map(({ emoji, title, desc, color, border, accent }) => (
               <div
                 key={title}
-                className="rounded-2xl p-6 flex items-start gap-4 flex-1 min-w-[280px] max-w-sm"
+                className="rounded-2xl p-6 flex items-start gap-4 w-full"
                 style={{
                   background: color,
                   border: `1.5px solid ${border}`,
