@@ -39,7 +39,8 @@ export default function CalendarPage() {
   useEffect(() => {
     const init = async () => {
       const supabase = getBrowserDb();
-      const { data: { user } } = await supabase.auth.getUser();
+      const { data: { user }, error: authError } = await supabase.auth.getUser();
+      if (authError?.code === 'refresh_token_not_found') { await supabase.auth.signOut(); router.replace('/auth/login'); return; }
       if (!user) { router.replace('/auth/login'); return; }
       setUserId(user.id);
 

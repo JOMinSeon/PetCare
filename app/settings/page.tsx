@@ -73,7 +73,12 @@ function SettingsContent() {
   useEffect(() => {
     const init = async () => {
       const supabase = getBrowserDb();
-      const { data: { user } } = await supabase.auth.getUser();
+      const { data: { user }, error } = await supabase.auth.getUser();
+      if (error?.code === 'refresh_token_not_found') {
+        await supabase.auth.signOut();
+        router.replace('/auth/login');
+        return;
+      }
       if (!user) { router.replace('/auth/login'); return; }
 
       setUserId(user.id);

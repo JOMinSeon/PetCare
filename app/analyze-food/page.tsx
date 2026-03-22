@@ -1,6 +1,6 @@
 'use client';
 import { useState, useEffect } from 'react';
-import { redirect } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 import { ArrowLeft, AlertCircle } from 'lucide-react';
 import Link from 'next/link';
 import { getBrowserDb } from '@/lib/supabase-browser';
@@ -15,6 +15,7 @@ interface Pet {
 }
 
 export default function AnalyzeFoodPage() {
+  const router = useRouter();
   const [pets, setPets] = useState<Pet[]>([]);
   const [selectedPet, setSelectedPet] = useState<Pet | null>(null);
   const [loading, setLoading] = useState(true);
@@ -24,10 +25,15 @@ export default function AnalyzeFoodPage() {
     const fetchPets = async () => {
       try {
         const supabase = getBrowserDb();
-        const { data: { user } } = await supabase.auth.getUser();
-        
+        const { data: { user }, error: authError } = await supabase.auth.getUser();
+
+        if (authError?.code === 'refresh_token_not_found') {
+          await supabase.auth.signOut();
+          router.replace('/auth/login');
+          return;
+        }
         if (!user) {
-          redirect('/auth/login');
+          router.replace('/auth/login');
           return;
         }
 

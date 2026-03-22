@@ -1,6 +1,7 @@
 'use client';
 import Link from 'next/link';
 import { useRouter, usePathname } from 'next/navigation';
+import { useEffect } from 'react';
 import { Home, PawPrint, Scale, Utensils, Calendar, Settings, LogOut, Users } from 'lucide-react';
 import { getBrowserDb } from '@/lib/supabase-browser';
 
@@ -23,6 +24,17 @@ const desktopLinks = [
 export function NavBar() {
   const router   = useRouter();
   const pathname = usePathname();
+
+  useEffect(() => {
+    const supabase = getBrowserDb();
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
+      if (event === 'SIGNED_OUT') {
+        router.push('/auth/login');
+        router.refresh();
+      }
+    });
+    return () => subscription.unsubscribe();
+  }, [router]);
 
   if (pathname === '/' || pathname === '/landing' || pathname.startsWith('/auth') || pathname === '/terms' || pathname === '/privacy' || pathname === '/refund' || pathname === '/business') return null;
 
