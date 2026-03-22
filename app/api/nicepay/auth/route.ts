@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
+import { getServerDb } from '@/lib/supabase-server';
 import { subscribeRegist } from '@/lib/nicepay';
 
 const PLAN_AMOUNTS: Record<string, number> = {
@@ -14,7 +15,7 @@ function adminDb() {
   );
 }
 
-// 나이스페이 결제창에서 returnUrl로 POST 호출
+// 나이스페이 결제창에서 returnUrl로 POST 호출 (브라우저 리다이렉트이므로 세션 쿠키 사용 가능)
 export async function POST(req: NextRequest) {
   const { searchParams } = new URL(req.url);
   const userId = searchParams.get('userId');
@@ -23,6 +24,13 @@ export async function POST(req: NextRequest) {
   const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
 
   if (!userId || !planId || !PLAN_AMOUNTS[planId]) {
+    return NextResponse.redirect(`${appUrl}/settings?payment=failed`, { status: 303 });
+  }
+
+  // IDOR 방지: 세션의 실제 사용자가 URL의 userId와 일치하는지 검증
+  const supabaseAuth = await getServerDb();
+  const { data: { user } } = await supabaseAuth.auth.getUser();
+  if (!user || user.id !== userId) {
     return NextResponse.redirect(`${appUrl}/settings?payment=failed`, { status: 303 });
   }
 
