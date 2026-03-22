@@ -4,22 +4,6 @@ import { Bell, CreditCard, User, Shield, ChevronRight, Check, LogOut, X, AlertCi
 import { useRouter, useSearchParams } from 'next/navigation';
 import { getBrowserDb } from '@/lib/supabase-browser';
 
-declare global {
-  interface Window {
-    AUTHNICE?: {
-      requestPay: (params: {
-        clientId: string;
-        method: string;
-        orderId: string;
-        amount: number;
-        goodsName: string;
-        returnUrl: string;
-        fnError?: (result: { resultMsg?: string }) => void;
-      }) => void;
-    };
-  }
-}
-
 interface ToggleProps {
   checked: boolean;
   onChange: () => void;
@@ -55,6 +39,7 @@ function SettingsContent() {
   const [userId, setUserId] = useState('');
   const [userEmail, setUserEmail] = useState('');
   const [nickname, setNickname] = useState('보호자');
+  const [phone, setPhone] = useState('');
   const [notifications, setNotifications] = useState({
     vaccination: true,
     weight: true,
@@ -66,8 +51,6 @@ function SettingsContent() {
   const [aiUsage, setAiUsage] = useState(0);
   const [savedProfile, setSavedProfile] = useState(false);
   const [paymentMsg, setPaymentMsg] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
-  const [showCancelModal, setShowCancelModal] = useState(false);
-  const [cancelling, setCancelling] = useState(false);
 
   // 비밀번호 변경
   const [showPwModal, setShowPwModal] = useState(false);
@@ -75,16 +58,7 @@ function SettingsContent() {
   const [pwSaving, setPwSaving] = useState(false);
   const [pwMessage, setPwMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
 
-  // NicePay JS SDK 로드
-  useEffect(() => {
-    const script = document.createElement('script');
-    script.src = 'https://pay.nicepay.co.kr/v1/js/';
-    script.async = true;
-    document.head.appendChild(script);
-    return () => { document.head.removeChild(script); };
-  }, []);
-
-  // 결제 결과 처리 (returnUrl 리다이렉트 후)
+  // 결제 결과 처리 (리다이렉트 후)
   useEffect(() => {
     const payment = searchParams.get('payment');
     if (payment === 'success') {
@@ -113,6 +87,7 @@ function SettingsContent() {
 
       if (data) {
         setNickname(data.nickname ?? user.email?.split('@')[0] ?? '보호자');
+        setPhone(data.phone ?? '');
         setNotifications({
           vaccination: data.notif_vaccination,
           weight: data.notif_weight,
@@ -138,7 +113,7 @@ function SettingsContent() {
   };
 
   const saveProfile = async () => {
-    await upsertProfile({ nickname });
+    await upsertProfile({ nickname, phone });
     setSavedProfile(true);
     setTimeout(() => setSavedProfile(false), 2000);
   };
@@ -152,56 +127,6 @@ function SettingsContent() {
       notif_community: newNotifs.community,
       notif_marketing: newNotifs.marketing,
     });
-  };
-
-  const handlePlanSelect = (planId: string) => {
-    if (planId === currentPlan) return;
-
-    if (planId === 'free') {
-      setShowCancelModal(true);
-      return;
-    }
-
-    const plan = PLAN_OPTIONS.find((p) => p.id === planId);
-    if (!plan || !userId) return;
-
-    if (!window.AUTHNICE) {
-      setPaymentMsg({ type: 'error', text: '결제 모듈을 불러오는 중입니다. 잠시 후 다시 시도해 주세요.' });
-      return;
-    }
-
-    const amount = planId === 'plus' ? 4900 : 9900;
-    const orderId = `${planId}-${userId.replace(/-/g, '')}-${Date.now()}`;
-    const returnUrl = `${window.location.origin}/api/nicepay/auth?userId=${userId}&planId=${planId}`;
-
-    window.AUTHNICE.requestPay({
-      clientId: process.env.NEXT_PUBLIC_NICEPAY_CLIENT_ID!,
-      method: 'card',
-      orderId,
-      amount,
-      goodsName: `펫헬스 ${plan.label} 구독`,
-      returnUrl,
-      fnError: (result) => {
-        setPaymentMsg({ type: 'error', text: result.resultMsg || '결제 중 오류가 발생했습니다.' });
-      },
-    });
-  };
-
-  const cancelSubscription = async () => {
-    setCancelling(true);
-    try {
-      const res = await fetch('/api/nicepay/cancel', { method: 'POST' });
-      if (res.ok) {
-        setCurrentPlan('free');
-        setPlanStartedAt(null);
-        setShowCancelModal(false);
-        setPaymentMsg({ type: 'success', text: '구독이 취소되었습니다.' });
-      } else {
-        setPaymentMsg({ type: 'error', text: '구독 취소에 실패했습니다. 다시 시도해 주세요.' });
-      }
-    } finally {
-      setCancelling(false);
-    }
   };
 
   const getNextBillingDate = (startedAt: string | null): string => {
@@ -313,6 +238,24 @@ function SettingsContent() {
                   }}
                 />
               </div>
+              <div>
+                <label className="block text-xs font-medium mb-1.5" style={{ color: 'var(--color-text-muted)' }}>
+                  휴대폰 번호 <span style={{ color: 'var(--color-primary-500)' }}>*</span>
+                  <span className="ml-1 font-normal" style={{ color: 'var(--color-text-muted)' }}>(유료 구독 필수)</span>
+                </label>
+                <input
+                  type="tel"
+                  value={phone}
+                  onChange={(e) => setPhone(e.target.value)}
+                  placeholder="01012345678"
+                  className="w-full rounded-xl border px-4 py-2.5 text-sm outline-none transition-all focus:border-[var(--color-primary-500)]"
+                  style={{
+                    background: 'var(--color-bg)',
+                    borderColor: 'var(--color-border)',
+                    color: 'var(--color-text-primary)',
+                  }}
+                />
+              </div>
             </div>
 
             <button
@@ -371,59 +314,54 @@ function SettingsContent() {
             <CreditCard size={15} style={{ color: 'var(--color-text-muted)' }} />
             <h2 className="text-sm font-semibold" style={{ color: 'var(--color-text-muted)' }}>구독 & 결제</h2>
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-            {PLAN_OPTIONS.map((plan) => {
-              const active = currentPlan === plan.id;
-              return (
-                <button
-                  key={plan.id}
-                  onClick={() => handlePlanSelect(plan.id)}
-                  className="rounded-2xl border p-4 text-left space-y-3 transition-all hover:shadow-md"
-                  style={{
-                    background: active ? 'var(--color-primary-50)' : 'var(--color-surface)',
-                    borderColor: active ? 'var(--color-primary-500)' : 'var(--color-border)',
-                    borderWidth: active ? '2px' : '1px',
-                  }}
-                >
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm font-bold" style={{ color: 'var(--color-text-primary)' }}>
-                      {plan.label}
-                    </span>
-                    {active && (
-                      <span
-                        className="flex h-5 w-5 items-center justify-center rounded-full"
-                        style={{ background: 'var(--color-primary-500)' }}
-                      >
-                        <Check size={12} color="#fff" />
-                      </span>
-                    )}
-                  </div>
-                  <p className="font-bold text-lg" style={{ color: active ? 'var(--color-primary-600)' : 'var(--color-text-primary)' }}>
-                    {plan.price}
-                  </p>
-                  <ul className="space-y-1">
-                    {plan.features.map((f) => (
-                      <li key={f} className="flex items-center gap-1.5 text-xs" style={{ color: 'var(--color-text-secondary)' }}>
-                        <Check size={11} style={{ color: 'var(--color-primary-500)', flexShrink: 0 }} />
-                        {f}
-                      </li>
-                    ))}
-                  </ul>
-                </button>
-              );
-            })}
-          </div>
-          <div className="space-y-1.5">
-            {currentPlan === 'free' && (
-              <p className="text-xs text-center" style={{ color: 'var(--color-text-muted)' }}>
-                이번 달 AI 상담 사용: <strong>{aiUsage} / 10회</strong>
-              </p>
-            )}
-            {currentPlan !== 'free' && planStartedAt && (
-              <p className="text-xs text-center" style={{ color: 'var(--color-text-muted)' }}>
-                현재 플랜: <strong>{PLAN_OPTIONS.find((p) => p.id === currentPlan)?.label}</strong> · 다음 결제일: <strong>{getNextBillingDate(planStartedAt)}</strong>
-              </p>
-            )}
+          <div
+            className="rounded-2xl border p-5 space-y-3"
+            style={{ background: 'var(--color-surface)', borderColor: 'var(--color-border)' }}
+          >
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="font-semibold" style={{ color: 'var(--color-text-primary)' }}>
+                  {PLAN_OPTIONS.find((p) => p.id === currentPlan)?.label ?? '무료'} 플랜
+                </p>
+                <p className="text-xs mt-0.5" style={{ color: 'var(--color-text-muted)' }}>
+                  {currentPlan === 'free'
+                    ? `이번 달 AI 상담 ${aiUsage} / 10회`
+                    : planStartedAt
+                    ? `다음 결제일: ${getNextBillingDate(planStartedAt)}`
+                    : ''}
+                </p>
+              </div>
+              <span
+                className="rounded-full px-3 py-1 text-xs font-semibold"
+                style={{
+                  background: currentPlan !== 'free' ? 'var(--color-primary-50)' : 'var(--color-bg)',
+                  color: currentPlan !== 'free' ? 'var(--color-primary-600)' : 'var(--color-text-muted)',
+                  border: `1px solid ${currentPlan !== 'free' ? 'var(--color-primary-200)' : 'var(--color-border)'}`,
+                }}
+              >
+                {currentPlan !== 'free' ? '구독 중' : '무료'}
+              </span>
+            </div>
+            <div className="flex gap-2">
+              <button
+                onClick={() => router.push('/plans')}
+                className="flex-1 rounded-xl py-2.5 text-sm font-medium transition-all hover:opacity-80"
+                style={{ background: 'var(--color-primary-500)', color: '#fff' }}
+              >
+                플랜 보기
+              </button>
+              <button
+                onClick={() => router.push('/subscription')}
+                className="flex-1 rounded-xl py-2.5 text-sm font-medium transition-all hover:opacity-80"
+                style={{
+                  background: 'var(--color-bg)',
+                  color: 'var(--color-text-secondary)',
+                  border: '1px solid var(--color-border)',
+                }}
+              >
+                구독 관리
+              </button>
+            </div>
           </div>
         </section>
 
@@ -456,44 +394,6 @@ function SettingsContent() {
         </section>
 
       </div>
-
-      {/* 구독 취소 확인 모달 */}
-      {showCancelModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-          <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={() => setShowCancelModal(false)} />
-          <div
-            className="relative w-full max-w-sm rounded-2xl p-6 space-y-4 shadow-2xl"
-            style={{ background: 'var(--color-surface)' }}
-          >
-            <div className="flex items-center justify-between">
-              <h3 className="font-bold text-lg" style={{ color: 'var(--color-text-primary)' }}>구독 취소</h3>
-              <button onClick={() => setShowCancelModal(false)}>
-                <X size={18} style={{ color: 'var(--color-text-muted)' }} />
-              </button>
-            </div>
-            <p className="text-sm" style={{ color: 'var(--color-text-secondary)' }}>
-              구독을 취소하면 즉시 무료 플랜으로 전환됩니다. 계속하시겠습니까?
-            </p>
-            <div className="flex gap-2">
-              <button
-                onClick={() => setShowCancelModal(false)}
-                className="flex-1 rounded-xl py-2.5 text-sm font-medium"
-                style={{ background: 'var(--color-bg)', color: 'var(--color-text-secondary)' }}
-              >
-                돌아가기
-              </button>
-              <button
-                onClick={cancelSubscription}
-                disabled={cancelling}
-                className="flex-1 rounded-xl py-2.5 text-sm font-medium text-white transition-opacity disabled:opacity-40"
-                style={{ background: 'var(--color-danger)' }}
-              >
-                {cancelling ? '취소 중...' : '구독 취소'}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
 
       {/* 비밀번호 변경 모달 */}
       {showPwModal && (

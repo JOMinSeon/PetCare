@@ -3,7 +3,7 @@
 import { revalidatePath } from 'next/cache';
 import { createClient } from '@supabase/supabase-js';
 import { getServerDb } from '@/lib/supabase-server';
-import { subscribeExpire } from '@/lib/nicepay';
+import { deleteBillingKey } from '@/lib/portone';
 
 function adminDb() {
   return createClient(
@@ -20,20 +20,16 @@ export async function cancelSubscription() {
 
   const db = adminDb();
 
-  // 현재 빌링키 조회
   const { data: profile } = await db
     .from('profiles')
     .select('nicepay_bid')
     .eq('user_id', user.id)
     .single();
 
-  // 빌링키 해제
   if (profile?.nicepay_bid) {
-    const orderId = `expire-${user.id.replace(/-/g, '')}-${Date.now()}`;
-    await subscribeExpire(profile.nicepay_bid, orderId);
+    await deleteBillingKey(profile.nicepay_bid);
   }
 
-  // 플랜 무료로 변경
   const { error } = await db
     .from('profiles')
     .update({

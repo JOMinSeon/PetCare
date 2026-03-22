@@ -66,8 +66,10 @@ export async function POST(req: NextRequest) {
     }
   }
 
+  const db = adminDb();
+
   // 빌링키 및 플랜 저장
-  const { error } = await adminDb()
+  const { error } = await db
     .from('profiles')
     .update({
       nicepay_bid: billingKey,
@@ -81,6 +83,16 @@ export async function POST(req: NextRequest) {
     console.error('[PortOne] DB update failed:', error);
     return NextResponse.json({ error: 'DB 저장 실패' }, { status: 500 });
   }
+
+  // 결제 내역 기록
+  await db.from('payment_history').insert({
+    user_id: user.id,
+    payment_id: paymentId,
+    plan: planId,
+    amount,
+    status: 'success',
+    type: 'subscribe',
+  });
 
   return NextResponse.json({ success: true });
 }

@@ -1,10 +1,10 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
-import { subscribePayments } from '@/lib/nicepay';
+import { payWithBillingKey } from '@/lib/portone';
 
-const PLAN_PRICES: Record<string, { amount: number; goodsName: string }> = {
-  plus:    { amount: 4900,  goodsName: 'Plus 플랜' },
-  premium: { amount: 9900,  goodsName: 'Premium 플랜' },
+const PLAN_PRICES: Record<string, { amount: number; orderName: string }> = {
+  plus:    { amount: 4900,  orderName: 'Plus 플랜' },
+  premium: { amount: 9900,  orderName: 'Premium 플랜' },
 };
 
 // Vercel Cron에서만 호출되도록 시크릿 검증
@@ -13,7 +13,6 @@ export async function GET(req: Request) {
     return new NextResponse('Unauthorized', { status: 401 });
   }
 
-  // service_role로 RLS 우회
   const supabase = createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.SUPABASE_SERVICE_ROLE_KEY!
@@ -32,13 +31,12 @@ export async function GET(req: Request) {
   let success = 0, failed = 0, skipped = 0;
 
   for (const profile of profiles) {
-    // 지원하지 않는 플랜 건너뜀
     if (!PLAN_PRICES[profile.subscription_plan]) {
       skipped++;
       continue;
     }
 
-    // plan_started_at 기준 1개월 경과 여부 확인 (마지막 결제일로 사용)
+    // plan_started_at 기준 1개월 경과 여부 확인
     const lastBillAt = new Date(profile.plan_started_at);
     const nextBillAt = new Date(lastBillAt);
     nextBillAt.setMonth(nextBillAt.getMonth() + 1);
@@ -48,19 +46,35 @@ export async function GET(req: Request) {
       continue;
     }
 
-    const { amount, goodsName } = PLAN_PRICES[profile.subscription_plan];
-    const orderId = `renewal-${profile.user_id.replace(/-/g, '')}-${Date.now()}`;
+    const { amount, orderName } = PLAN_PRICES[profile.subscription_plan];
+    const paymentId = `renewal-${profile.user_id.replace(/-/g, '')}-${Date.now()}`;
 
     try {
-      const result = await subscribePayments(profile.nicepay_bid, { orderId, amount, goodsName });
+      const result = await payWithBillingKey({
+        paymentId,
+        billingKey: profile.nicepay_bid,
+        orderName,
+        amount,
+        customerId: profile.user_id,
+      });
 
-      if (result.resultCode !== '0000') throw new Error(result.resultMsg);
+      if (result.code || result.status === 'FAILED') {
+        throw new Error(result.message || 'Payment failed');
+      }
 
-      // 다음 결제 기준일 갱신
       await supabase
         .from('profiles')
         .update({ plan_started_at: now.toISOString() })
         .eq('user_id', profile.user_id);
+
+      await supabase.from('payment_history').insert({
+        user_id: profile.user_id,
+        payment_id: paymentId,
+        plan: profile.subscription_plan,
+        amount,
+        status: 'success',
+        type: 'renewal',
+      });
 
       success++;
     } catch {
@@ -68,6 +82,15 @@ export async function GET(req: Request) {
         .from('profiles')
         .update({ subscription_status: 'payment_failed' })
         .eq('user_id', profile.user_id);
+
+      await supabase.from('payment_history').insert({
+        user_id: profile.user_id,
+        payment_id: paymentId,
+        plan: profile.subscription_plan,
+        amount,
+        status: 'failed',
+        type: 'renewal',
+      });
 
       failed++;
     }
