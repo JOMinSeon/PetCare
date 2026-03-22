@@ -754,7 +754,7 @@ export default function LandingPage() {
               <span>사업장 소재지: 경기도 시흥시 마유로423번길 20-7</span>
               <span>사업자등록번호: 297-66-00726 | 통신판매업신고: 신청 중</span>
               <span>이메일: help@petcare.pe.kr</span>
-              <span>고객센터: 010-2714-7196</span>
+              <span>고객센터(유선): 010-2714-7196</span>
             </div>
             <p className="text-center">&copy; 2026 펫헬스. All rights reserved.</p>
           </div>
