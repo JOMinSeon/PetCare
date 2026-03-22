@@ -1,11 +1,12 @@
 'use client';
 import Link from 'next/link';
-import { HeartPulse, Beef, MessageCircle } from 'lucide-react';
+import { HeartPulse, Beef, MessageCircle, Sparkles } from 'lucide-react';
 
 const TABS = [
-  { key: 'health', label: '건강기록', icon: HeartPulse },
-  { key: 'food',   label: '사료분석', icon: Beef },
-  { key: 'chat',   label: 'AI상담',   icon: MessageCircle },
+  { key: 'health',   label: '건강기록', icon: HeartPulse },
+  { key: 'food',     label: '사료분석', icon: Beef },
+  { key: 'chat',     label: 'AI상담',   icon: MessageCircle },
+  { key: 'analysis', label: 'AI분석',   icon: Sparkles },
 ];
 
 export function PetDetailTabs({ activeTab, petId }: { activeTab: string; petId: string }) {

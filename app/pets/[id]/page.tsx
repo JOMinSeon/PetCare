@@ -3,6 +3,7 @@ import { redirect } from 'next/navigation';
 import { ChevronLeft, Pencil } from 'lucide-react';
 import { getServerDb } from '@/lib/supabase-server';
 import { GeminiAdvicePanel } from '@/components/GeminiAdvicePanel';
+import { HealthAnalysis } from '@/components/HealthAnalysis';
 import { HealthChart } from '@/components/HealthChart';
 import { FoodAnalyzer } from '@/components/FoodAnalyzer';
 import { PetDetailTabs } from '@/components/PetDetailTabs';
@@ -270,6 +271,11 @@ export default async function PetDetailPage({
         {/* ── Tab: AI상담 ── */}
         {activeTab === 'chat' && (
           <GeminiAdvicePanel petId={id} />
+        )}
+
+        {/* ── Tab: AI분석 ── */}
+        {activeTab === 'analysis' && (
+          <HealthAnalysis petId={id} hasLogs={sortedLogs.length > 0} />
         )}
       </div>
     </div>
