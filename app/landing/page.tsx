@@ -462,14 +462,6 @@ export default function LandingPage() {
                 accent: '#065F46',
               },
               {
-                emoji: '🤖',
-                title: 'AI 수의사 상담 무제한 제공',
-                desc: '체험 기간 동안 AI 수의사 채팅을 횟수 제한 없이 이용 가능해요',
-                color: '#EFF6FF',
-                border: '#93C5FD',
-                accent: '#1E3A8A',
-              },
-              {
                 emoji: '🍖',
                 title: '사료 성분 분석 무료 체험',
                 desc: '신규 기능인 AI 사료 성분 분석도 체험 기간 내 무료로 이용 가능해요',
