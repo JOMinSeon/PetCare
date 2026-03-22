@@ -1,3 +1,5 @@
+export const runtime = 'nodejs';
+
 import { createGoogleGenerativeAI } from '@ai-sdk/google';
 import { generateText } from 'ai';
 import { getServerDb } from '@/lib/supabase-server';
@@ -86,10 +88,26 @@ ${logSummary}
 {"score":숫자,"trend":"값","alerts":["..."],"advice":["..."],"summary":"..."}
 `;
 
-    const { text } = await generateText({
-      model: google('gemini-2.5-flash'),
-      prompt,
-    });
+    let text: string;
+    try {
+      const res = await generateText({
+        model: google('gemini-2.5-flash'),
+        messages: [{ role: 'user', content: prompt }],
+      });
+      text = res.text;
+    } catch (aiError) {
+      console.error('Gemini API error:', aiError);
+      const ae = aiError as { statusCode?: number; status?: number; message?: string; reason?: string; lastError?: { statusCode?: number } };
+      const isQuota =
+        ae?.statusCode === 429 || ae?.status === 429 ||
+        ae?.lastError?.statusCode === 429 ||
+        ae?.reason === 'maxRetriesExceeded';
+      if (isQuota) {
+        return Response.json({ error: 'AI 분석 서비스 요청 한도를 초과했습니다. 잠시 후 다시 시도해주세요.' }, { status: 429 });
+      }
+      const detail = process.env.NODE_ENV === 'development' ? (ae?.message ?? String(aiError)) : undefined;
+      return Response.json({ error: 'AI 분석 호출 중 오류가 발생했습니다.', detail }, { status: 500 });
+    }
 
     // JSON 파싱
     const jsonMatch = text.match(/\{[\s\S]*\}/);
@@ -97,9 +115,13 @@ ${logSummary}
       return Response.json({ error: '분석 결과를 처리할 수 없습니다.' }, { status: 500 });
     }
 
-    const result: HealthAnalysisResult = JSON.parse(jsonMatch[0]);
+    let result: HealthAnalysisResult;
+    try {
+      result = JSON.parse(jsonMatch[0]);
+    } catch {
+      return Response.json({ error: '분석 결과 형식이 올바르지 않습니다.' }, { status: 500 });
+    }
 
-    // 기본 유효성 검사
     if (
       typeof result.score !== 'number' ||
       !['improving', 'stable', 'declining', 'insufficient'].includes(result.trend) ||
@@ -113,6 +135,8 @@ ${logSummary}
     return Response.json(result);
   } catch (error) {
     console.error('Health analysis error:', error);
-    return Response.json({ error: '분석 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.' }, { status: 500 });
+    const err = error as { statusCode?: number; status?: number; message?: string };
+    const detail = process.env.NODE_ENV === 'development' ? (err?.message ?? String(error)) : undefined;
+    return Response.json({ error: '분석 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.', detail }, { status: 500 });
   }
 }
