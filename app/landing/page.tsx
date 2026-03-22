@@ -414,69 +414,116 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* ── Testimonials ── */}
-      <section className="py-24 sm:py-32" style={{ background: '#f8fdf9' }}>
-        <div className="mx-auto max-w-7xl px-6 lg:px-8">
-          <div className="mx-auto max-w-2xl text-center mb-16">
-            <div className="section-badge mb-4">사용자 후기</div>
-            <h2 className="text-3xl sm:text-4xl font-bold" style={{ color: '#1a2e1a' }}>
-              <span className="gradient-text">10,000명</span> 이상이 신뢰합니다
+      {/* ── Grand Open Benefits ── */}
+      <section className="py-24 sm:py-32 relative overflow-hidden" style={{ background: '#f8fdf9' }}>
+        {/* Decorative blobs */}
+        <div
+          className="absolute -top-20 -right-20 w-80 h-80 rounded-full opacity-10 blur-3xl pointer-events-none"
+          style={{ background: 'radial-gradient(circle, #52B788, transparent)' }}
+          aria-hidden="true"
+        />
+        <div
+          className="absolute -bottom-20 -left-20 w-80 h-80 rounded-full opacity-10 blur-3xl pointer-events-none"
+          style={{ background: 'radial-gradient(circle, #F4A261, transparent)' }}
+          aria-hidden="true"
+        />
+
+        <div className="mx-auto max-w-4xl px-6 lg:px-8 relative">
+          {/* Header */}
+          <div className="text-center mb-12">
+            <div
+              className="inline-flex items-center gap-2 rounded-full px-4 py-1.5 mb-6 text-sm font-bold"
+              style={{
+                background: 'linear-gradient(135deg, #FFF7ED, #FEF3C7)',
+                color: '#B45309',
+                border: '1.5px solid #FDE68A',
+              }}
+            >
+              🎉 Grand Open 특별 혜택
+            </div>
+            <h2 className="text-3xl sm:text-4xl font-bold mb-4" style={{ color: '#1a2e1a' }}>
+              지금 가입하시는 분께만<br />
+              <span className="gradient-text">특별한 혜택</span>을 드려요!
             </h2>
+            <p className="text-base font-medium" style={{ color: '#4a7c59' }}>
+              놓치면 후회할 수 있으니 꼭 확인해 보세요 😊
+            </p>
           </div>
 
-          <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
+          {/* Benefits Grid */}
+          <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
             {[
               {
-                name: '김지은',
-                pet: '골든 리트리버 맥스',
-                text: 'AI 건강 분석 덕분에 조기에 심장 문제를 발견했어요. 정말 감사합니다! 이제 매일 기록하는 습관이 생겼어요.',
-                emoji: '🐕',
+                emoji: '📅',
+                title: '14일 무료 체험',
+                desc: '카드 등록 없이 모든 기능을 14일간 100% 무료로 사용해보세요',
+                color: '#ECFDF5',
+                border: '#6EE7B7',
+                accent: '#065F46',
               },
               {
-                name: '이준호',
-                pet: '고양이 나비',
-                text: 'AI 수의사 상담이 너무 편리해요. 밤에도 빠르게 답변 받을 수 있어서 불안할 때 큰 도움이 됩니다.',
-                emoji: '🐈',
+                emoji: '🤖',
+                title: 'AI 수의사 상담 무제한 제공',
+                desc: '체험 기간 동안 AI 수의사 채팅을 횟수 제한 없이 이용 가능해요',
+                color: '#EFF6FF',
+                border: '#93C5FD',
+                accent: '#1E3A8A',
               },
               {
-                name: '박소연',
-                pet: '포메라니안 코코',
-                text: '건강 기록이 체계적이라 병원 방문 시 매우 유용해요. 수의사 선생님도 좋다고 하셨어요.',
-                emoji: '🐕',
+                emoji: '🍖',
+                title: '사료 성분 분석 무료 체험',
+                desc: '신규 기능인 AI 사료 성분 분석도 체험 기간 내 무료로 이용 가능해요',
+                color: '#FFF7ED',
+                border: '#FCD34D',
+                accent: '#92400E',
               },
-            ].map((t, i) => (
+              {
+                emoji: '💌',
+                title: '오픈 기념 첫 달 요금 할인',
+                desc: '체험 후 유료 전환 시 첫 달 특별 할인 혜택이 자동 적용돼요',
+                color: '#FDF4FF',
+                border: '#E879F9',
+                accent: '#701A75',
+              },
+            ].map(({ emoji, title, desc, color, border, accent }) => (
               <div
-                key={i}
-                className="rounded-2xl p-6 flex flex-col"
+                key={title}
+                className="rounded-2xl p-6 flex items-start gap-4"
                 style={{
-                  background: '#fff',
-                  border: '1px solid #d1fae5',
-                  boxShadow: '0 2px 12px rgba(45,106,79,0.06)',
+                  background: color,
+                  border: `1.5px solid ${border}`,
+                  boxShadow: '0 2px 12px rgba(0,0,0,0.04)',
                 }}
               >
-                {/* Stars */}
-                <div className="flex gap-1 mb-4">
-                  {[...Array(5)].map((_, s) => (
-                    <Star key={s} size={14} fill="#E9C46A" color="#E9C46A" />
-                  ))}
+                <div
+                  className="flex h-12 w-12 items-center justify-center rounded-2xl text-2xl flex-shrink-0"
+                  style={{ background: '#fff', boxShadow: '0 2px 8px rgba(0,0,0,0.06)' }}
+                >
+                  {emoji}
                 </div>
-                <p className="text-sm leading-relaxed flex-1 mb-6" style={{ color: '#4a7c59' }}>
-                  &ldquo;{t.text}&rdquo;
-                </p>
-                <div className="flex items-center gap-3 pt-4" style={{ borderTop: '1px solid #d1fae5' }}>
-                  <div
-                    className="flex h-10 w-10 items-center justify-center rounded-full text-xl flex-shrink-0"
-                    style={{ background: 'linear-gradient(135deg, #f0fdf4, #dcfce7)' }}
-                  >
-                    {t.emoji}
-                  </div>
-                  <div>
-                    <p className="font-bold text-sm" style={{ color: '#1a2e1a' }}>{t.name}</p>
-                    <p className="text-xs" style={{ color: '#86a98c' }}>{t.pet} 보호자</p>
-                  </div>
+                <div>
+                  <h3 className="font-bold text-base mb-1.5" style={{ color: accent }}>{title}</h3>
+                  <p className="text-sm leading-relaxed" style={{ color: '#4a5568' }}>{desc}</p>
                 </div>
               </div>
             ))}
+          </div>
+
+          {/* CTA */}
+          <div className="text-center mt-12">
+            <Link
+              href="/auth/signup"
+              className="inline-flex items-center gap-2 rounded-full px-10 py-4 text-base font-bold text-white transition-all hover:opacity-90 ripple"
+              style={{
+                background: 'linear-gradient(135deg, #2D6A4F, #52B788)',
+                boxShadow: '0 8px 28px rgba(45,106,79,0.4)',
+              }}
+            >
+              지금 바로 혜택 받기 <ArrowRight size={16} />
+            </Link>
+            <p className="mt-3 text-xs font-medium" style={{ color: '#86a98c' }}>
+              카드 등록 없이 14일 무료 · 언제든지 취소 가능
+            </p>
           </div>
         </div>
       </section>
