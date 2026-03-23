@@ -1,21 +1,45 @@
 'use client';
 import { getBrowserDb } from '@/lib/supabase-browser';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
 interface GoogleAuthButtonProps {
   mode?: 'login' | 'signup';
   className?: string;
 }
 
+function isInAppBrowser(): boolean {
+  if (typeof navigator === 'undefined') return false;
+  const ua = navigator.userAgent;
+  return /KAKAOTALK|Line\/|Instagram|FBAN|FBAV|NaverSearch|NAVER\(|DaumApps|Whale\//.test(ua);
+}
+
 export function GoogleAuthButton({ mode = 'login', className = '' }: GoogleAuthButtonProps) {
   const [loading, setLoading] = useState(false);
+  const [inAppBrowser, setInAppBrowser] = useState(false);
+  const [copied, setCopied] = useState(false);
+
+  useEffect(() => {
+    setInAppBrowser(isInAppBrowser());
+  }, []);
+
+  const handleOpenBrowser = async () => {
+    const url = window.location.href;
+    try {
+      await navigator.clipboard.writeText(url);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch {
+      // clipboard 실패 시 무시
+    }
+  };
 
   const handleGoogleSignIn = async () => {
     try {
       setLoading(true);
       const supabase = getBrowserDb();
-      const redirectUrl = `${window.location.origin}/auth/callback`;
-      
+      const origin = process.env.NEXT_PUBLIC_SITE_URL || window.location.origin;
+      const redirectUrl = `${origin}/auth/callback`;
+
       const { error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
@@ -32,6 +56,21 @@ export function GoogleAuthButton({ mode = 'login', className = '' }: GoogleAuthB
       setLoading(false);
     }
   };
+
+  if (inAppBrowser) {
+    return (
+      <div className={`w-full rounded-lg border border-amber-300 bg-amber-50 p-3 text-sm ${className}`}>
+        <p className="font-medium text-amber-800 mb-1">인앱 브라우저에서는 Google 로그인이 제한됩니다</p>
+        <p className="text-amber-700 text-xs mb-2">Safari 또는 Chrome에서 열어주세요.</p>
+        <button
+          onClick={handleOpenBrowser}
+          className="w-full rounded-md border border-amber-400 bg-white py-1.5 px-3 text-xs font-medium text-amber-800 hover:bg-amber-100 transition-colors"
+        >
+          {copied ? '주소가 복사됐습니다!' : '주소 복사하기'}
+        </button>
+      </div>
+    );
+  }
 
   return (
     <button
