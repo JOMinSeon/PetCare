@@ -27,6 +27,7 @@ export function VaccinationStepper({ species, petId }: { species: string; petId:
 
   const [completed, setCompleted] = useState<Set<string>>(new Set());
   const [toggling, setToggling] = useState<string | null>(null);
+  const [saveError, setSaveError] = useState('');
 
   useEffect(() => {
     const load = async () => {
@@ -44,6 +45,7 @@ export function VaccinationStepper({ species, petId }: { species: string; petId:
   const toggle = async (vaccineName: string) => {
     if (toggling) return;
     setToggling(vaccineName);
+    setSaveError('');
     const supabase = getBrowserDb();
     const isDone = completed.has(vaccineName);
     if (isDone) {
@@ -52,20 +54,24 @@ export function VaccinationStepper({ species, petId }: { species: string; petId:
         .delete()
         .eq('pet_id', petId)
         .eq('vaccine_name', vaccineName);
-      if (error) { alert('저장에 실패했습니다.'); setToggling(null); return; }
+      if (error) { setSaveError('저장에 실패했습니다. 다시 시도해주세요.'); setToggling(null); return; }
       setCompleted((prev) => { const next = new Set(prev); next.delete(vaccineName); return next; });
     } else {
       const { error } = await supabase
         .from('pet_vaccinations')
         .upsert({ pet_id: petId, vaccine_name: vaccineName, done_at: new Date().toISOString() });
-      if (error) { alert('저장에 실패했습니다.'); setToggling(null); return; }
+      if (error) { setSaveError('저장에 실패했습니다. 다시 시도해주세요.'); setToggling(null); return; }
       setCompleted((prev) => new Set([...prev, vaccineName]));
     }
     setToggling(null);
   };
 
   return (
-    <ol className="space-y-3">
+    <div className="space-y-3">
+      {saveError && (
+        <p role="alert" className="text-xs px-1" style={{ color: 'var(--color-danger)' }}>{saveError}</p>
+      )}
+      <ol className="space-y-3">
       {vaccines.map((v, i) => {
         const done = completed.has(v.name);
         const isToggling = toggling === v.name;
@@ -74,9 +80,10 @@ export function VaccinationStepper({ species, petId }: { species: string; petId:
             <button
               onClick={() => toggle(v.name)}
               disabled={isToggling}
-              className="flex-shrink-0 w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold text-white mt-0.5 transition-all hover:opacity-80 disabled:opacity-50"
+              aria-label={done ? `${v.name} 접종 완료 취소` : `${v.name} 접종 완료 표시`}
+              aria-pressed={done}
+              className="flex-shrink-0 min-w-[44px] min-h-[44px] rounded-full flex items-center justify-center text-xs font-bold text-white transition-all hover:opacity-80 disabled:opacity-50"
               style={{ background: done ? '#22c55e' : 'var(--color-primary-500)' }}
-              title={done ? '접종 완료 취소' : '접종 완료 표시'}
             >
               {done ? '✓' : i + 1}
             </button>
@@ -97,6 +104,7 @@ export function VaccinationStepper({ species, petId }: { species: string; petId:
           </li>
         );
       })}
-    </ol>
+      </ol>
+    </div>
   );
 }

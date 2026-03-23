@@ -9,13 +9,9 @@ export function NavBar() {
     <>
       {/* ── Desktop top nav ── */}
       <nav
-        className="hidden md:flex border-b px-6 py-3 items-center justify-between sticky top-0 z-40"
-        style={{
-          background: 'rgba(255,255,255,0.88)',
-          backdropFilter: 'blur(24px)',
-          WebkitBackdropFilter: 'blur(24px)',
-          borderColor: 'var(--color-border)',
-        }}
+        aria-label="주요 메뉴"
+        className="glass-nav hidden md:flex border-b px-6 py-3 items-center justify-between sticky top-0 z-40"
+        style={{ borderColor: 'var(--color-border)' }}
       >
         <div className="flex items-center gap-8">
           <Link

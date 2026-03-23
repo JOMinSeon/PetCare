@@ -23,6 +23,7 @@ export function NavLinks() {
             <Link
               key={href}
               href={href}
+              aria-current={active ? 'page' : undefined}
               className="rounded-full px-4 py-1.5 text-sm font-medium transition-all"
               style={{
                 background: active ? 'var(--color-primary-50)' : 'transparent',

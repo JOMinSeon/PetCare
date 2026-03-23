@@ -16,13 +16,14 @@ export function MobileNav() {
 
   return (
     <div className="floating-nav md:hidden">
-      <nav className="glass-nav flex items-center gap-0.5 px-2 py-2 rounded-full">
+      <nav aria-label="모바일 메뉴" className="glass-nav flex items-center gap-0.5 px-2 py-2 rounded-full">
         {mobileTabs.map(({ href, icon: Icon, label }) => {
           const active = pathname === href || (href !== '/pets' && pathname.startsWith(href));
           return (
             <Link
               key={label}
               href={href}
+              aria-current={active ? 'page' : undefined}
               className="relative flex flex-col items-center justify-center gap-0.5 rounded-full px-3 py-2 transition-all duration-200"
               style={{
                 background: active
@@ -32,7 +33,7 @@ export function MobileNav() {
                 minWidth: '3.5rem',
               }}
             >
-              <Icon size={18} />
+              <Icon size={18} aria-hidden="true" />
               <span className="text-[10px] font-semibold leading-none tracking-tight">{label}</span>
             </Link>
           );

@@ -23,9 +23,18 @@ function HealthScoreRing({ score }: { score: number }) {
     score >= 80 ? '#10b981' :
     score >= 55 ? '#f59e0b' : '#ef4444';
 
+  const scoreLabel =
+    score >= 80 ? '건강 상태 양호' :
+    score >= 55 ? '건강 상태 주의' : '건강 상태 위험';
+
   return (
-    <div className="relative flex-shrink-0" style={{ width: size, height: size }}>
-      <svg width={size} height={size} style={{ transform: 'rotate(-90deg)' }}>
+    <div
+      className="relative flex-shrink-0"
+      style={{ width: size, height: size }}
+      role="img"
+      aria-label={`건강 점수 ${score}점 — ${scoreLabel}`}
+    >
+      <svg width={size} height={size} style={{ transform: 'rotate(-90deg)' }} aria-hidden="true">
         <circle
           cx={size / 2} cy={size / 2} r={r}
           className="health-ring-track"
@@ -41,7 +50,7 @@ function HealthScoreRing({ score }: { score: number }) {
           style={{ '--ring-full': circ, '--ring-offset': offset } as React.CSSProperties}
         />
       </svg>
-      <div className="absolute inset-0 flex flex-col items-center justify-center">
+      <div className="absolute inset-0 flex flex-col items-center justify-center" aria-hidden="true">
         <span className="font-display text-sm font-bold leading-none" style={{ color }}>
           {score}
         </span>
@@ -110,7 +119,11 @@ export function PetCard({ pet }: { pet: Pet }) {
           >
             {speciesEmoji}
           </div>
-          <span className={`status-dot ${statusClass} absolute -bottom-0.5 -right-0.5`} />
+          <span
+            className={`status-dot ${statusClass} absolute -bottom-0.5 -right-0.5`}
+            role="img"
+            aria-label={healthScore >= 80 ? '건강 상태 양호' : healthScore >= 55 ? '건강 상태 주의' : '건강 상태 위험'}
+          />
         </div>
 
         {/* Name & info */}
@@ -147,9 +160,13 @@ export function PetCard({ pet }: { pet: Pet }) {
               {currentWeight}
             </span>
             <span className="text-xs mb-0.5" style={{ color: 'var(--color-text-muted)' }}>kg</span>
-            {WeightIcon && (
-              <span className="flex items-center gap-0.5 text-[10px] font-bold mb-0.5 ml-auto" style={{ color: deltaColor }}>
-                <WeightIcon size={10} />
+            {WeightIcon && weightDelta !== null && (
+              <span
+                className="flex items-center gap-0.5 text-[10px] font-bold mb-0.5 ml-auto"
+                style={{ color: deltaColor }}
+                aria-label={weightDelta > 0 ? `${Math.abs(weightDelta)}kg 증가` : weightDelta < 0 ? `${Math.abs(weightDelta)}kg 감소` : '변화 없음'}
+              >
+                <WeightIcon size={10} aria-hidden="true" />
                 {Math.abs(weightDelta)}
               </span>
             )}

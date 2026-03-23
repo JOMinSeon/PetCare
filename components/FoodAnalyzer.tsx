@@ -193,15 +193,19 @@ export function FoodAnalyzer({ petInfo }: { petInfo: PetInfo }) {
         {/* Image mode */}
         {mode === 'image' && (
           <div
+            role="button"
+            tabIndex={0}
+            aria-label="사료 이미지 업로드 — 클릭하거나 Enter를 눌러 파일 선택"
             onClick={() => inputRef.current?.click()}
+            onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); inputRef.current?.click(); } }}
             onDragOver={(e) => { e.preventDefault(); setDragging(true); }}
             onDragLeave={() => setDragging(false)}
             onDrop={onDrop}
-            className="rounded-xl border-2 border-dashed cursor-pointer transition-colors flex flex-col items-center justify-center overflow-hidden"
+            className="rounded-xl border-2 border-dashed cursor-pointer transition-colors flex flex-col items-center justify-center overflow-hidden focus:outline-none focus:ring-2 focus:ring-offset-2"
             style={{
               minHeight: preview ? 'auto' : '180px',
-              borderColor: dragging ? '#2E7D32' : 'var(--color-border)',
-              background: dragging ? '#E8F5E9' : 'var(--color-bg)',
+              borderColor: dragging ? 'var(--color-secondary-500)' : 'var(--color-border)',
+              background: dragging ? 'var(--color-primary-50)' : 'var(--color-bg)',
             }}
           >
             {preview ? (
@@ -246,7 +250,7 @@ export function FoodAnalyzer({ petInfo }: { petInfo: PetInfo }) {
         )}
 
         {error && (
-          <p className="text-sm" style={{ color: '#E53935' }}>{error}</p>
+          <p role="alert" aria-live="assertive" className="text-sm" style={{ color: 'var(--color-danger)' }}>{error}</p>
         )}
 
         <button
