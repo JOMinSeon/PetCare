@@ -135,12 +135,14 @@ function NewPetPage() {
       formData.append('age', form.age);
       formData.append('weight', form.weight);
       if (form.neutered) formData.append('neutered', 'on');
+      formData.append('condition', form.condition);
+      form.activities.forEach((a) => formData.append('activities', a));
 
       const { createPet } = await import('@/app/actions/pet');
       await createPet(formData);
     } catch (err) {
+      if ((err as { digest?: string })?.digest?.startsWith('NEXT_REDIRECT')) return;
       const msg = err instanceof Error ? err.message : String(err);
-      if (msg.includes('NEXT_REDIRECT')) return;
       alert('반려동물 등록에 실패했습니다: ' + msg);
       setLoading(false);
     }

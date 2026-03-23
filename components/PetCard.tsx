@@ -147,7 +147,7 @@ export function PetCard({ pet }: { pet: Pet }) {
               {currentWeight}
             </span>
             <span className="text-xs mb-0.5" style={{ color: 'var(--color-text-muted)' }}>kg</span>
-            {WeightIcon && weightDelta !== null && (
+            {WeightIcon && (
               <span className="flex items-center gap-0.5 text-[10px] font-bold mb-0.5 ml-auto" style={{ color: deltaColor }}>
                 <WeightIcon size={10} />
                 {Math.abs(weightDelta)}

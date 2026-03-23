@@ -31,10 +31,11 @@ export function VaccinationStepper({ species, petId }: { species: string; petId:
   useEffect(() => {
     const load = async () => {
       const supabase = getBrowserDb();
-      const { data } = await supabase
+      const { data, error } = await supabase
         .from('pet_vaccinations')
         .select('vaccine_name')
         .eq('pet_id', petId);
+      if (error) { console.error('백신 기록 불러오기 실패:', error.message); return; }
       if (data) setCompleted(new Set(data.map((r: { vaccine_name: string }) => r.vaccine_name)));
     };
     load();
@@ -46,16 +47,18 @@ export function VaccinationStepper({ species, petId }: { species: string; petId:
     const supabase = getBrowserDb();
     const isDone = completed.has(vaccineName);
     if (isDone) {
-      await supabase
+      const { error } = await supabase
         .from('pet_vaccinations')
         .delete()
         .eq('pet_id', petId)
         .eq('vaccine_name', vaccineName);
+      if (error) { alert('저장에 실패했습니다.'); setToggling(null); return; }
       setCompleted((prev) => { const next = new Set(prev); next.delete(vaccineName); return next; });
     } else {
-      await supabase
+      const { error } = await supabase
         .from('pet_vaccinations')
         .upsert({ pet_id: petId, vaccine_name: vaccineName, done_at: new Date().toISOString() });
+      if (error) { alert('저장에 실패했습니다.'); setToggling(null); return; }
       setCompleted((prev) => new Set([...prev, vaccineName]));
     }
     setToggling(null);

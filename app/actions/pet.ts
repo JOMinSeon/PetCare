@@ -3,6 +3,14 @@ import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
 import { getServerDb } from '@/lib/supabase-server';
 
+function calcRer(weight: number) {
+  return 70 * Math.pow(weight, 0.75);
+}
+const MER_MULTIPLIER: Record<string, number> = { dog: 1.6, cat: 1.2 };
+function calcMer(weight: number, species: string) {
+  return calcRer(weight) * (MER_MULTIPLIER[species] ?? 1.6);
+}
+
 const PLAN_PET_LIMITS: Record<string, number> = {
   free: 1,
   premium: 3,
@@ -53,6 +61,9 @@ export async function createPet(formData: FormData) {
     throw new Error('체중은 0~200kg 사이여야 합니다.');
   }
 
+  const condition = (formData.get('condition') as string) || 'good';
+  const activities = formData.getAll('activities') as string[];
+
   const { data: newPet, error } = await db.from('pets').insert({
     user_id: user.id,
     name,
@@ -63,6 +74,17 @@ export async function createPet(formData: FormData) {
   }).select('id').single();
 
   if (error) throw new Error(error.message);
+
+  // 등록 시 초기 건강 기록 생성
+  await db.from('health_logs').insert({
+    pet_id: newPet.id,
+    weight,
+    rer: calcRer(weight),
+    mer: calcMer(weight, species),
+    condition,
+    activities,
+    recorded_at: new Date().toISOString(),
+  });
 
   revalidatePath('/pets');
   redirect(`/pets/${newPet.id}`);
