@@ -2,11 +2,9 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 import { getServerDb } from '@/lib/supabase-server';
 import { payWithBillingKey, getBillingKey, getPayment } from '@/lib/portone';
+import { getPlanAmount, getOrderName, type PlanId, type BillingCycle } from '@/lib/plans';
 
-const PLAN_PRICES: Record<string, { amount: number; orderName: string }> = {
-  plus:    { amount: 4900,  orderName: 'Plus 플랜' },
-  premium: { amount: 9900,  orderName: 'Premium 플랜' },
-};
+const VALID_PLANS: PlanId[] = ['premium', 'clinic'];
 
 function adminDb() {
   return createClient(
@@ -23,13 +21,14 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
-  const { billingKey, planId } = await req.json();
+  const { billingKey, planId, billingCycle } = await req.json();
+  const cycle: BillingCycle = billingCycle === 'yearly' ? 'yearly' : 'monthly';
 
-  if (!billingKey || !planId || !PLAN_PRICES[planId]) {
+  if (!billingKey || !planId || !VALID_PLANS.includes(planId)) {
     return NextResponse.json({ error: 'Invalid request' }, { status: 400 });
   }
 
-  // 빌링키 소유권 검증: 현재 사용자가 발급한 빌링키인지 확인
+  // 빌링키 소유권 검증
   const billingKeyInfo = await getBillingKey(billingKey);
   if (
     billingKeyInfo.code ||
@@ -38,8 +37,9 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: '빌링키 인증 실패' }, { status: 400 });
   }
 
-  const { amount, orderName } = PLAN_PRICES[planId];
-  const paymentId = `pay-${planId}-${user.id.replace(/-/g, '')}-${Date.now()}`;
+  const amount = getPlanAmount(planId, cycle);
+  const orderName = getOrderName(planId, cycle);
+  const paymentId = `pay-${planId}-${cycle}-${user.id.replace(/-/g, '')}-${Date.now()}`;
 
   // 첫 결제 실행
   const result = await payWithBillingKey({
@@ -57,7 +57,7 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  // 결제 금액 검증: PortOne에서 실제 청구된 금액이 플랜 가격과 일치하는지 확인
+  // 결제 금액 검증
   if (result.paymentId) {
     const payment = await getPayment(result.paymentId);
     if (payment.amount?.total !== amount) {
@@ -68,13 +68,24 @@ export async function POST(req: NextRequest) {
 
   const db = adminDb();
 
-  // 빌링키 및 플랜 저장
+  // 다음 결제일 계산
+  const now = new Date();
+  const nextBillingAt = new Date(now);
+  if (cycle === 'yearly') {
+    nextBillingAt.setFullYear(nextBillingAt.getFullYear() + 1);
+  } else {
+    nextBillingAt.setMonth(nextBillingAt.getMonth() + 1);
+  }
+
+  // 빌링키, 플랜, 결제 주기 저장
   const { error } = await db
     .from('profiles')
     .update({
       nicepay_bid: billingKey,
       subscription_plan: planId,
-      plan_started_at: new Date().toISOString(),
+      billing_cycle: cycle,
+      plan_started_at: now.toISOString(),
+      next_billing_at: nextBillingAt.toISOString(),
       subscription_status: 'active',
     })
     .eq('user_id', user.id);

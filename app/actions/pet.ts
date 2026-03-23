@@ -5,14 +5,14 @@ import { getServerDb } from '@/lib/supabase-server';
 
 const PLAN_PET_LIMITS: Record<string, number> = {
   free: 1,
-  plus: 3,
-  premium: Infinity,
+  premium: 3,
+  clinic: Infinity,
 };
 
 const PLAN_LABELS: Record<string, string> = {
   free: '무료',
-  plus: 'Plus',
-  premium: 'Premium',
+  premium: '프리미엄',
+  clinic: '병원용',
 };
 
 export async function createPet(formData: FormData) {

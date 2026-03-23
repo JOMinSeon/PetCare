@@ -3,11 +3,6 @@ import { createClient } from '@supabase/supabase-js';
 import { getPayment } from '@/lib/portone';
 import crypto from 'crypto';
 
-const PLAN_PRICES: Record<string, number> = {
-  plus: 4900,
-  premium: 9900,
-};
-
 /**
  * PortOne v2 웹훅 서명 검증 (Svix 포맷)
  * payload = "{webhook-id}.{webhook-timestamp}.{rawBody}"
@@ -87,11 +82,29 @@ export async function POST(req: NextRequest) {
   const paymentId: string = data?.paymentId ?? '';
   if (!paymentId) return NextResponse.json({ ok: true });
 
+  const supabase = createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!
+  );
+
+  // 중복 처리 방지: 이미 처리된 이벤트인지 확인
+  if (msgId) {
+    const { data: existing } = await supabase
+      .from('webhook_events')
+      .select('id')
+      .eq('event_id', msgId)
+      .maybeSingle();
+
+    if (existing) {
+      return NextResponse.json({ ok: true });
+    }
+  }
+
   // 포트원 API로 결제 상태 검증
   const payment = await getPayment(paymentId);
 
-  // paymentId 형식: pay-{planId}-{userId}-{timestamp} 또는 renewal-{userId}-{timestamp}
-  const match = paymentId.match(/^(?:pay-\w+-|renewal-)([a-f0-9]{32})-\d+$/);
+  // paymentId 형식: pay-{planId}-{cycle}-{userId}-{timestamp} 또는 renewal-{userId}-{timestamp}
+  const match = paymentId.match(/^(?:pay-\w+-\w+-|renewal-)([a-f0-9]{32})-\d+$/);
   if (!match) return NextResponse.json({ ok: true });
 
   const rawUserId = match[1];
@@ -104,44 +117,71 @@ export async function POST(req: NextRequest) {
     rawUserId.slice(20),
   ].join('-');
 
-  const supabase = createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!
-  );
+  let eventStatus: 'processed' | 'skipped' | 'error' = 'processed';
 
   if (payment.status === 'PAID') {
-    // 결제 금액이 실제 플랜 가격과 일치하는지 검증
+    // 프로필에서 플랜 및 결제 주기 조회
     const { data: profile } = await supabase
       .from('profiles')
-      .select('subscription_plan')
+      .select('subscription_plan, billing_cycle')
       .eq('user_id', userId)
       .single();
 
-    const expectedAmount = profile?.subscription_plan
-      ? PLAN_PRICES[profile.subscription_plan]
-      : null;
+    // plan_limits에서 가격 조회 (billing_cycle 기준으로 검증)
+    const { data: planLimit } = await supabase
+      .from('plan_limits')
+      .select('monthly_price, yearly_price')
+      .eq('plan_type', profile?.subscription_plan ?? '')
+      .single();
+
+    const cycle = profile?.billing_cycle ?? 'monthly';
+    const expectedAmount = cycle === 'yearly'
+      ? planLimit?.yearly_price
+      : planLimit?.monthly_price;
 
     if (!expectedAmount || payment.amount?.total !== expectedAmount) {
       console.error('[PortOne Webhook] 결제 금액 불일치', {
         userId,
+        cycle,
         expected: expectedAmount,
         actual: payment.amount?.total,
       });
-      return NextResponse.json({ error: 'Amount mismatch' }, { status: 400 });
+      eventStatus = 'error';
+    } else {
+      await supabase
+        .from('profiles')
+        .update({
+          plan_started_at: new Date().toISOString(),
+          subscription_status: 'active',
+        })
+        .eq('user_id', userId);
     }
-
-    await supabase
-      .from('profiles')
-      .update({
-        plan_started_at: new Date().toISOString(),
-        subscription_status: 'active',
-      })
-      .eq('user_id', userId);
   } else if (payment.status === 'FAILED') {
     await supabase
       .from('profiles')
       .update({ subscription_status: 'payment_failed' })
       .eq('user_id', userId);
+  } else {
+    eventStatus = 'skipped';
+  }
+
+  // 처리 결과 기록 (중복 방지용 — UNIQUE(event_id) 제약으로 보호됨)
+  if (msgId) {
+    try {
+      await supabase.from('webhook_events').insert({
+        event_id: msgId,
+        event_type: type,
+        payment_id: paymentId,
+        status: eventStatus,
+        payload: body,
+      });
+    } catch {
+      // 극히 드문 동시성 충돌(race condition) — 이미 처리된 것으로 간주
+    }
+  }
+
+  if (eventStatus === 'error') {
+    return NextResponse.json({ error: 'Amount mismatch' }, { status: 400 });
   }
 
   return NextResponse.json({ ok: true });
