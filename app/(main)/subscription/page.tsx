@@ -9,14 +9,14 @@ import { getBrowserDb } from '@/lib/supabase-browser';
 
 const PLAN_LABELS: Record<string, string> = {
   free: '무료',
-  plus: 'Plus',
-  premium: 'Premium',
+  premium: '프리미엄',
+  clinic: '병원용',
 };
 
 const PLAN_PRICES: Record<string, string> = {
   free: '₩0/월',
-  plus: '₩4,900/월',
-  premium: '₩9,900/월',
+  premium: '₩14,900/월',
+  clinic: '₩49,000/월',
 };
 
 interface PaymentRecord {

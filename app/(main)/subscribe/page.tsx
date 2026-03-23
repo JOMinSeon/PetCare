@@ -4,28 +4,13 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { ArrowLeft, Check, AlertCircle, CreditCard } from 'lucide-react';
 import { getBrowserDb } from '@/lib/supabase-browser';
 import * as PortOne from '@portone/browser-sdk/v2';
-
-const PLANS = [
-  {
-    id: 'plus',
-    label: 'Plus',
-    price: '₩4,900/월',
-    amount: 4900,
-    features: ['반려동물 3마리', 'AI 상담 무제한', '영양 분석 차트', '캘린더 알림'],
-  },
-  {
-    id: 'premium',
-    label: 'Premium',
-    price: '₩9,900/월',
-    amount: 9900,
-    features: ['반려동물 무제한', '수의사 Q&A 우선 답변', '건강 리포트 PDF', '모든 기능'],
-  },
-];
+import { PLAN_MAP, getPlanAmount, getOrderName, formatPrice, type BillingCycle, type PlanId } from '@/lib/plans';
 
 function SubscribeContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const planIdParam = searchParams.get('planId') ?? 'plus';
+  const planIdParam = (searchParams.get('planId') ?? 'premium') as PlanId;
+  const cycleParam = (searchParams.get('cycle') ?? 'monthly') as BillingCycle;
   const changeCard = searchParams.get('changeCard') === 'true';
 
   const [userId, setUserId] = useState('');
@@ -35,17 +20,17 @@ function SubscribeContent() {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
-  const plan = PLANS.find((p) => p.id === planIdParam) ?? PLANS[0];
+  const plan = PLAN_MAP[planIdParam] ?? PLAN_MAP['premium'];
+  const isYearly = cycleParam === 'yearly';
+  const amount = getPlanAmount(planIdParam, cycleParam);
+  const orderName = getOrderName(planIdParam, cycleParam);
 
   useEffect(() => {
     const init = async () => {
       const supabase = getBrowserDb();
       const { data: { user }, error: authError } = await supabase.auth.getUser();
       if (authError?.code === 'refresh_token_not_found') { await supabase.auth.signOut(); router.replace('/auth/login'); return; }
-      if (!user) {
-        router.replace('/auth/login');
-        return;
-      }
+      if (!user) { router.replace('/auth/login'); return; }
       setUserId(user.id);
       setUserEmail(user.email ?? '');
 
@@ -77,7 +62,6 @@ function SubscribeContent() {
     const issueId = `issue${plan.id}${userId.replace(/-/g, '')}${Date.now()}`;
 
     try {
-      // phone이 없었던 경우 결제 전에 저장
       if (!hasPhone) {
         const supabase = getBrowserDb();
         await supabase.from('profiles').upsert({ user_id: userId, phone });
@@ -88,7 +72,7 @@ function SubscribeContent() {
         channelKey: process.env.NEXT_PUBLIC_PORTONE_CHANNEL_KEY!,
         billingKeyMethod: 'CARD',
         issueId,
-        issueName: `펫헬스 ${plan.label} 구독`,
+        issueName: `펫헬스 ${orderName}`,
         customer: {
           customerId: userId.replace(/-/g, ''),
           email: userEmail,
@@ -106,7 +90,6 @@ function SubscribeContent() {
       const billingKey = (response as { billingKey: string }).billingKey;
 
       if (changeCard) {
-        // 카드 변경: 새 빌링키 저장만 (결제 없음)
         const res = await fetch('/api/portone/change-card', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -120,11 +103,10 @@ function SubscribeContent() {
         }
         router.push('/subscription?card=changed');
       } else {
-        // 신규 구독: 첫 결제 포함
         const res = await fetch('/api/portone/billing-key', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ billingKey, planId: plan.id }),
+          body: JSON.stringify({ billingKey, planId: plan.id, billingCycle: cycleParam }),
         });
         if (!res.ok) {
           const { error: msg } = await res.json();
@@ -172,15 +154,22 @@ function SubscribeContent() {
           <p className="text-xs font-semibold" style={{ color: 'var(--color-text-muted)' }}>선택한 플랜</p>
           <div
             className="rounded-2xl border-2 p-5 space-y-3"
-            style={{
-              background: 'var(--color-primary-50)',
-              borderColor: 'var(--color-primary-500)',
-            }}
+            style={{ background: 'var(--color-primary-50)', borderColor: 'var(--color-primary-500)' }}
           >
             <div className="flex items-center justify-between">
-              <span className="font-bold text-lg" style={{ color: 'var(--color-text-primary)' }}>
-                {plan.label}
-              </span>
+              <div>
+                <span className="font-bold text-lg" style={{ color: 'var(--color-text-primary)' }}>
+                  {plan.label}
+                </span>
+                {isYearly && (
+                  <span
+                    className="ml-2 rounded-full px-2 py-0.5 text-xs font-semibold"
+                    style={{ background: 'var(--color-accent-400)', color: '#fff' }}
+                  >
+                    연간 · 2개월 무료
+                  </span>
+                )}
+              </div>
               <span
                 className="flex h-6 w-6 items-center justify-center rounded-full"
                 style={{ background: 'var(--color-primary-500)' }}
@@ -188,13 +177,32 @@ function SubscribeContent() {
                 <Check size={14} color="#fff" />
               </span>
             </div>
-            <p className="text-2xl font-bold" style={{ color: 'var(--color-primary-600)' }}>
-              {plan.price}
-            </p>
+
+            {/* 가격 표시 */}
+            {isYearly ? (
+              <div>
+                <div className="flex items-baseline gap-1">
+                  <span className="text-2xl font-bold" style={{ color: 'var(--color-primary-600)' }}>
+                    {formatPrice(plan.monthlyEquivalent)}
+                  </span>
+                  <span className="text-sm" style={{ color: 'var(--color-text-muted)' }}>/월</span>
+                  <span className="ml-1 text-xs line-through" style={{ color: 'var(--color-text-muted)' }}>
+                    {formatPrice(plan.monthlyPrice)}
+                  </span>
+                </div>
+                <p className="text-xs mt-0.5" style={{ color: 'var(--color-text-muted)' }}>
+                  오늘 {formatPrice(amount)} 청구 (연간 일괄)
+                </p>
+              </div>
+            ) : (
+              <p className="text-2xl font-bold" style={{ color: 'var(--color-primary-600)' }}>
+                {formatPrice(amount)}/월
+              </p>
+            )}
+
             <ul className="space-y-1.5">
               {plan.features.map((f) => (
-                <li key={f} className="flex items-center gap-2 text-sm"
-                  style={{ color: 'var(--color-text-secondary)' }}>
+                <li key={f} className="flex items-center gap-2 text-sm" style={{ color: 'var(--color-text-secondary)' }}>
                   <Check size={13} style={{ color: 'var(--color-primary-500)', flexShrink: 0 }} />
                   {f}
                 </li>
@@ -258,7 +266,9 @@ function SubscribeContent() {
           style={{ background: 'var(--color-primary-50)', color: 'var(--color-primary-600)' }}
         >
           <CreditCard size={14} style={{ flexShrink: 0 }} />
-          <span>매월 자동 갱신 · 언제든 취소 가능 · KG이니시스 안전 결제</span>
+          <span>
+            {isYearly ? '연간 자동 갱신' : '매월 자동 갱신'} · 언제든 취소 가능 · KG이니시스 안전 결제
+          </span>
         </div>
 
         {/* 에러 메시지 */}

@@ -2,7 +2,6 @@ import type { Metadata } from "next";
 import { Noto_Sans_KR, DM_Sans, Geist_Mono } from "next/font/google";
 import { ThemeProvider } from "next-themes";
 import "./globals.css";
-import { NavBar } from "@/components/NavBar";
 
 const notoSansKR = Noto_Sans_KR({
   variable: "--font-noto-sans-kr",
@@ -38,7 +37,6 @@ export default function RootLayout({
         className={`${notoSansKR.variable} ${dmSans.variable} ${geistMono.variable} antialiased`}
       >
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
-          <NavBar />
           {children}
         </ThemeProvider>
       </body>
