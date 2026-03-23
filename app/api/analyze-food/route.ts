@@ -130,14 +130,14 @@ export async function POST(req: Request) {
         .single(),
     ]);
 
-    // 플랜별 월 사용량 제한 (Free: 10회/월, chat과 공유)
+    // 플랜별 월 사용량 제한 (Free: 5회/월, chat과 공유)
     const plan = profile?.subscription_plan ?? 'free';
     if (plan === 'free' && !profile?.is_admin) {
       const sameMonth = profile?.ai_usage_reset_month === currentMonth;
       const usage = sameMonth ? (profile?.ai_monthly_usage ?? 0) : 0;
-      if (usage >= 10) {
+      if (usage >= 5) {
         return Response.json({
-          error: 'AI 분석 월 10회 한도를 초과했습니다. Plus 플랜으로 업그레이드하면 무제한으로 이용할 수 있어요.',
+          error: 'AI 분석 월 5회 한도를 초과했습니다. 프리미엄 플랜으로 업그레이드하면 무제한으로 이용할 수 있어요.',
         }, { status: 429 });
       }
       await db.from('profiles').upsert({

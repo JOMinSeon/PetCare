@@ -1,13 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 import { payWithBillingKey } from '@/lib/portone';
+import { getPlanAmount, getOrderName, type PlanId, type BillingCycle } from '@/lib/plans';
 
-const PLAN_PRICES: Record<string, { amount: number; orderName: string }> = {
-  plus:    { amount: 4900,  orderName: 'Plus 플랜' },
-  premium: { amount: 9900,  orderName: 'Premium 플랜' },
-};
-
-// 내부/cron에서 호출하는 빌링키 결제 실행 API
+// 내부/cron에서 호출하는 정기 결제 실행 API
 export async function POST(req: NextRequest) {
   const apiKey = req.headers.get('x-api-key');
   if (!apiKey || apiKey !== process.env.INTERNAL_API_KEY) {
@@ -26,16 +22,20 @@ export async function POST(req: NextRequest) {
 
   const { data: profile, error } = await supabase
     .from('profiles')
-    .select('nicepay_bid, subscription_plan')
+    .select('nicepay_bid, subscription_plan, billing_cycle')
     .eq('user_id', userId)
     .single();
 
-  if (error || !profile?.nicepay_bid || !PLAN_PRICES[profile.subscription_plan]) {
+  const planId = profile?.subscription_plan as PlanId;
+  const cycle: BillingCycle = profile?.billing_cycle === 'yearly' ? 'yearly' : 'monthly';
+
+  if (error || !profile?.nicepay_bid || !['premium', 'clinic'].includes(planId)) {
     return NextResponse.json({ error: 'Invalid profile or billing key' }, { status: 400 });
   }
 
-  const { amount, orderName } = PLAN_PRICES[profile.subscription_plan];
-  const paymentId = `renewal-${userId.replace(/-/g, '')}-${Date.now()}`;
+  const amount = getPlanAmount(planId, cycle);
+  const orderName = getOrderName(planId, cycle);
+  const paymentId = `renewal-${planId}-${cycle}-${userId.replace(/-/g, '')}-${Date.now()}`;
 
   const result = await payWithBillingKey({
     paymentId,
@@ -60,6 +60,16 @@ export async function POST(req: NextRequest) {
       subscription_status: 'active',
     })
     .eq('user_id', userId);
+
+  // 결제 내역 기록
+  await supabase.from('payment_history').insert({
+    user_id: userId,
+    payment_id: paymentId,
+    plan: planId,
+    amount,
+    status: 'success',
+    type: 'renewal',
+  });
 
   return NextResponse.json({ success: true, paymentId: result.paymentId });
 }

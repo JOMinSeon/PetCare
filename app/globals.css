@@ -1,22 +1,22 @@
 @import "tailwindcss";
 
-/* ─── Design Tokens — Warm Nature ──────────────────────── */
+/* ─── Design Tokens — Warm Cream · Coral · Moss Green ─── */
 :root {
-  /* Primary — Deep Forest Green */
-  --color-primary-50:  #f0fdf4;
-  --color-primary-100: #dcfce7;
-  --color-primary-400: #4ade80;
-  --color-primary-500: #2D6A4F;
-  --color-primary-600: #1B5E3B;
+  /* Primary — Coral */
+  --color-primary-50:  #FFF4F1;
+  --color-primary-100: #FFEBE6;
+  --color-primary-400: #FF7A64;
+  --color-primary-500: #E8604A;
+  --color-primary-600: #CC4A35;
 
-  /* Secondary — Mint Green */
-  --color-secondary-400: #74C69D;
-  --color-secondary-500: #52B788;
-  --color-secondary-600: #40916C;
+  /* Secondary — Moss Green */
+  --color-secondary-400: #8FAF7A;
+  --color-secondary-500: #6B9455;
+  --color-secondary-600: #517040;
 
-  /* Accent — Warm Orange */
+  /* Accent — Warm Amber */
   --color-accent-400: #F4A261;
-  --color-accent-500: #E76F51;
+  --color-accent-500: #E07B3A;
 
   /* Golden */
   --color-golden:       #E9C46A;
@@ -28,15 +28,15 @@
   --color-info:    #0ea5e9;
   --color-success: #10b981;
 
-  /* Neutral — Soft Cream */
-  --color-bg:             #F8FDF9;
+  /* Neutral — Warm Cream */
+  --color-bg:             #FDF8F4;
   --color-surface:        #ffffff;
-  --color-surface-2:      #f0fdf4;
-  --color-border:         #d1fae5;
-  --color-border-soft:    #e8f5e9;
-  --color-text-primary:   #1a2e1a;
-  --color-text-secondary: #4a7c59;
-  --color-text-muted:     #86a98c;
+  --color-surface-2:      #FFF5F0;
+  --color-border:         #F2DDD5;
+  --color-border-soft:    #F9EDE7;
+  --color-text-primary:   #2A1A15;
+  --color-text-secondary: #7A5248;
+  --color-text-muted:     #B08878;
 
   /* Typography */
   --font-sans:    var(--font-noto-sans-kr), 'Noto Sans KR', system-ui, sans-serif;
@@ -52,43 +52,43 @@
   --radius-full: 9999px;
 
   /* Shadows */
-  --shadow-sm:   0 1px 3px rgba(45, 106, 79, 0.08), 0 1px 2px rgba(45, 106, 79, 0.04);
-  --shadow-md:   0 4px 16px rgba(45, 106, 79, 0.12), 0 2px 6px rgba(45, 106, 79, 0.06);
-  --shadow-lg:   0 12px 40px rgba(45, 106, 79, 0.18), 0 4px 12px rgba(45, 106, 79, 0.08);
-  --shadow-glow: 0 0 24px rgba(45, 106, 79, 0.28);
+  --shadow-sm:   0 1px 3px rgba(232, 96, 74, 0.08), 0 1px 2px rgba(232, 96, 74, 0.04);
+  --shadow-md:   0 4px 16px rgba(232, 96, 74, 0.12), 0 2px 6px rgba(232, 96, 74, 0.06);
+  --shadow-lg:   0 12px 40px rgba(232, 96, 74, 0.18), 0 4px 12px rgba(232, 96, 74, 0.08);
+  --shadow-glow: 0 0 24px rgba(232, 96, 74, 0.28);
 }
 
 /* ─── Dark Mode ─────────────────────────────────────────── */
 @media (prefers-color-scheme: dark) {
   :root {
-    --color-bg:             #0D1117;
-    --color-surface:        #161B22;
-    --color-surface-2:      #1C2A1E;
-    --color-border:         #1E3A2A;
-    --color-border-soft:    #243B2E;
-    --color-text-primary:   #e8f5e9;
-    --color-text-secondary: #74C69D;
-    --color-text-muted:     #4a7c59;
+    --color-bg:             #1A1210;
+    --color-surface:        #231714;
+    --color-surface-2:      #2E201B;
+    --color-border:         #3D2820;
+    --color-border-soft:    #4A3028;
+    --color-text-primary:   #F5E5DF;
+    --color-text-secondary: #D48070;
+    --color-text-muted:     #8A5548;
     --shadow-sm:   0 1px 3px rgba(0,0,0,0.3);
     --shadow-md:   0 4px 16px rgba(0,0,0,0.4);
     --shadow-lg:   0 12px 40px rgba(0,0,0,0.5);
-    --shadow-glow: 0 0 24px rgba(82, 183, 136, 0.2);
+    --shadow-glow: 0 0 24px rgba(232, 96, 74, 0.2);
   }
 }
 
 .dark {
-  --color-bg:             #0D1117;
-  --color-surface:        #161B22;
-  --color-surface-2:      #1C2A1E;
-  --color-border:         #1E3A2A;
-  --color-border-soft:    #243B2E;
-  --color-text-primary:   #e8f5e9;
-  --color-text-secondary: #74C69D;
-  --color-text-muted:     #4a7c59;
+  --color-bg:             #1A1210;
+  --color-surface:        #231714;
+  --color-surface-2:      #2E201B;
+  --color-border:         #3D2820;
+  --color-border-soft:    #4A3028;
+  --color-text-primary:   #F5E5DF;
+  --color-text-secondary: #D48070;
+  --color-text-muted:     #8A5548;
   --shadow-sm:   0 1px 3px rgba(0,0,0,0.3);
   --shadow-md:   0 4px 16px rgba(0,0,0,0.4);
   --shadow-lg:   0 12px 40px rgba(0,0,0,0.5);
-  --shadow-glow: 0 0 24px rgba(82, 183, 136, 0.2);
+  --shadow-glow: 0 0 24px rgba(232, 96, 74, 0.2);
 }
 
 /* ─── Base ──────────────────────────────────────────────── */
@@ -168,11 +168,11 @@ body {
   backdrop-filter: blur(28px) saturate(200%);
   -webkit-backdrop-filter: blur(28px) saturate(200%);
   border: 1px solid rgba(255, 255, 255, 0.65);
-  box-shadow: 0 8px 32px rgba(45, 106, 79, 0.12), 0 2px 8px rgba(0,0,0,0.06);
+  box-shadow: 0 8px 32px rgba(232, 96, 74, 0.10), 0 2px 8px rgba(0,0,0,0.06);
 }
 .dark .glass-nav {
-  background: rgba(13, 17, 23, 0.88);
-  border-color: rgba(82, 183, 136, 0.12);
+  background: rgba(26, 18, 16, 0.88);
+  border-color: rgba(232, 96, 74, 0.12);
   box-shadow: 0 8px 32px rgba(0,0,0,0.4);
 }
 
@@ -192,18 +192,18 @@ body {
 
 /* ─── Buttons ───────────────────────────────────────────── */
 .btn-primary {
-  background: linear-gradient(135deg, var(--color-primary-500) 0%, var(--color-secondary-600) 100%);
+  background: linear-gradient(135deg, var(--color-primary-500) 0%, var(--color-primary-600) 100%);
   color: #fff;
   border-radius: var(--radius-full);
   padding: 0.625rem 1.5rem;
   font-weight: 600;
   font-size: 0.875rem;
-  box-shadow: 0 4px 14px rgba(45, 106, 79, 0.4);
+  box-shadow: 0 4px 14px rgba(232, 96, 74, 0.4);
   transition: all 0.2s;
 }
 .btn-primary:hover {
   transform: translateY(-1px);
-  box-shadow: 0 6px 20px rgba(45, 106, 79, 0.5);
+  box-shadow: 0 6px 20px rgba(232, 96, 74, 0.5);
 }
 .btn-primary:active { transform: translateY(0); }
 
@@ -278,7 +278,7 @@ body {
 
 /* ─── Gradient Text ─────────────────────────────────────── */
 .gradient-text {
-  background: linear-gradient(135deg, var(--color-primary-500) 0%, var(--color-secondary-500) 60%, var(--color-accent-400) 100%);
+  background: linear-gradient(135deg, var(--color-primary-500) 0%, var(--color-accent-400) 60%, var(--color-secondary-500) 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -290,7 +290,7 @@ body {
 /* ─── Hero gradient ─────────────────────────────────────── */
 .bg-hero-gradient {
   background:
-    radial-gradient(ellipse at 20% 50%, rgba(45,106,79,0.10) 0%, transparent 55%),
-    radial-gradient(ellipse at 80% 20%, rgba(116,198,157,0.13) 0%, transparent 50%),
+    radial-gradient(ellipse at 20% 50%, rgba(232,96,74,0.10) 0%, transparent 55%),
+    radial-gradient(ellipse at 80% 20%, rgba(143,175,122,0.13) 0%, transparent 50%),
     radial-gradient(ellipse at 60% 85%, rgba(244,162,97,0.08) 0%, transparent 50%);
 }
