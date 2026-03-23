@@ -1,4 +1,3 @@
-'use client';
 import Link from 'next/link';
 import { HeartPulse, Beef, MessageCircle, Sparkles } from 'lucide-react';
 

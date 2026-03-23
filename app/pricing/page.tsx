@@ -1,48 +1,29 @@
-'use client';
-import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
 import { Sparkles } from 'lucide-react';
-import { getBrowserDb } from '@/lib/supabase-browser';
-import { PLANS, type BillingCycle } from '@/lib/plans';
-import { BillingToggle } from '@/components/pricing/BillingToggle';
-import { PricingCard } from '@/components/pricing/PricingCard';
+import { getServerDb } from '@/lib/supabase-server';
+import { type BillingCycle } from '@/lib/plans';
 import { ComparisonTable } from '@/components/pricing/ComparisonTable';
 import { TrustBar } from '@/components/pricing/TrustBar';
+import PricingClient from './PricingClient';
 
-export default function PricingPage() {
-  const router = useRouter();
-  const [cycle, setCycle] = useState<BillingCycle>('monthly');
-  const [currentPlanId, setCurrentPlanId] = useState<string | undefined>();
-  const [currentCycle, setCurrentCycle] = useState<BillingCycle | undefined>();
+export default async function PricingPage() {
+  let currentPlanId: string | undefined;
+  let currentCycle: BillingCycle | undefined;
 
-  // 로그인 상태면 현재 플랜 로드 (실패해도 페이지는 동작)
-  useEffect(() => {
-    const load = async () => {
-      try {
-        const supabase = getBrowserDb();
-        const { data: { user } } = await supabase.auth.getUser();
-        if (!user) return;
-        const { data } = await supabase
-          .from('profiles')
-          .select('subscription_plan, billing_cycle')
-          .eq('user_id', user.id)
-          .single();
-        if (data?.subscription_plan) setCurrentPlanId(data.subscription_plan);
-        if (data?.billing_cycle) setCurrentCycle(data.billing_cycle as BillingCycle);
-      } catch {
-        // 비로그인 상태 — 무시
-      }
-    };
-    load();
-  }, []);
-
-  const handleSelect = (planId: string) => {
-    if (planId === 'free') {
-      router.push('/auth/login');
-      return;
+  try {
+    const supabase = await getServerDb();
+    const { data: { user } } = await supabase.auth.getUser();
+    if (user) {
+      const { data } = await supabase
+        .from('profiles')
+        .select('subscription_plan, billing_cycle')
+        .eq('user_id', user.id)
+        .single();
+      if (data?.subscription_plan) currentPlanId = data.subscription_plan;
+      if (data?.billing_cycle) currentCycle = data.billing_cycle as BillingCycle;
     }
-    router.push(`/subscribe?planId=${planId}&cycle=${cycle}`);
-  };
+  } catch {
+    // 비로그인 상태 — 무시
+  }
 
   return (
     <div className="min-h-screen pb-20" style={{ background: 'var(--color-bg)' }}>
@@ -65,22 +46,8 @@ export default function PricingPage() {
           </p>
         </div>
 
-        {/* Billing toggle */}
-        <BillingToggle value={cycle} onChange={setCycle} />
-
-        {/* Plan cards */}
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-          {PLANS.map((plan) => (
-            <PricingCard
-              key={plan.id}
-              plan={plan}
-              cycle={cycle}
-              currentPlanId={currentPlanId}
-              currentCycle={currentCycle}
-              onSelect={handleSelect}
-            />
-          ))}
-        </div>
+        {/* 인터랙티브: 토글 + 카드 */}
+        <PricingClient currentPlanId={currentPlanId} currentCycle={currentCycle} />
 
         {/* Comparison table */}
         <section className="space-y-4">
