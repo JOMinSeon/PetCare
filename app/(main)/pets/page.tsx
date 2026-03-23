@@ -44,12 +44,8 @@ export default async function PetsPage() {
 
       {/* ── Mobile App Bar ── */}
       <div
-        className="flex items-center justify-between px-5 py-4 md:hidden"
-        style={{
-          background: 'rgba(255,255,255,0.88)',
-          backdropFilter: 'blur(20px)',
-          borderBottom: '1px solid var(--color-border)',
-        }}
+        className="flex items-center justify-between px-5 py-4 md:hidden glass-nav"
+        style={{ borderBottom: '1px solid var(--color-border)' }}
       >
         <div>
           <p className="text-xs font-medium" style={{ color: 'var(--color-text-muted)' }}>{greeting}</p>

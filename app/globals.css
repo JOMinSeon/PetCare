@@ -27,6 +27,7 @@
   --color-warning: #f59e0b;
   --color-info:    #0ea5e9;
   --color-success: #10b981;
+  --color-rose:    #f43f5e;
 
   /* Neutral — Warm Cream */
   --color-bg:             #FDF8F4;
@@ -52,10 +53,16 @@
   --radius-full: 9999px;
 
   /* Shadows */
-  --shadow-sm:   0 1px 3px rgba(232, 96, 74, 0.08), 0 1px 2px rgba(232, 96, 74, 0.04);
-  --shadow-md:   0 4px 16px rgba(232, 96, 74, 0.12), 0 2px 6px rgba(232, 96, 74, 0.06);
-  --shadow-lg:   0 12px 40px rgba(232, 96, 74, 0.18), 0 4px 12px rgba(232, 96, 74, 0.08);
-  --shadow-glow: 0 0 24px rgba(232, 96, 74, 0.28);
+  --shadow-sm:     0 1px 3px rgba(232, 96, 74, 0.08), 0 1px 2px rgba(232, 96, 74, 0.04);
+  --shadow-md:     0 4px 16px rgba(232, 96, 74, 0.12), 0 2px 6px rgba(232, 96, 74, 0.06);
+  --shadow-lg:     0 12px 40px rgba(232, 96, 74, 0.18), 0 4px 12px rgba(232, 96, 74, 0.08);
+  --shadow-glow:   0 0 24px rgba(232, 96, 74, 0.28);
+  --shadow-btn:    0 4px 14px rgba(232, 96, 74, 0.40);
+  --shadow-btn-lg: 0 8px 28px rgba(232, 96, 74, 0.35);
+
+  /* Footer — always dark, independent of colour scheme */
+  --color-footer-bg:     #1A1210;
+  --color-footer-border: #2E201B;
 }
 
 /* ─── Dark Mode ─────────────────────────────────────────── */
@@ -73,6 +80,7 @@
     --shadow-md:   0 4px 16px rgba(0,0,0,0.4);
     --shadow-lg:   0 12px 40px rgba(0,0,0,0.5);
     --shadow-glow: 0 0 24px rgba(232, 96, 74, 0.2);
+    --color-rose:  #fb7185;
   }
 }
 
@@ -89,6 +97,17 @@
   --shadow-md:   0 4px 16px rgba(0,0,0,0.4);
   --shadow-lg:   0 12px 40px rgba(0,0,0,0.5);
   --shadow-glow: 0 0 24px rgba(232, 96, 74, 0.2);
+  --color-rose:  #fb7185;
+}
+
+/* ─── Reduced Motion ────────────────────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }
 
 /* ─── Base ──────────────────────────────────────────────── */
@@ -159,8 +178,8 @@ body {
   box-shadow: var(--shadow-md);
 }
 .dark .glass-card {
-  background: rgba(22, 27, 34, 0.75);
-  border-color: rgba(82, 183, 136, 0.12);
+  background: rgba(35, 23, 20, 0.80);   /* --color-surface dark: #231714 */
+  border-color: rgba(61, 40, 32, 0.60); /* --color-border dark: #3D2820 */
 }
 
 .glass-nav {
