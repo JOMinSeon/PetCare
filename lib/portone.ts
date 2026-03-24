@@ -102,4 +102,48 @@ export async function getBillingKey(billingKey: string) {
   }>;
 }
 
+/** 카드 정보로 빌링키 직접 발급 (비인증 결제) */
+export async function issueBillingKeyWithCard(params: {
+  customerId: string;
+  email: string;
+  phoneNumber: string;
+  cardNumber: string;
+  expiryYear: string;
+  expiryMonth: string;
+  birthOrBusinessRegistrationNumber: string;
+  passwordTwoDigits: string;
+}) {
+  const res = await fetch(`${BASE_URL}/billing-keys`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: authHeader(),
+    },
+    body: JSON.stringify({
+      channelKey: process.env.NEXT_PUBLIC_PORTONE_CHANNEL_KEY,
+      customer: {
+        id: params.customerId,
+        email: params.email,
+        phoneNumber: params.phoneNumber,
+      },
+      method: {
+        card: {
+          credential: {
+            number: params.cardNumber.replace(/\D/g, ''),
+            expiryYear: params.expiryYear,
+            expiryMonth: params.expiryMonth,
+            birthOrBusinessRegistrationNumber: params.birthOrBusinessRegistrationNumber,
+            passwordTwoDigits: params.passwordTwoDigits,
+          },
+        },
+      },
+    }),
+  });
+  return res.json() as Promise<{
+    billingKey?: string;
+    code?: string;
+    message?: string;
+  }>;
+}
+
 export { getAccessToken };

@@ -3,7 +3,6 @@ import { useState, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { ArrowLeft, Check, AlertCircle, CreditCard, Tag, ChevronDown, ChevronUp } from 'lucide-react';
 import { getBrowserDb } from '@/lib/supabase-browser';
-import * as PortOne from '@portone/browser-sdk/v2';
 import { PLAN_MAP, getPlanAmount, getOrderName, formatPrice, type BillingCycle, type PlanId } from '@/lib/plans';
 import { BillingToggle } from '@/components/pricing/BillingToggle';
 
@@ -36,6 +35,15 @@ function SubscribeContent() {
 
   // 금액 요약 펼치기
   const [summaryOpen, setSummaryOpen] = useState(true);
+
+  // 카드 정보 직접 입력
+  const [cardNumber, setCardNumber] = useState('');
+  const [expiry, setExpiry] = useState('');
+  const [birthOrBusiness, setBirthOrBusiness] = useState('');
+  const [passwordTwoDigits, setPasswordTwoDigits] = useState('');
+
+  const expiryMonth = expiry.replace(/\D/g, '').slice(0, 2);
+  const expiryYear = expiry.replace(/\D/g, '').slice(2, 4);
 
   const plan = PLAN_MAP[planIdParam] ?? PLAN_MAP['premium'];
   const isYearly = cycle === 'yearly';
@@ -118,18 +126,17 @@ function SubscribeContent() {
 
   const handleSubscribe = async () => {
     if (!userId) return;
-    if (!phone) {
-      setError('휴대폰 번호를 입력해 주세요.');
-      return;
-    }
-    if (!allAgreed) {
-      setError('필수 약관에 모두 동의해 주세요.');
-      return;
-    }
+    if (!phone) { setError('휴대폰 번호를 입력해 주세요.'); return; }
+    if (!changeCard && !allAgreed) { setError('필수 약관에 모두 동의해 주세요.'); return; }
+
+    const rawCard = cardNumber.replace(/\s/g, '');
+    if (rawCard.length < 15) { setError('올바른 카드번호를 입력해 주세요.'); return; }
+    if (expiryMonth.length !== 2 || expiryYear.length !== 2) { setError('유효기간을 MM/YY 형식으로 입력해 주세요.'); return; }
+    if (birthOrBusiness.length < 6) { setError('생년월일(6자리) 또는 사업자번호(10자리)를 입력해 주세요.'); return; }
+    if (passwordTwoDigits.length !== 2) { setError('카드 비밀번호 앞 2자리를 입력해 주세요.'); return; }
+
     setError('');
     setLoading(true);
-
-    const issueId = `issue${plan.id}${userId.replace(/-/g, '')}${Date.now()}`;
 
     try {
       if (!hasPhone) {
@@ -137,64 +144,32 @@ function SubscribeContent() {
         await supabase.from('profiles').upsert({ user_id: userId, phone });
       }
 
-      const response = await PortOne.requestIssueBillingKey({
-        storeId: process.env.NEXT_PUBLIC_PORTONE_STORE_ID!,
-        channelKey: process.env.NEXT_PUBLIC_PORTONE_CHANNEL_KEY!,
-        billingKeyMethod: 'CARD',
-        issueId,
-        issueName: `펫헬스 ${orderName}`,
-        customer: {
-          customerId: userId.replace(/-/g, ''),
-          email: userEmail,
-          phoneNumber: phone,
-        },
+      const res = await fetch('/api/portone/issue-billing-key-direct', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          cardNumber: rawCard,
+          expiryMonth,
+          expiryYear,
+          birthOrBusiness,
+          passwordTwoDigits,
+          planId: plan.id,
+          billingCycle: cycle,
+          couponCode: couponStatus === 'valid' ? couponCode.trim() : undefined,
+          changeCard,
+        }),
       });
 
-      if (!response || 'code' in response) {
-        const errResp = response as { message?: string } | null;
-        setError(errResp?.message || '결제 중 오류가 발생했습니다.');
+      if (!res.ok) {
+        const { error: msg } = await res.json();
+        setError(msg || '결제 처리 중 오류가 발생했습니다.');
         setLoading(false);
         return;
       }
 
-      const billingKey = (response as { billingKey: string }).billingKey;
-
-      if (changeCard) {
-        const res = await fetch('/api/portone/change-card', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ billingKey }),
-        });
-        if (!res.ok) {
-          const { error: msg } = await res.json();
-          setError(msg || '카드 변경 중 오류가 발생했습니다.');
-          setLoading(false);
-          return;
-        }
-        router.push('/subscription?card=changed');
-      } else {
-        const res = await fetch('/api/portone/billing-key', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            billingKey,
-            planId: plan.id,
-            billingCycle: cycle,
-            couponCode: couponStatus === 'valid' ? couponCode.trim() : undefined,
-          }),
-        });
-        if (!res.ok) {
-          const { error: msg } = await res.json();
-          setError(msg || '구독 처리 중 오류가 발생했습니다.');
-          setLoading(false);
-          return;
-        }
-        router.push('/settings?payment=success');
-      }
-    } catch (err) {
-      const portOneErr = err as { message?: string; pgMessage?: string };
-      const detail = portOneErr?.message || portOneErr?.pgMessage || '';
-      setError(detail ? `결제 오류: ${detail}` : '결제 중 오류가 발생했습니다.');
+      router.push(changeCard ? '/subscription?card=changed' : '/settings?payment=success');
+    } catch {
+      setError('결제 중 오류가 발생했습니다.');
       setLoading(false);
     }
   };
@@ -342,6 +317,88 @@ function SubscribeContent() {
                   color: 'var(--color-text-primary)',
                   boxShadow: !hasPhone && !phone ? '0 0 0 3px rgba(252,165,165,0.2)' : undefined,
                 }}
+              />
+            </div>
+          </div>
+        </section>
+
+        {/* 카드 정보 직접 입력 */}
+        <section className="space-y-2">
+          <p className="text-xs font-semibold" style={{ color: 'var(--color-text-muted)' }}>카드 정보</p>
+          <div
+            className="rounded-2xl border p-5 space-y-4"
+            style={{ background: 'var(--color-surface)', borderColor: 'var(--color-border)' }}
+          >
+            {/* 카드번호 */}
+            <div>
+              <label className="block text-xs font-medium mb-1.5" style={{ color: 'var(--color-text-muted)' }}>
+                카드번호
+              </label>
+              <div className="relative">
+                <CreditCard size={14} className="absolute left-3 top-1/2 -translate-y-1/2" style={{ color: 'var(--color-text-muted)' }} />
+                <input
+                  type="text"
+                  inputMode="numeric"
+                  value={cardNumber}
+                  onChange={(e) => {
+                    const digits = e.target.value.replace(/\D/g, '').slice(0, 16);
+                    setCardNumber(digits.replace(/(\d{4})(?=\d)/g, '$1 '));
+                  }}
+                  placeholder="0000 0000 0000 0000"
+                  className="w-full rounded-xl border pl-9 pr-4 py-2.5 text-sm outline-none transition-all focus:border-[var(--color-primary-500)] tracking-widest"
+                  style={{ background: 'var(--color-bg)', borderColor: 'var(--color-border)', color: 'var(--color-text-primary)' }}
+                />
+              </div>
+            </div>
+
+            {/* 유효기간 + 비밀번호 */}
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className="block text-xs font-medium mb-1.5" style={{ color: 'var(--color-text-muted)' }}>
+                  유효기간
+                </label>
+                <input
+                  type="text"
+                  inputMode="numeric"
+                  value={expiry}
+                  onChange={(e) => {
+                    const digits = e.target.value.replace(/\D/g, '').slice(0, 4);
+                    setExpiry(digits.length > 2 ? digits.slice(0, 2) + '/' + digits.slice(2) : digits);
+                  }}
+                  placeholder="MM/YY"
+                  className="w-full rounded-xl border px-4 py-2.5 text-sm outline-none transition-all focus:border-[var(--color-primary-500)]"
+                  style={{ background: 'var(--color-bg)', borderColor: 'var(--color-border)', color: 'var(--color-text-primary)' }}
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-medium mb-1.5" style={{ color: 'var(--color-text-muted)' }}>
+                  비밀번호 앞 2자리
+                </label>
+                <input
+                  type="password"
+                  inputMode="numeric"
+                  value={passwordTwoDigits}
+                  onChange={(e) => setPasswordTwoDigits(e.target.value.replace(/\D/g, '').slice(0, 2))}
+                  placeholder="••"
+                  className="w-full rounded-xl border px-4 py-2.5 text-sm outline-none transition-all focus:border-[var(--color-primary-500)]"
+                  style={{ background: 'var(--color-bg)', borderColor: 'var(--color-border)', color: 'var(--color-text-primary)' }}
+                />
+              </div>
+            </div>
+
+            {/* 생년월일 / 사업자번호 */}
+            <div>
+              <label className="block text-xs font-medium mb-1.5" style={{ color: 'var(--color-text-muted)' }}>
+                생년월일 6자리 <span style={{ color: 'var(--color-text-muted)', fontWeight: 400 }}>(법인카드는 사업자번호 10자리)</span>
+              </label>
+              <input
+                type="text"
+                inputMode="numeric"
+                value={birthOrBusiness}
+                onChange={(e) => setBirthOrBusiness(e.target.value.replace(/\D/g, '').slice(0, 10))}
+                placeholder="901231"
+                className="w-full rounded-xl border px-4 py-2.5 text-sm outline-none transition-all focus:border-[var(--color-primary-500)]"
+                style={{ background: 'var(--color-bg)', borderColor: 'var(--color-border)', color: 'var(--color-text-primary)' }}
               />
             </div>
           </div>
