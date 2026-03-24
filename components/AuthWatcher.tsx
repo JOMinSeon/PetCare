@@ -8,7 +8,7 @@ export function AuthWatcher() {
 
   useEffect(() => {
     const supabase = getBrowserDb();
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event: string) => {
       if (event === 'SIGNED_OUT') {
         router.push('/auth/login');
         router.refresh();

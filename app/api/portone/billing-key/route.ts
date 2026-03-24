@@ -21,7 +21,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
-  const { billingKey, planId, billingCycle } = await req.json();
+  const { billingKey, planId, billingCycle, couponCode } = await req.json();
   const cycle: BillingCycle = billingCycle === 'yearly' ? 'yearly' : 'monthly';
 
   if (!billingKey || !planId || !VALID_PLANS.includes(planId)) {
@@ -37,7 +37,34 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: '빌링키 인증 실패' }, { status: 400 });
   }
 
-  const amount = getPlanAmount(planId, cycle);
+  const baseAmount = getPlanAmount(planId, cycle);
+
+  // 쿠폰 할인 적용
+  let couponDiscount = 0;
+  let couponId: string | null = null;
+  if (couponCode) {
+    const { data: coupon } = await supabase
+      .from('coupons')
+      .select('id, type, discount_value, applicable_plans, expires_at, max_uses, used_count')
+      .eq('code', (couponCode as string).toUpperCase())
+      .eq('is_active', true)
+      .single();
+
+    if (coupon && (!coupon.expires_at || new Date(coupon.expires_at) >= new Date())) {
+      const withinLimit = coupon.max_uses === null || coupon.used_count < coupon.max_uses;
+      const planAllowed = !coupon.applicable_plans || coupon.applicable_plans.includes(planId);
+      if (withinLimit && planAllowed) {
+        couponId = coupon.id;
+        if (coupon.type === 'fixed') {
+          couponDiscount = coupon.discount_value;
+        } else if (coupon.type === 'percent') {
+          couponDiscount = Math.floor(baseAmount * (coupon.discount_value / 100));
+        }
+      }
+    }
+  }
+
+  const amount = Math.max(0, baseAmount - couponDiscount);
   const orderName = getOrderName(planId, cycle);
   const paymentId = `pay-${planId}-${cycle}-${user.id.replace(/-/g, '')}-${Date.now()}`;
 
@@ -64,6 +91,13 @@ export async function POST(req: NextRequest) {
       console.error('[PortOne] 결제 금액 불일치', { expected: amount, actual: payment.amount?.total });
       return NextResponse.json({ error: '결제 금액이 일치하지 않습니다.' }, { status: 400 });
     }
+  }
+
+  // 쿠폰 사용 처리
+  if (couponId) {
+    const db = adminDb();
+    await db.from('coupon_usages').insert({ coupon_id: couponId, user_id: user.id });
+    await db.rpc('increment_coupon_used_count', { coupon_id: couponId });
   }
 
   const db = adminDb();
@@ -101,6 +135,8 @@ export async function POST(req: NextRequest) {
     payment_id: paymentId,
     plan: planId,
     amount,
+    discount_amount: couponDiscount > 0 ? couponDiscount : undefined,
+    coupon_id: couponId ?? undefined,
     status: 'success',
     type: 'subscribe',
   });

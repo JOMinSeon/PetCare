@@ -52,16 +52,6 @@ export default function LandingPage() {
             >
               로그인
             </Link>
-            <Link
-              href="/auth/signup"
-              className="flex items-center gap-1.5 rounded-full px-5 py-2 text-sm font-bold text-white transition-all hover:opacity-90"
-              style={{
-                background: 'linear-gradient(135deg, var(--color-primary-500), var(--color-primary-600))',
-                boxShadow: 'var(--shadow-btn)',
-              }}
-            >
-              무료 시작하기 <ArrowRight size={14} />
-            </Link>
           </div>
         </nav>
       </header>
