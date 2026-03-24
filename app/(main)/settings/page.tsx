@@ -27,9 +27,9 @@ function Toggle({ checked, onChange }: ToggleProps) {
 }
 
 const PLAN_OPTIONS = [
-  { id: 'free',    label: '무료',   price: '₩0/월',      features: ['반려동물 1마리', 'AI 상담 5회/월', '기본 건강 기록'] },
-  { id: 'premium', label: '프리미엄', price: '₩14,900/월', features: ['반려동물 3마리', 'AI 상담 무제한', '수의사 원격 상담 3회/월', '건강 리포트 PDF'] },
-  { id: 'clinic',  label: '병원용', price: '₩49,000/월', features: ['반려동물 무제한', 'EMR 연동', '병원 연동 API', '전담 매니저'] },
+  { id: 'free',    label: '무료',    price: '₩0/월',       features: ['반려동물 1마리', 'AI 건강 상담 5회/월', '기본 건강 기록', '예방접종 알림', '커뮤니티 이용'] },
+  { id: 'premium', label: '프리미엄', price: '₩14,900/월',  features: ['반려동물 3마리', 'AI 상담 무제한', '수의사 원격 상담 3회/월', '건강 리포트 PDF 월 1회', '체중/식이 관리'] },
+  { id: 'clinic',  label: '병원용',  price: '₩49,000/월',  features: ['반려동물 무제한', 'AI 상담 무제한', 'EMR 연동', '수의사 원격 상담 무제한', '병원 연동 API', '전담 매니저'] },
 ];
 
 function SettingsContent() {
@@ -209,7 +209,7 @@ function SettingsContent() {
         <section className="space-y-3">
           <div className="flex items-center gap-2">
             <User size={15} style={{ color: 'var(--color-text-muted)' }} />
-            <h2 className="text-sm font-semibold" style={{ color: 'var(--color-text-muted)' }}>보호자 정보</h2>
+            <h2 className="text-sm font-semibold" style={{ color: 'var(--color-text-primary)' }}>보호자 정보</h2>
           </div>
           <div
             className="rounded-2xl border p-5 space-y-4"
@@ -287,7 +287,7 @@ function SettingsContent() {
         <section className="space-y-3">
           <div className="flex items-center gap-2">
             <Bell size={15} style={{ color: 'var(--color-text-muted)' }} />
-            <h2 className="text-sm font-semibold" style={{ color: 'var(--color-text-muted)' }}>알림 설정</h2>
+            <h2 className="text-sm font-semibold" style={{ color: 'var(--color-text-primary)' }}>알림 설정</h2>
           </div>
           <div
             className="rounded-2xl border divide-y divide-[var(--color-border)]"
@@ -317,7 +317,7 @@ function SettingsContent() {
         <section className="space-y-3">
           <div className="flex items-center gap-2">
             <CreditCard size={15} style={{ color: 'var(--color-text-muted)' }} />
-            <h2 className="text-sm font-semibold" style={{ color: 'var(--color-text-muted)' }}>구독 & 결제</h2>
+            <h2 className="text-sm font-semibold" style={{ color: 'var(--color-text-primary)' }}>구독 & 결제</h2>
           </div>
           <div
             className="rounded-2xl border p-5 space-y-3"
@@ -374,7 +374,7 @@ function SettingsContent() {
         <section className="space-y-3">
           <div className="flex items-center gap-2">
             <Shield size={15} style={{ color: 'var(--color-text-muted)' }} />
-            <h2 className="text-sm font-semibold" style={{ color: 'var(--color-text-muted)' }}>계정</h2>
+            <h2 className="text-sm font-semibold" style={{ color: 'var(--color-text-primary)' }}>계정</h2>
           </div>
           <div
             className="rounded-2xl border divide-y"

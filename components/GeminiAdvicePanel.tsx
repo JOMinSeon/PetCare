@@ -70,8 +70,8 @@ export function GeminiAdvicePanel({ petId }: { petId: string }) {
                 style={
                   isAI
                     ? {
-                        background: '#eff6ff',
-                        color: '#1e40af',
+                        background: 'var(--chat-ai-bg)',
+                        color: 'var(--chat-ai-text)',
                         borderBottomLeftRadius: 4,
                       }
                     : {
@@ -94,12 +94,12 @@ export function GeminiAdvicePanel({ petId }: { petId: string }) {
           <div className="flex justify-start">
             <div
               className="flex items-center gap-1 rounded-2xl px-4 py-3"
-              style={{ background: '#eff6ff', borderBottomLeftRadius: 4 }}
+              style={{ background: 'var(--chat-ai-bg)', borderBottomLeftRadius: 4 }}
               aria-label="AI 분석 중"
             >
-              <span className="typing-dot h-2 w-2 rounded-full" style={{ background: '#3b82f6' }} />
-              <span className="typing-dot h-2 w-2 rounded-full" style={{ background: '#3b82f6' }} />
-              <span className="typing-dot h-2 w-2 rounded-full" style={{ background: '#3b82f6' }} />
+              <span className="typing-dot h-2 w-2 rounded-full" style={{ background: 'var(--chat-ai-dot)' }} />
+              <span className="typing-dot h-2 w-2 rounded-full" style={{ background: 'var(--chat-ai-dot)' }} />
+              <span className="typing-dot h-2 w-2 rounded-full" style={{ background: 'var(--chat-ai-dot)' }} />
             </div>
           </div>
         )}

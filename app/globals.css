@@ -63,6 +63,27 @@
   /* Footer — always dark, independent of colour scheme */
   --color-footer-bg:     #1A1210;
   --color-footer-border: #2E201B;
+
+  /* GeminiAdvicePanel — AI chat bubble */
+  --chat-ai-bg:   #EFF6FF;
+  --chat-ai-text: #1E40AF;
+  --chat-ai-dot:  #3B82F6;
+
+  /* FoodAnalyzer semantic tokens — light mode */
+  --food-ok-bg:     #EEF6EE;
+  --food-ok-border: #A8D5A2;
+  --food-ok-text:   #2E5E2E;
+  --food-ok-icon:   #5EAD5E;
+  --food-low-bg:    #FFFDE7;
+  --food-low-text:  #7A5A00;
+  --food-low-dot:   #D4A017;
+  --food-bad-bg:    #FDE8E8;
+  --food-bad-border:#F5AAAA;
+  --food-bad-text:  #8B1A1A;
+  --food-bad-dot:   #D94040;
+  --food-warn-bg:   #FFF3E0;
+  --food-warn-text: #7A3800;
+  --food-warn-dot:  #D4730A;
 }
 
 /* ─── Dark Mode ─────────────────────────────────────────── */
@@ -81,6 +102,25 @@
     --shadow-lg:   0 12px 40px rgba(0,0,0,0.5);
     --shadow-glow: 0 0 24px rgba(232, 96, 74, 0.2);
     --color-rose:  #fb7185;
+    /* GeminiAdvicePanel — dark mode */
+    --chat-ai-bg:   #172554;
+    --chat-ai-text: #93C5FD;
+    --chat-ai-dot:  #60A5FA;
+    /* FoodAnalyzer — dark mode */
+    --food-ok-bg:     #1A2E1A;
+    --food-ok-border: #2E5E2E;
+    --food-ok-text:   #7EC87E;
+    --food-ok-icon:   #5EAD5E;
+    --food-low-bg:    #2E2800;
+    --food-low-text:  #D4C050;
+    --food-low-dot:   #D4A017;
+    --food-bad-bg:    #2E1010;
+    --food-bad-border:#5E2020;
+    --food-bad-text:  #F09090;
+    --food-bad-dot:   #D94040;
+    --food-warn-bg:   #2E1A00;
+    --food-warn-text: #EDAA60;
+    --food-warn-dot:  #D4730A;
   }
 }
 
@@ -98,6 +138,21 @@
   --shadow-lg:   0 12px 40px rgba(0,0,0,0.5);
   --shadow-glow: 0 0 24px rgba(232, 96, 74, 0.2);
   --color-rose:  #fb7185;
+  /* FoodAnalyzer — dark mode */
+  --food-ok-bg:     #1A2E1A;
+  --food-ok-border: #2E5E2E;
+  --food-ok-text:   #7EC87E;
+  --food-ok-icon:   #5EAD5E;
+  --food-low-bg:    #2E2800;
+  --food-low-text:  #D4C050;
+  --food-low-dot:   #D4A017;
+  --food-bad-bg:    #2E1010;
+  --food-bad-border:#5E2020;
+  --food-bad-text:  #F09090;
+  --food-bad-dot:   #D94040;
+  --food-warn-bg:   #2E1A00;
+  --food-warn-text: #EDAA60;
+  --food-warn-dot:  #D4730A;
 }
 
 /* ─── Reduced Motion ────────────────────────────────────── */
@@ -117,6 +172,15 @@ body {
   background: var(--color-bg);
   color: var(--color-text-primary);
   font-family: var(--font-sans);
+}
+
+/* ─── Input focus-visible — 전역 통일 ───────────────────── */
+input:focus-visible,
+textarea:focus-visible,
+select:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px var(--color-bg), 0 0 0 4px var(--color-primary-500);
+  border-color: var(--color-primary-500) !important;
 }
 
 /* ─── Animations ────────────────────────────────────────── */

@@ -1,5 +1,5 @@
 'use client';
-import { useState, useRef, DragEvent } from 'react';
+import { useState, useRef, useEffect, DragEvent } from 'react';
 import {
   Camera, Upload, AlertTriangle, Loader2, Star,
   CheckCircle2, XCircle, ShieldAlert, FileText, Image as ImageIcon,
@@ -36,16 +36,16 @@ interface AnalysisResult {
 }
 
 const statusStyle: Record<string, { bg: string; text: string; label: string }> = {
-  '적정': { bg: '#E8F5E9', text: '#2E7D32', label: '적정' },
-  '부족': { bg: '#FFF9C4', text: '#F57F17', label: '부족' },
-  '과잉': { bg: '#FBE9E7', text: '#BF360C', label: '과잉' },
-  '정보없음': { bg: '#F5F5F5', text: '#757575', label: '정보없음' },
+  '적정': { bg: 'var(--food-ok-bg)',   text: 'var(--food-ok-text)',   label: '적정' },
+  '부족': { bg: 'var(--food-low-bg)',  text: 'var(--food-low-text)',  label: '부족' },
+  '과잉': { bg: 'var(--food-bad-bg)',  text: 'var(--food-bad-text)',  label: '과잉' },
+  '정보없음': { bg: 'var(--color-surface-2)', text: 'var(--color-text-muted)', label: '정보없음' },
 };
 
 const harmfulLevelStyle: Record<string, { bg: string; text: string; dot: string }> = {
-  '높음': { bg: '#FBE9E7', text: '#BF360C', dot: '#E53935' },
-  '중간': { bg: '#FFF3E0', text: '#E65100', dot: '#FB8C00' },
-  '낮음': { bg: '#FFF9C4', text: '#F57F17', dot: '#FDD835' },
+  '높음': { bg: 'var(--food-bad-bg)',  text: 'var(--food-bad-text)',  dot: 'var(--food-bad-dot)' },
+  '중간': { bg: 'var(--food-warn-bg)', text: 'var(--food-warn-text)', dot: 'var(--food-warn-dot)' },
+  '낮음': { bg: 'var(--food-low-bg)',  text: 'var(--food-low-text)',  dot: 'var(--food-low-dot)' },
 };
 
 function ScoreStars({ score }: { score: number }) {
@@ -82,6 +82,14 @@ export function FoodAnalyzer({ petInfo }: { petInfo: PetInfo }) {
   const [loading, setLoading] = useState(false);
   const [dragging, setDragging] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
+  const resultRef = useRef<HTMLDivElement>(null);
+
+  // 분석 완료 시 결과 섹션으로 자동 스크롤
+  useEffect(() => {
+    if (analysis) {
+      resultRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  }, [analysis]);
 
   const MAX_SIZE = 5 * 1024 * 1024;
   const ALLOWED = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
@@ -161,9 +169,9 @@ export function FoodAnalyzer({ petInfo }: { petInfo: PetInfo }) {
       {/* Header */}
       <div
         className="flex items-center gap-2 px-5 py-4 border-b"
-        style={{ background: '#2E7D32', borderColor: '#1B5E20' }}
+        style={{ background: 'var(--color-secondary-600)', borderColor: 'var(--color-secondary-600)' }}
       >
-        <Camera size={18} color="#A5D6A7" />
+        <Camera size={18} style={{ color: 'rgba(255,255,255,0.75)' }} />
         <h2 className="font-semibold text-base text-white">AI 사료 성분 분석</h2>
       </div>
 
@@ -180,7 +188,7 @@ export function FoodAnalyzer({ petInfo }: { petInfo: PetInfo }) {
               onClick={() => { setMode(m); setError(''); setAnalysis(null); }}
               className="flex-1 flex items-center justify-center gap-1.5 py-2.5 text-sm font-medium transition-colors"
               style={{
-                background: mode === m ? '#2E7D32' : 'var(--color-bg)',
+                background: mode === m ? 'var(--color-secondary-600)' : 'var(--color-bg)',
                 color: mode === m ? 'white' : 'var(--color-text-secondary)',
               }}
             >
@@ -257,7 +265,7 @@ export function FoodAnalyzer({ petInfo }: { petInfo: PetInfo }) {
           type="submit"
           disabled={!canSubmit || loading}
           className="w-full flex items-center justify-center gap-2 rounded-xl py-3 text-sm font-semibold text-white transition-opacity disabled:opacity-40"
-          style={{ background: '#2E7D32' }}
+          style={{ background: 'var(--color-secondary-600)' }}
         >
           {loading ? (
             <><Loader2 size={16} className="animate-spin" />AI 분석 중...</>
@@ -267,7 +275,11 @@ export function FoodAnalyzer({ petInfo }: { petInfo: PetInfo }) {
         </button>
 
         {/* ── Analysis Result ── */}
-        {analysis && <AnalysisDisplay result={analysis} />}
+        {analysis && (
+          <div ref={resultRef}>
+            <AnalysisDisplay result={analysis} />
+          </div>
+        )}
 
         {/* Disclaimer */}
         <div className="flex items-start gap-2 text-xs" style={{ color: 'var(--color-text-muted)' }}>
@@ -285,9 +297,9 @@ function AnalysisDisplay({ result }: { result: AnalysisResult }) {
       {/* 1. 종합 평점 */}
       <div
         className="rounded-xl border p-4 space-y-2"
-        style={{ background: '#E8F5E9', borderColor: '#A5D6A7' }}
+        style={{ background: 'var(--food-ok-bg)', borderColor: 'var(--food-ok-border)' }}
       >
-        <p className="text-xs font-semibold uppercase tracking-wide" style={{ color: '#2E7D32' }}>
+        <p className="text-xs font-semibold uppercase tracking-wide" style={{ color: 'var(--food-ok-text)' }}>
           종합 평가
         </p>
         <p className="font-bold text-base" style={{ color: 'var(--color-text-primary)' }}>
@@ -306,10 +318,10 @@ function AnalysisDisplay({ result }: { result: AnalysisResult }) {
         </p>
         {result.summary.strengths.length > 0 && (
           <div className="space-y-1">
-            <p className="text-xs font-medium" style={{ color: '#2E7D32' }}>✅ 강점</p>
+            <p className="text-xs font-medium" style={{ color: 'var(--food-ok-text)' }}>✅ 강점</p>
             {result.summary.strengths.map((s, i) => (
               <div key={i} className="flex items-start gap-1.5">
-                <CheckCircle2 size={14} style={{ color: '#81C784', marginTop: 2, flexShrink: 0 }} />
+                <CheckCircle2 size={14} style={{ color: 'var(--food-ok-icon)', marginTop: 2, flexShrink: 0 }} />
                 <p className="text-sm leading-snug" style={{ color: 'var(--color-text-secondary)' }}>{s}</p>
               </div>
             ))}
@@ -317,10 +329,10 @@ function AnalysisDisplay({ result }: { result: AnalysisResult }) {
         )}
         {result.summary.warnings.length > 0 && (
           <div className="space-y-1">
-            <p className="text-xs font-medium" style={{ color: '#E65100' }}>⚠️ 주의사항</p>
+            <p className="text-xs font-medium" style={{ color: 'var(--food-warn-text)' }}>⚠️ 주의사항</p>
             {result.summary.warnings.map((w, i) => (
               <div key={i} className="flex items-start gap-1.5">
-                <XCircle size={14} style={{ color: '#FFB74D', marginTop: 2, flexShrink: 0 }} />
+                <XCircle size={14} style={{ color: 'var(--food-warn-dot)', marginTop: 2, flexShrink: 0 }} />
                 <p className="text-sm leading-snug" style={{ color: 'var(--color-text-secondary)' }}>{w}</p>
               </div>
             ))}
@@ -333,7 +345,7 @@ function AnalysisDisplay({ result }: { result: AnalysisResult }) {
         className="rounded-xl border overflow-hidden"
         style={{ borderColor: 'var(--color-border)' }}
       >
-        <div className="px-4 py-3 border-b" style={{ background: '#2E7D32', borderColor: '#1B5E20' }}>
+        <div className="px-4 py-3 border-b" style={{ background: 'var(--color-secondary-600)', borderColor: 'var(--color-secondary-600)' }}>
           <p className="text-xs font-semibold text-white uppercase tracking-wide">영양성분 상세 분석</p>
         </div>
         <div style={{ background: 'var(--color-bg)' }}>
@@ -377,17 +389,17 @@ function AnalysisDisplay({ result }: { result: AnalysisResult }) {
       {result.harmfulIngredients.length > 0 ? (
         <div
           className="rounded-xl border overflow-hidden"
-          style={{ borderColor: '#FFCCBC' }}
+          style={{ borderColor: 'var(--food-bad-border)' }}
         >
-          <div className="px-4 py-3 border-b flex items-center gap-1.5" style={{ background: '#E65100', borderColor: '#BF360C' }}>
-            <ShieldAlert size={14} color="#FFE0B2" />
+          <div className="px-4 py-3 border-b flex items-center gap-1.5" style={{ background: 'var(--color-danger)', borderColor: 'var(--color-danger)' }}>
+            <ShieldAlert size={14} color="rgba(255,255,255,0.75)" />
             <p className="text-xs font-semibold text-white uppercase tracking-wide">유해 성분 경고</p>
           </div>
-          <div style={{ background: '#FBE9E7' }}>
+          <div style={{ background: 'var(--food-bad-bg)' }}>
             {result.harmfulIngredients.map((h, i) => {
               const lv = harmfulLevelStyle[h.level] || harmfulLevelStyle['낮음'];
               return (
-                <div key={i} className="px-4 py-3 border-b last:border-0" style={{ borderColor: '#FFCCBC' }}>
+                <div key={i} className="px-4 py-3 border-b last:border-0" style={{ borderColor: 'var(--food-bad-border)' }}>
                   <div className="flex items-center gap-2 mb-1">
                     <span
                       className="inline-block w-2 h-2 rounded-full flex-shrink-0"
@@ -403,7 +415,7 @@ function AnalysisDisplay({ result }: { result: AnalysisResult }) {
                       위험도 {h.level}
                     </span>
                   </div>
-                  <p className="text-sm ml-4 leading-snug" style={{ color: '#BF360C' }}>{h.reason}</p>
+                  <p className="text-sm ml-4 leading-snug" style={{ color: 'var(--food-bad-text)' }}>{h.reason}</p>
                 </div>
               );
             })}
@@ -412,10 +424,10 @@ function AnalysisDisplay({ result }: { result: AnalysisResult }) {
       ) : (
         <div
           className="rounded-xl border p-3 flex items-center gap-2"
-          style={{ background: '#E8F5E9', borderColor: '#A5D6A7' }}
+          style={{ background: 'var(--food-ok-bg)', borderColor: 'var(--food-ok-border)' }}
         >
-          <CheckCircle2 size={16} style={{ color: '#2E7D32' }} />
-          <p className="text-sm font-medium" style={{ color: '#2E7D32' }}>
+          <CheckCircle2 size={16} style={{ color: 'var(--food-ok-text)' }} />
+          <p className="text-sm font-medium" style={{ color: 'var(--food-ok-text)' }}>
             검출된 유해 성분이 없습니다.
           </p>
         </div>
@@ -425,23 +437,23 @@ function AnalysisDisplay({ result }: { result: AnalysisResult }) {
       <div
         className="rounded-xl border p-4 space-y-2"
         style={{
-          background: result.suitability.suitable ? '#E8F5E9' : '#FBE9E7',
-          borderColor: result.suitability.suitable ? '#A5D6A7' : '#FFCCBC',
+          background: result.suitability.suitable ? 'var(--food-ok-bg)' : 'var(--food-bad-bg)',
+          borderColor: result.suitability.suitable ? 'var(--food-ok-border)' : 'var(--food-bad-border)',
         }}
       >
         <div className="flex items-center gap-2">
           {result.suitability.suitable
-            ? <CheckCircle2 size={16} style={{ color: '#2E7D32' }} />
-            : <XCircle size={16} style={{ color: '#E53935' }} />
+            ? <CheckCircle2 size={16} style={{ color: 'var(--food-ok-text)' }} />
+            : <XCircle size={16} style={{ color: 'var(--food-bad-dot)' }} />
           }
           <p
             className="text-sm font-semibold"
-            style={{ color: result.suitability.suitable ? '#2E7D32' : '#B71C1C' }}
+            style={{ color: result.suitability.suitable ? 'var(--food-ok-text)' : 'var(--food-bad-text)' }}
           >
             {result.suitability.suitable ? '이 반려동물에게 적합한 사료입니다.' : '이 반려동물에게 적합하지 않을 수 있습니다.'}
           </p>
         </div>
-        <p className="text-sm leading-snug" style={{ color: result.suitability.suitable ? '#388E3C' : '#C62828' }}>
+        <p className="text-sm leading-snug" style={{ color: result.suitability.suitable ? 'var(--food-ok-text)' : 'var(--food-bad-text)' }}>
           {result.suitability.reason}
         </p>
         {result.suitability.feedingGuide && (

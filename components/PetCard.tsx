@@ -54,7 +54,7 @@ function HealthScoreRing({ score }: { score: number }) {
         <span className="font-display text-sm font-bold leading-none" style={{ color }}>
           {score}
         </span>
-        <span className="text-[8px] font-medium" style={{ color: 'var(--color-text-muted)' }}>점</span>
+        <span className="text-xs font-medium" style={{ color: 'var(--color-text-muted)' }}>점</span>
       </div>
     </div>
   );
