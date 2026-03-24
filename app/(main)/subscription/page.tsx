@@ -15,8 +15,8 @@ const PLAN_LABELS: Record<string, string> = {
 
 const PLAN_PRICES: Record<string, string> = {
   free: '₩0/월',
-  premium: '₩14,900/월',
-  clinic: '₩49,000/월',
+  premium: '₩30,000/월',
+  clinic: '₩99,000/월',
 };
 
 interface PaymentRecord {

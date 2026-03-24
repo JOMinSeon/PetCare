@@ -413,7 +413,7 @@ export default function LandingPage() {
           </div>
 
           <div className="mx-auto max-w-4xl grid grid-cols-1 gap-6 lg:grid-cols-2">
-            {/* Pro Plan — featured */}
+            {/* 프리미엄 플랜 — featured */}
             <div
               className="rounded-3xl p-8 flex flex-col relative overflow-hidden"
               style={{
@@ -428,28 +428,29 @@ export default function LandingPage() {
                 aria-hidden="true"
               />
               <div className="flex items-center justify-between mb-2">
-                <h3 className="text-lg font-bold text-white">전문가 플랜</h3>
+                <h3 className="text-lg font-bold text-white">프리미엄</h3>
                 <span
                   className="rounded-full px-3 py-1 text-xs font-bold"
                   style={{ background: 'rgba(255,255,255,0.2)', color: '#fff' }}
                 >
-                  🔥 인기
+                  🔥 추천
                 </span>
               </div>
               <p className="text-sm mb-6" style={{ color: 'rgba(255,255,255,0.7)' }}>
-                반려동물 3마리까지
+                활발한 반려동물 보호자용 · 반려동물 3마리
               </p>
               <div className="flex items-baseline gap-1 mb-8">
-                <span className="font-display text-5xl font-bold text-white">9,900</span>
+                <span className="font-display text-5xl font-bold text-white">30,000</span>
                 <span className="text-base font-medium" style={{ color: 'rgba(255,255,255,0.7)' }}>원/월</span>
               </div>
               <ul className="space-y-3 flex-1 mb-8">
                 {[
-                  '완전한 AI 건강 분석',
-                  'AI 수의사 무제한 상담',
-                  '월간 건강 리포트',
-                  '예방접종 일정 관리',
-                  'AI 사료 성분 분석',
+                  'AI 상담 무제한',
+                  '상세 건강 기록 + 차트',
+                  '수의사 원격 상담 3회/월',
+                  '증상 사진 AI 분석',
+                  '건강 리포트 PDF 월 1회',
+                  '체중/식이 관리',
                 ].map((f) => (
                   <li key={f} className="flex items-center gap-2.5 text-sm" style={{ color: 'rgba(255,255,255,0.9)' }}>
                     <CheckCircle size={16} style={{ color: 'var(--color-secondary-400)', flexShrink: 0 }} />
@@ -466,31 +467,40 @@ export default function LandingPage() {
               </Link>
             </div>
 
-            {/* Premium Plan */}
+            {/* 병원전용 플랜 */}
             <div
               className="rounded-3xl p-8 flex flex-col"
               style={{
                 background: 'var(--color-surface)',
-                border: '2px solid var(--color-border)',
+                border: '2px solid var(--color-accent-400)',
                 boxShadow: 'var(--shadow-sm)',
               }}
             >
-              <h3 className="text-lg font-bold mb-2" style={{ color: 'var(--color-text-primary)' }}>프리미엄 플랜</h3>
-              <p className="text-sm mb-6" style={{ color: 'var(--color-text-muted)' }}>반려동물 무제한</p>
+              <div className="flex items-center justify-between mb-2">
+                <h3 className="text-lg font-bold" style={{ color: 'var(--color-text-primary)' }}>병원전용</h3>
+                <span
+                  className="rounded-full px-3 py-1 text-xs font-bold text-white"
+                  style={{ background: 'var(--color-accent-400)' }}
+                >
+                  전문가
+                </span>
+              </div>
+              <p className="text-sm mb-6" style={{ color: 'var(--color-text-muted)' }}>동물병원 · 전문 케어 · 무제한</p>
               <div className="flex items-baseline gap-1 mb-8">
-                <span className="font-display text-5xl font-bold" style={{ color: 'var(--color-text-primary)' }}>29,900</span>
+                <span className="font-display text-5xl font-bold" style={{ color: 'var(--color-accent-500)' }}>99,000</span>
                 <span className="text-base font-medium" style={{ color: 'var(--color-text-muted)' }}>원/월</span>
               </div>
               <ul className="space-y-3 flex-1 mb-8">
                 {[
-                  '전문가 플랜 모든 기능 포함',
-                  '무제한 반려동물 등록',
-                  '우선 고객 지원 (24시간)',
-                  '전담 수의사 연결',
-                  '고급 건강 예측 분석',
+                  '반려동물 무제한 등록',
+                  'EMR 연동',
+                  '수의사 원격 상담 무제한',
+                  '건강 리포트 PDF 무제한',
+                  '다중 사용자 무제한',
+                  '전담 매니저',
                 ].map((f) => (
                   <li key={f} className="flex items-center gap-2.5 text-sm" style={{ color: 'var(--color-text-secondary)' }}>
-                    <CheckCircle size={16} style={{ color: 'var(--color-secondary-500)', flexShrink: 0 }} />
+                    <CheckCircle size={16} style={{ color: 'var(--color-accent-500)', flexShrink: 0 }} />
                     {f}
                   </li>
                 ))}
@@ -500,8 +510,8 @@ export default function LandingPage() {
                 className="block rounded-full py-3.5 text-center text-sm font-bold transition-all ripple"
                 style={{
                   background: 'var(--color-surface-2)',
-                  color: 'var(--color-secondary-500)',
-                  border: '2px solid var(--color-border)',
+                  color: 'var(--color-accent-500)',
+                  border: '2px solid var(--color-accent-400)',
                 }}
               >
                 시작하기

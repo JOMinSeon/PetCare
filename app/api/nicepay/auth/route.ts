@@ -5,7 +5,7 @@ import { subscribeRegist } from '@/lib/nicepay';
 
 const PLAN_AMOUNTS: Record<string, number> = {
   plus: 4900,
-  premium: 9900,
+  premium: 30000,
 };
 
 function adminDb() {

@@ -31,9 +31,9 @@ export const PLANS: Plan[] = [
   {
     id: 'premium',
     label: '프리미엄',
-    monthlyPrice: 14900,
-    yearlyPrice: 149000,           // 14,900 × 10 (2개월 무료)
-    monthlyEquivalent: 12400,      // 149,000 / 12 ≈ 12,400
+    monthlyPrice: 30000,
+    yearlyPrice: 300000,           // 30,000 × 10 (2개월 무료)
+    monthlyEquivalent: 25000,      // 300,000 / 12 = 25,000
     description: '활발한 반려동물 보호자용',
     badge: '추천',
     features: [
@@ -49,10 +49,10 @@ export const PLANS: Plan[] = [
   },
   {
     id: 'clinic',
-    label: '병원용',
-    monthlyPrice: 49000,
-    yearlyPrice: 490000,           // 49,000 × 10 (2개월 무료)
-    monthlyEquivalent: 40800,      // 490,000 / 12 ≈ 40,800
+    label: '병원전용',
+    monthlyPrice: 99000,
+    yearlyPrice: 990000,           // 99,000 × 10 (2개월 무료)
+    monthlyEquivalent: 82500,      // 990,000 / 12 = 82,500
     description: '동물병원 · 전문 케어',
     badge: '전문가',
     features: [

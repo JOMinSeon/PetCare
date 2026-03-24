@@ -4,8 +4,8 @@ import { getServerDb } from '@/lib/supabase-server';
 import { payWithBillingKey } from '@/lib/portone';
 
 const PLAN_PRICES: Record<string, { amount: number; orderName: string }> = {
-  premium: { amount: 14900, orderName: '프리미엄 플랜' },
-  clinic:  { amount: 49000, orderName: '병원용 플랜' },
+  premium: { amount: 30000, orderName: '프리미엄 플랜' },
+  clinic:  { amount: 99000, orderName: '병원전용 플랜' },
 };
 
 function adminDb() {

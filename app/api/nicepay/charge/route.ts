@@ -3,8 +3,8 @@ import { createClient } from '@supabase/supabase-js';
 import { subscribePayments } from '@/lib/nicepay';
 
 const PLAN_PRICES: Record<string, { amount: number; goodsName: string }> = {
-  premium: { amount: 14900, goodsName: '프리미엄 플랜' },
-  clinic:  { amount: 49000, goodsName: '병원용 플랜' },
+  premium: { amount: 30000, goodsName: '프리미엄 플랜' },
+  clinic:  { amount: 99000, goodsName: '병원전용 플랜' },
 };
 
 // 내부/cron에서 호출하는 빌링키 결제 실행 API
