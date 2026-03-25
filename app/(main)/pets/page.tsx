@@ -1,3 +1,5 @@
+export const dynamic = 'force-dynamic';
+
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
 import { Plus, Calendar, AlertCircle, Sparkles, Activity } from 'lucide-react';
@@ -7,15 +9,18 @@ import { PetTypeOnboarding } from '@/components/PetTypeOnboarding';
 
 export default async function PetsPage() {
   const db = await getServerDb();
-  const { data: { user } } = await db.auth.getUser();
-  if (!user) redirect('/auth/login');
+  const { data: { user }, error: authError } = await db.auth.getUser();
+  // authError가 있거나 user가 없으면 로그인 페이지로 이동
+  // 익명 유저(is_anonymous: true)는 user 객체가 존재하므로 정상 통과
+  if (authError || !user) redirect('/auth/login');
 
   const { data: pets } = await db
     .from('pets')
     .select('*, health_logs(weight, mer, recorded_at)')
     .order('created_at', { ascending: false });
 
-  const userName = user.email?.split('@')[0] ?? '보호자';
+  // 익명 유저(signInAnonymously)는 email이 null이므로 안전하게 폴백 처리
+  const userName = user.email?.split('@')[0] ?? user.user_metadata?.name ?? '보호자';
   const hour = new Date().getHours();
   const greeting =
     hour < 12 ? '좋은 아침이에요' :

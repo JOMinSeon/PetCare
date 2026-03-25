@@ -1,3 +1,5 @@
+export const dynamic = 'force-dynamic';
+
 import { Sparkles } from 'lucide-react';
 import { getServerDb } from '@/lib/supabase-server';
 import { type BillingCycle } from '@/lib/plans';

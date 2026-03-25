@@ -1,3 +1,5 @@
+export const dynamic = 'force-dynamic';
+
 import { redirect } from 'next/navigation';
 import { getServerDb } from '@/lib/supabase-server';
 import { updatePet, deletePet } from '@/app/actions/pet';
