@@ -9,6 +9,21 @@ declare global {
   }
 }
 
+function waitForKakao(): Promise<void> {
+  if (window.kakao) return Promise.resolve();
+  return new Promise((resolve) => {
+    const script = document.getElementById('kakao-map-sdk');
+    if (script) {
+      script.addEventListener('load', () => resolve(), { once: true });
+    } else {
+      // fallback: poll
+      const timer = setInterval(() => {
+        if (window.kakao) { clearInterval(timer); resolve(); }
+      }, 100);
+    }
+  });
+}
+
 interface Hospital {
   id: string;
   name: string;
@@ -43,14 +58,22 @@ export function HospitalMap({
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const currentLocationMarkerRef = useRef<any>(null);
 
-  // 지도 초기화 (최초 1회)
   useEffect(() => {
-    const scriptId = 'kakao-map-sdk';
+    if (!mapRef.current) return;
 
-    const initMap = () => {
-      if (!mapRef.current) return;
+    const mapKey = process.env.NEXT_PUBLIC_KAKAO_MAP_KEY;
+    if (!mapKey) {
+      setError('카카오맵 API 키가 설정되지 않았습니다.');
+      return;
+    }
 
-      window.kakao?.maps.load(() => {
+    waitForKakao().then(() => {
+      if (!window.kakao || !mapRef.current) {
+        setError('카카오맵을 불러오지 못했습니다.');
+        return;
+      }
+
+      window.kakao.maps.load(() => {
         if (!mapRef.current) return;
         const initialCenter = new window.kakao!.maps.LatLng(37.5665, 126.978);
         const map = new window.kakao!.maps.Map(mapRef.current, {
@@ -60,33 +83,9 @@ export function HospitalMap({
         mapInstanceRef.current = map;
         setMapLoaded(true);
       });
-    };
+    });
+  }, []);
 
-    const existingScript = document.getElementById(scriptId);
-    if (existingScript) {
-      if (window.kakao) {
-        initMap();
-      } else {
-        existingScript.addEventListener('load', initMap);
-      }
-      return;
-    }
-
-    const script = document.createElement('script');
-    script.id = scriptId;
-    script.src = `https://dapi.kakao.com/v2/maps/sdk.js?appkey=${process.env.NEXT_PUBLIC_KAKAO_MAP_KEY}&libraries=services&autoload=false`;
-    script.async = true;
-    script.onload = initMap;
-    script.onerror = () => setError('카카오맵을 불러오지 못했습니다.');
-    document.head.appendChild(script);
-
-    return () => {
-      markersRef.current.forEach(m => m.setMap(null));
-      markersRef.current = [];
-    };
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
-
-  // center 변경 시 지도 이동
   useEffect(() => {
     if (!mapLoaded || !mapInstanceRef.current || !center) return;
     const pos = new window.kakao!.maps.LatLng(center.lat, center.lng);
@@ -133,7 +132,6 @@ export function HospitalMap({
     }
   }, [mapLoaded, hospitals, selectedHospitalId, onSelectHospital]);
 
-  // 현위치 마커
   useEffect(() => {
     if (!mapLoaded || !mapInstanceRef.current || !center || typeof window.kakao === 'undefined') return;
 
@@ -169,9 +167,6 @@ export function HospitalMap({
         <div className="text-center p-4">
           <MapPin className="mx-auto mb-2 text-gray-400" size={32} />
           <p className="text-sm" style={{ color: 'var(--color-text-muted)' }}>{error}</p>
-          <p className="text-xs mt-1" style={{ color: 'var(--color-text-muted)' }}>
-            환경변수에 NEXT_PUBLIC_KAKAO_MAP_KEY를 설정해주세요
-          </p>
         </div>
       </div>
     );
