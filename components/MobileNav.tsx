@@ -1,15 +1,16 @@
 'use client';
 import Link from 'next/link';
-import { Home, Scale, Utensils, Calendar, Users, Settings } from 'lucide-react';
+import { Home, Scale, Utensils, Calendar, Users, Settings, Map as MapIcon } from 'lucide-react';
 import { usePathname } from 'next/navigation';
 
 const mobileTabs = [
-  { href: '/pets',         icon: Home,     label: '홈' },
-  { href: '/tracking',     icon: Scale,    label: '체중' },
-  { href: '/analyze-food', icon: Utensils, label: 'AI분석' },
-  { href: '/community',    icon: Users,    label: '커뮤니티' },
-  { href: '/calendar',     icon: Calendar, label: '캘린더' },
-  { href: '/settings',     icon: Settings, label: '설정' },
+  { href: '/pets',              icon: Home,     label: '홈' },
+  { href: '/tracking',          icon: Scale,    label: '체중' },
+  { href: '/analyze-food',      icon: Utensils, label: 'AI분석' },
+  { href: '/hospitals?view=map',icon: MapIcon,  label: '지도' },
+  { href: '/calendar',          icon: Calendar, label: '캘린더' },
+  { href: '/community',         icon: Users,    label: '커뮤니티' },
+  { href: '/settings',          icon: Settings, label: '설정' },
 ];
 
 export function MobileNav() {
@@ -19,7 +20,8 @@ export function MobileNav() {
     <div className="floating-nav md:hidden">
       <nav aria-label="모바일 메뉴" className="glass-nav flex items-center gap-0.5 px-2 py-2 rounded-full">
         {mobileTabs.map(({ href, icon: Icon, label }) => {
-          const active = pathname === href || (href !== '/pets' && pathname.startsWith(href));
+          const base = href.split('?')[0];
+          const active = pathname === base || (base !== '/pets' && pathname.startsWith(base));
           return (
             <Link
               key={label}

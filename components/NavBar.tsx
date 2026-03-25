@@ -1,6 +1,7 @@
 import Link from 'next/link';
+import { Suspense } from 'react';
 import { PawPrint } from 'lucide-react';
-import { NavLinks } from './NavLinks';
+import { NavLinks, SettingsLink } from './NavLinks';
 import { MobileNav } from './MobileNav';
 import { AuthButton } from './AuthButton';
 
@@ -13,9 +14,9 @@ export function NavBar() {
         className="glass-nav hidden md:flex border-b px-6 py-3 items-center justify-between sticky top-0 z-40"
         style={{ borderColor: 'var(--color-border)' }}
       >
-        <div className="flex items-center gap-8">
+        <div className="flex items-center gap-4">
           <Link
-            href="/community"
+            href="/"
             className="flex items-center gap-2 font-bold text-base"
             style={{ color: 'var(--color-primary-500)' }}
           >
@@ -27,9 +28,14 @@ export function NavBar() {
             </div>
             펫헬스
           </Link>
-          <NavLinks />
+          <Suspense fallback={null}>
+            <NavLinks />
+          </Suspense>
         </div>
         <div className="flex items-center gap-2">
+          <Suspense fallback={null}>
+            <SettingsLink />
+          </Suspense>
           <AuthButton />
         </div>
       </nav>
