@@ -2,7 +2,7 @@ import Link from 'next/link';
 import { PawPrint } from 'lucide-react';
 import { NavLinks } from './NavLinks';
 import { MobileNav } from './MobileNav';
-import { LogoutButton } from './LogoutButton';
+import { AuthButton } from './AuthButton';
 
 export function NavBar() {
   return (
@@ -15,7 +15,7 @@ export function NavBar() {
       >
         <div className="flex items-center gap-8">
           <Link
-            href="/pets"
+            href="/community"
             className="flex items-center gap-2 font-bold text-base"
             style={{ color: 'var(--color-primary-500)' }}
           >
@@ -30,7 +30,7 @@ export function NavBar() {
           <NavLinks />
         </div>
         <div className="flex items-center gap-2">
-          <LogoutButton />
+          <AuthButton />
         </div>
       </nav>
 

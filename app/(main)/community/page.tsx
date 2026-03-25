@@ -82,15 +82,17 @@ export default function CommunityPage() {
     const init = async () => {
       const supabase = getBrowserDb();
       const { data: { user }, error: authError } = await supabase.auth.getUser();
-      if (authError?.code === 'refresh_token_not_found') { await supabase.auth.signOut(); router.replace('/auth/login'); return; }
-      if (!user) { router.replace('/auth/login'); return; }
-      setUserId(user.id);
-      const { data: profile } = await supabase
-        .from('profiles')
-        .select('nickname')
-        .eq('user_id', user.id)
-        .single();
-      setUserNick(profile?.nickname || user.email?.split('@')[0] || '보호자');
+      if (authError?.code === 'refresh_token_not_found') { await supabase.auth.signOut(); }
+
+      if (user) {
+        setUserId(user.id);
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('nickname')
+          .eq('user_id', user.id)
+          .single();
+        setUserNick(profile?.nickname || user.email?.split('@')[0] || '보호자');
+      }
 
       const [{ data: postsData }, { data: qaData }] = await Promise.all([
         supabase
@@ -108,7 +110,7 @@ export default function CommunityPage() {
       setLoading(false);
     };
     init();
-  }, [router]);
+  }, []);
 
   if (loading) return (
     <div className="flex min-h-screen items-center justify-center" style={{ background: 'var(--color-bg)' }}>
@@ -118,7 +120,7 @@ export default function CommunityPage() {
 
   // 좋아요 토글
   const toggleLike = async (postId: string) => {
-    if (!userId) return;
+    if (!userId) { router.push('/auth/login'); return; }
     const supabase = getBrowserDb();
     const post = posts.find((p) => p.id === postId);
     if (!post) return;
@@ -138,7 +140,8 @@ export default function CommunityPage() {
 
   // 글 작성
   const submitPost = async () => {
-    if (!newPost.content.trim() || !userId) return;
+    if (!userId) { router.push('/auth/login'); return; }
+    if (!newPost.content.trim()) return;
     setPostSaving(true);
     setPostError('');
     const supabase = getBrowserDb();
@@ -171,7 +174,8 @@ export default function CommunityPage() {
 
   // Q&A 작성
   const submitQA = async () => {
-    if (!newQuestion.trim() || !userId) return;
+    if (!userId) { router.push('/auth/login'); return; }
+    if (!newQuestion.trim()) return;
     setQaSaving(true);
     setQaError('');
     const supabase = getBrowserDb();
@@ -199,7 +203,8 @@ export default function CommunityPage() {
 
   // 댓글 작성
   const submitComment = async (postId: string) => {
-    if (!newComment.trim() || !userId) return;
+    if (!userId) { router.push('/auth/login'); return; }
+    if (!newComment.trim()) return;
     setCommentSaving(true);
     const supabase = getBrowserDb();
     const { data, error } = await supabase
@@ -218,6 +223,7 @@ export default function CommunityPage() {
 
   // 투표
   const voteQA = async (id: string) => {
+    if (!userId) { router.push('/auth/login'); return; }
     const supabase = getBrowserDb();
     const item = qaItems.find((q) => q.id === id);
     if (!item) return;
@@ -245,7 +251,10 @@ export default function CommunityPage() {
               <p className="text-sm" style={{ color: 'var(--color-text-muted)' }}>보호자들의 이야기를 나눠요</p>
             </div>
             <button
-              onClick={() => activeTab === 'feed' ? setShowWritePost(true) : setShowWriteQA(true)}
+              onClick={() => {
+                if (!userId) { router.push('/auth/login'); return; }
+                activeTab === 'feed' ? setShowWritePost(true) : setShowWriteQA(true);
+              }}
               className="flex items-center gap-1.5 rounded-xl px-4 py-2 text-sm font-medium text-white transition-opacity hover:opacity-80"
               style={{ background: 'var(--color-primary-500)' }}
             >
