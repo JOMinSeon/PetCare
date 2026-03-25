@@ -40,6 +40,7 @@ export function HospitalMap({
   const [error, setError] = useState<string | null>(null);
   const markersRef = useRef<kakao.maps.Marker[]>([]);
   const mapInstanceRef = useRef<kakao.maps.Map | null>(null);
+  const currentLocationMarkerRef = useRef<kakao.maps.CustomOverlay | null>(null);
 
   useEffect(() => {
     const scriptId = 'kakao-map-sdk';
@@ -127,6 +128,35 @@ export function HospitalMap({
       map.setBounds(bounds, 40, 40, 40, 40);
     }
   }, [mapLoaded, hospitals, selectedHospitalId, onSelectHospital]);
+
+  // 현위치 마커
+  useEffect(() => {
+    if (!mapLoaded || !mapInstanceRef.current || !center || typeof window.kakao === 'undefined') return;
+
+    if (currentLocationMarkerRef.current) {
+      currentLocationMarkerRef.current.setMap(null);
+    }
+
+    const position = new window.kakao!.maps.LatLng(center.lat, center.lng);
+    const content = `
+      <div style="position:relative;width:24px;height:24px;">
+        <div style="position:absolute;inset:0;border-radius:50%;background:rgba(37,99,235,0.25);animation:pulse 1.8s ease-in-out infinite;"></div>
+        <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:14px;height:14px;border-radius:50%;background:#2563eb;border:2.5px solid #fff;box-shadow:0 1px 4px rgba(0,0,0,0.3);"></div>
+        <style>@keyframes pulse{0%,100%{transform:scale(1);opacity:0.6}50%{transform:scale(1.7);opacity:0.15}}</style>
+      </div>
+    `;
+
+    const overlay = new window.kakao!.maps.CustomOverlay({
+      position,
+      content,
+      xAnchor: 0.5,
+      yAnchor: 0.5,
+      zIndex: 10,
+    });
+
+    overlay.setMap(mapInstanceRef.current);
+    currentLocationMarkerRef.current = overlay;
+  }, [mapLoaded, center]);
 
   if (error) {
     return (
