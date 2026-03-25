@@ -9,19 +9,32 @@ declare global {
   }
 }
 
-function waitForKakao(): Promise<void> {
-  if (window.kakao) return Promise.resolve();
-  return new Promise((resolve) => {
-    const script = document.getElementById('kakao-map-sdk');
-    if (script) {
-      script.addEventListener('load', () => resolve(), { once: true });
-    } else {
-      // fallback: poll
-      const timer = setInterval(() => {
-        if (window.kakao) { clearInterval(timer); resolve(); }
-      }, 100);
+let sdkPromise: Promise<void> | null = null;
+
+function loadKakaoSDK(): Promise<void> {
+  if (sdkPromise) return sdkPromise;
+
+  sdkPromise = new Promise((resolve, reject) => {
+    if (window.kakao) { resolve(); return; }
+
+    const existingScript = document.getElementById('kakao-map-sdk') as HTMLScriptElement | null;
+    if (existingScript) {
+      // 이미 삽입됐지만 아직 로딩 중
+      existingScript.addEventListener('load', () => resolve(), { once: true });
+      existingScript.addEventListener('error', () => reject(new Error('SDK 로드 실패')), { once: true });
+      return;
     }
+
+    const script = document.createElement('script');
+    script.id = 'kakao-map-sdk';
+    script.src = `https://dapi.kakao.com/v2/maps/sdk.js?appkey=${process.env.NEXT_PUBLIC_KAKAO_MAP_KEY}&libraries=services&autoload=false`;
+    script.async = true;
+    script.onload = () => resolve();
+    script.onerror = () => reject(new Error('SDK 로드 실패'));
+    document.head.appendChild(script);
   });
+
+  return sdkPromise;
 }
 
 interface Hospital {
@@ -67,23 +80,35 @@ export function HospitalMap({
       return;
     }
 
-    waitForKakao().then(() => {
-      if (!window.kakao || !mapRef.current) {
-        setError('카카오맵을 불러오지 못했습니다.');
-        return;
-      }
+    const timeout = setTimeout(() => {
+      setError('카카오맵 로드 시간이 초과되었습니다.\nAPI 키 또는 도메인 설정을 확인해주세요.');
+    }, 8000);
 
-      window.kakao.maps.load(() => {
-        if (!mapRef.current) return;
-        const initialCenter = new window.kakao!.maps.LatLng(37.5665, 126.978);
-        const map = new window.kakao!.maps.Map(mapRef.current, {
-          center: initialCenter,
-          level: 4,
+    loadKakaoSDK()
+      .then(() => {
+        if (!window.kakao || !mapRef.current) {
+          clearTimeout(timeout);
+          setError('카카오맵을 불러오지 못했습니다.');
+          return;
+        }
+        window.kakao.maps.load(() => {
+          clearTimeout(timeout);
+          if (!mapRef.current) return;
+          const initialCenter = new window.kakao!.maps.LatLng(37.5665, 126.978);
+          const map = new window.kakao!.maps.Map(mapRef.current, {
+            center: initialCenter,
+            level: 4,
+          });
+          mapInstanceRef.current = map;
+          setMapLoaded(true);
         });
-        mapInstanceRef.current = map;
-        setMapLoaded(true);
+      })
+      .catch(() => {
+        clearTimeout(timeout);
+        setError('카카오맵 SDK를 불러오지 못했습니다.\nAPI 키를 확인해주세요.');
       });
-    });
+
+    return () => clearTimeout(timeout);
   }, []);
 
   useEffect(() => {
