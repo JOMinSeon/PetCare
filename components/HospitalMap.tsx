@@ -40,7 +40,8 @@ export function HospitalMap({
   const [error, setError] = useState<string | null>(null);
   const markersRef = useRef<kakao.maps.Marker[]>([]);
   const mapInstanceRef = useRef<kakao.maps.Map | null>(null);
-  const currentLocationMarkerRef = useRef<kakao.maps.CustomOverlay | null>(null);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const currentLocationMarkerRef = useRef<any>(null);
 
   // 지도 초기화 (최초 1회)
   useEffect(() => {
