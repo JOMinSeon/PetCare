@@ -42,30 +42,32 @@ export function HospitalMap({
   const mapInstanceRef = useRef<kakao.maps.Map | null>(null);
   const currentLocationMarkerRef = useRef<kakao.maps.CustomOverlay | null>(null);
 
+  // 지도 초기화 (최초 1회)
   useEffect(() => {
     const scriptId = 'kakao-map-sdk';
-    const existingScript = document.getElementById(scriptId);
 
     const initMap = () => {
       if (!mapRef.current) return;
 
       window.kakao?.maps.load(() => {
-        const defaultCenter = center
-          ? new window.kakao!.maps.LatLng(center.lat, center.lng)
-          : new window.kakao!.maps.LatLng(37.5665, 126.978);
-
-        const map = new window.kakao!.maps.Map(mapRef.current!, {
-          center: defaultCenter,
+        if (!mapRef.current) return;
+        const initialCenter = new window.kakao!.maps.LatLng(37.5665, 126.978);
+        const map = new window.kakao!.maps.Map(mapRef.current, {
+          center: initialCenter,
           level: 4,
         });
         mapInstanceRef.current = map;
-
         setMapLoaded(true);
       });
     };
 
+    const existingScript = document.getElementById(scriptId);
     if (existingScript) {
-      initMap();
+      if (window.kakao) {
+        initMap();
+      } else {
+        existingScript.addEventListener('load', initMap);
+      }
       return;
     }
 
@@ -81,7 +83,14 @@ export function HospitalMap({
       markersRef.current.forEach(m => m.setMap(null));
       markersRef.current = [];
     };
-  }, [center]);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // center 변경 시 지도 이동
+  useEffect(() => {
+    if (!mapLoaded || !mapInstanceRef.current || !center) return;
+    const pos = new window.kakao!.maps.LatLng(center.lat, center.lng);
+    mapInstanceRef.current.setCenter(pos);
+  }, [mapLoaded, center]);
 
   useEffect(() => {
     if (!mapLoaded || !mapInstanceRef.current || typeof window.kakao === 'undefined') return;
