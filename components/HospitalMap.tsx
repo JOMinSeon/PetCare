@@ -49,12 +49,6 @@ export function HospitalMap({
     const initMap = () => {
       if (!mapRef.current) return;
 
-      const mapKey = process.env.NEXT_PUBLIC_KAKAO_MAP_KEY;
-      if (!mapKey || mapKey === 'your-kakao-map-api-key') {
-        setError('카카오맵 API 키가 설정되지 않았습니다.');
-        return;
-      }
-
       window.kakao?.maps.load(() => {
         const defaultCenter = center
           ? new window.kakao!.maps.LatLng(center.lat, center.lng)
