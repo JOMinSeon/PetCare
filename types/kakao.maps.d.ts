@@ -10,6 +10,20 @@ declare namespace kakao {
       constructor(container: HTMLElement, options: MapOptions);
       setBounds(bounds: LatLngBounds, paddingTop?: number, paddingRight?: number, paddingBottom?: number, paddingLeft?: number): void;
       setLevel(level: number): void;
+      setCenter(latlng: LatLng): void;
+    }
+
+    class CustomOverlay {
+      constructor(options: CustomOverlayOptions);
+      setMap(map: Map | null): void;
+    }
+
+    interface CustomOverlayOptions {
+      position: LatLng;
+      content: string | HTMLElement;
+      xAnchor?: number;
+      yAnchor?: number;
+      zIndex?: number;
     }
 
     interface MapOptions {
