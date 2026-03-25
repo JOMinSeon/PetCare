@@ -52,6 +52,7 @@ export function HospitalSearch({ onSelectHospital }: Props) {
   const [viewMode, setViewMode] = useState<'list' | 'map'>(initialView);
   const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | null>(null);
   const [locationError, setLocationError] = useState<string | null>(null);
+  const [locationLoaded, setLocationLoaded] = useState(false);
 
   const searchHospitals = async () => {
     setLoading(true);
@@ -94,12 +95,21 @@ export function HospitalSearch({ onSelectHospital }: Props) {
         .then(loc => {
           setUserLocation(loc);
           setLocationError(null);
+          setLocationLoaded(true);
         })
         .catch(() => {
           setLocationError('위치 정보를 가져올 수 없습니다.');
         });
     }
   }, [viewMode]);
+
+  useEffect(() => {
+    if (locationLoaded && userLocation && viewMode === 'map') {
+      setLocationLoaded(false);
+      searchHospitals();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [locationLoaded]);
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
@@ -223,16 +233,40 @@ export function HospitalSearch({ onSelectHospital }: Props) {
       )}
 
       {!loading && !error && hospitals.length === 0 && (
-        <div className="p-8 text-center">
-          <MapPin className="mx-auto mb-3 text-gray-300" size={40} />
-          <p className="text-sm" style={{ color: 'var(--color-text-muted)' }}>
-            검색 결과가 없습니다
-          </p>
-        </div>
+        viewMode === 'map' ? (
+          <div className="space-y-4">
+            <HospitalMap
+              hospitals={[]}
+              onSelectHospital={handleMapHospitalSelect}
+              selectedHospitalId={selectedHospital?.id}
+              center={userLocation || undefined}
+            />
+            {locationError && (
+              <p className="text-sm text-center" style={{ color: 'var(--color-text-muted)' }}>
+                {locationError}
+              </p>
+            )}
+            <p className="text-sm text-center" style={{ color: 'var(--color-text-muted)' }}>
+              검색 결과가 없습니다
+            </p>
+          </div>
+        ) : (
+          <div className="p-8 text-center">
+            <MapPin className="mx-auto mb-3 text-gray-300" size={40} />
+            <p className="text-sm" style={{ color: 'var(--color-text-muted)' }}>
+              검색 결과가 없습니다
+            </p>
+          </div>
+        )
       )}
 
       {viewMode === 'map' && hospitals.length > 0 && (
         <div className="space-y-4">
+          {locationError && (
+            <p className="text-sm text-center py-2" style={{ color: 'var(--color-warning)' }}>
+              {locationError}
+            </p>
+          )}
           <HospitalMap
             hospitals={hospitals}
             onSelectHospital={handleMapHospitalSelect}
