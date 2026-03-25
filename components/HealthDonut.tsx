@@ -1,4 +1,5 @@
 'use client';
+import { useState, useEffect } from 'react';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts';
 
 const ACTIVITY_DATA = [
@@ -85,6 +86,10 @@ function DonutCard({
 }
 
 export function HealthDonut() {
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => { setMounted(true); }, []);
+  if (!mounted) return null;
+
   return (
     <div className="flex gap-3">
       <DonutCard
