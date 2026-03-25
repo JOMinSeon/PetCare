@@ -232,35 +232,16 @@ export function HospitalSearch({ onSelectHospital }: Props) {
         </div>
       )}
 
-      {!loading && !error && hospitals.length === 0 && (
-        viewMode === 'map' ? (
-          <div className="space-y-4">
-            <HospitalMap
-              hospitals={[]}
-              onSelectHospital={handleMapHospitalSelect}
-              selectedHospitalId={selectedHospital?.id}
-              center={userLocation || undefined}
-            />
-            {locationError && (
-              <p className="text-sm text-center" style={{ color: 'var(--color-text-muted)' }}>
-                {locationError}
-              </p>
-            )}
-            <p className="text-sm text-center" style={{ color: 'var(--color-text-muted)' }}>
-              검색 결과가 없습니다
-            </p>
-          </div>
-        ) : (
-          <div className="p-8 text-center">
-            <MapPin className="mx-auto mb-3 text-gray-300" size={40} />
-            <p className="text-sm" style={{ color: 'var(--color-text-muted)' }}>
-              검색 결과가 없습니다
-            </p>
-          </div>
-        )
+      {!loading && !error && hospitals.length === 0 && viewMode === 'list' && (
+        <div className="p-8 text-center">
+          <MapPin className="mx-auto mb-3 text-gray-300" size={40} />
+          <p className="text-sm" style={{ color: 'var(--color-text-muted)' }}>
+            검색 결과가 없습니다
+          </p>
+        </div>
       )}
 
-      {viewMode === 'map' && hospitals.length > 0 && (
+      {viewMode === 'map' && (
         <div className="space-y-4">
           {locationError && (
             <p className="text-sm text-center py-2" style={{ color: 'var(--color-warning)' }}>
@@ -273,6 +254,11 @@ export function HospitalSearch({ onSelectHospital }: Props) {
             selectedHospitalId={selectedHospital?.id}
             center={userLocation || undefined}
           />
+          {!loading && !error && hospitals.length === 0 && (
+            <p className="text-sm text-center" style={{ color: 'var(--color-text-muted)' }}>
+              검색 결과가 없습니다
+            </p>
+          )}
           {selectedHospital && (
             <div className="card rounded-xl p-4 space-y-3 border-2 border-primary"
               style={{ borderColor: 'var(--color-primary-200)', background: 'var(--color-primary-50)' }}>
