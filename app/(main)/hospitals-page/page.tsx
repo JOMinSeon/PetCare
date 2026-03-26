@@ -1,8 +1,7 @@
 'use client';
 import { useState, useEffect, Suspense } from 'react';
-import { useRouter } from 'next/navigation';
 import { HospitalSearch } from '@/components/HospitalSearch';
-import { Calendar, Clock, MapPin, Phone, X } from 'lucide-react';
+import { Calendar, Clock } from 'lucide-react';
 
 interface Reservation {
   id: string;
@@ -35,7 +34,6 @@ function ReservationSkeleton() {
 }
 
 export default function HospitalsPage() {
-  const router = useRouter();
   const [reservations, setReservations] = useState<Reservation[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<'search' | 'reservations'>('search');
@@ -51,8 +49,8 @@ export default function HospitalsPage() {
       if (res.ok) {
         setReservations(data.reservations || []);
       }
-    } catch (err) {
-      console.error('Failed to fetch reservations:', err);
+    } catch {
+      // reservations remain empty on fetch failure
     } finally {
       setLoading(false);
     }
@@ -73,8 +71,8 @@ export default function HospitalsPage() {
           prev.map(r => r.id === reservationId ? { ...r, status: 'cancelled' } : r)
         );
       }
-    } catch (err) {
-      console.error('Failed to cancel:', err);
+    } catch {
+      // cancellation failure — reservation status remains unchanged in UI
     }
   };
 

@@ -53,8 +53,7 @@ export default function AnalyzeFoodPage() {
         setPets(data);
         setSelectedPet(data[0]);
         setLoading(false);
-      } catch (err) {
-        console.error('Error fetching pets:', err);
+      } catch {
         setError('반려동물 정보를 불러올 수 없습니다.');
         setLoading(false);
       }

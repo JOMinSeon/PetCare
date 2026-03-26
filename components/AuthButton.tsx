@@ -3,7 +3,7 @@ import Link from 'next/link';
 import { LogIn, LogOut } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import type { Session } from '@supabase/supabase-js';
+import type { Session, UserResponse } from '@supabase/supabase-js';
 import { getBrowserDb } from '@/lib/supabase-browser';
 
 export function AuthButton() {
@@ -13,8 +13,7 @@ export function AuthButton() {
   useEffect(() => {
     const supabase = getBrowserDb();
     supabase.auth.getUser().then(
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      (res: any) => { setIsLoggedIn(!!res?.data?.user); }
+      (res: UserResponse) => { setIsLoggedIn(!!res.data?.user); }
     );
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event: string, session: Session | null) => {
       setIsLoggedIn(!!session?.user);

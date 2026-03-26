@@ -19,7 +19,6 @@ function loadKakaoSDK(): Promise<void> {
 
     const existingScript = document.getElementById('kakao-map-sdk') as HTMLScriptElement | null;
     if (existingScript) {
-      // 이미 삽입됐지만 아직 로딩 중
       existingScript.addEventListener('load', () => resolve(), { once: true });
       existingScript.addEventListener('error', () => reject(new Error('SDK 로드 실패')), { once: true });
       return;
@@ -68,8 +67,7 @@ export function HospitalMap({
   const [error, setError] = useState<string | null>(null);
   const markersRef = useRef<kakao.maps.Marker[]>([]);
   const mapInstanceRef = useRef<kakao.maps.Map | null>(null);
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const currentLocationMarkerRef = useRef<any>(null);
+  const currentLocationMarkerRef = useRef<kakao.maps.CustomOverlay | null>(null);
 
   useEffect(() => {
     if (!mapRef.current) return;
@@ -155,8 +153,7 @@ export function HospitalMap({
       }
     };
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const geocoder = new (window.kakao!.maps as any).services.Geocoder();
+    const geocoder = new kakao.maps.services.Geocoder();
 
     hospitals.forEach((hospital) => {
       if (hospital.latitude && hospital.longitude) {

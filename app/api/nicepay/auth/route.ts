@@ -15,7 +15,6 @@ function adminDb() {
   );
 }
 
-// 나이스페이 결제창에서 returnUrl로 POST 호출 (브라우저 리다이렉트이므로 세션 쿠키 사용 가능)
 export async function POST(req: NextRequest) {
   const { searchParams } = new URL(req.url);
   const userId = searchParams.get('userId');
@@ -27,14 +26,12 @@ export async function POST(req: NextRequest) {
     return NextResponse.redirect(`${appUrl}/settings?payment=failed`, { status: 303 });
   }
 
-  // IDOR 방지: 세션의 실제 사용자가 URL의 userId와 일치하는지 검증
   const supabaseAuth = await getServerDb();
   const { data: { user } } = await supabaseAuth.auth.getUser();
   if (!user || user.id !== userId) {
     return NextResponse.redirect(`${appUrl}/settings?payment=failed`, { status: 303 });
   }
 
-  // 나이스페이는 form POST로 전송
   let resultCode: string;
   let encData: string;
   let orderId: string;
@@ -64,7 +61,6 @@ export async function POST(req: NextRequest) {
     return NextResponse.redirect(`${appUrl}/settings?payment=failed`, { status: 303 });
   }
 
-  // 빌링키 등록 승인
   const registResult = await subscribeRegist(encData, orderId);
 
   if (registResult.resultCode !== '0000') {
@@ -74,7 +70,6 @@ export async function POST(req: NextRequest) {
 
   const bid: string = registResult.bid;
 
-  // Supabase 업데이트
   const { error } = await adminDb()
     .from('profiles')
     .update({

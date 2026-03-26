@@ -13,7 +13,6 @@ function adminDb() {
   );
 }
 
-// 프론트에서 빌링키 발급 완료 후 호출 — 저장 + 첫 결제 실행
 export async function POST(req: NextRequest) {
   const supabase = await getServerDb();
   const { data: { user } } = await supabase.auth.getUser();
@@ -28,7 +27,6 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Invalid request' }, { status: 400 });
   }
 
-  // 빌링키 소유권 검증
   const billingKeyInfo = await getBillingKey(billingKey);
   if (
     billingKeyInfo.code ||
@@ -39,7 +37,6 @@ export async function POST(req: NextRequest) {
 
   const baseAmount = getPlanAmount(planId, cycle);
 
-  // 쿠폰 할인 적용
   let couponDiscount = 0;
   let couponId: string | null = null;
   if (couponCode) {
@@ -68,7 +65,6 @@ export async function POST(req: NextRequest) {
   const orderName = getOrderName(planId, cycle);
   const paymentId = `pay-${planId}-${cycle}-${user.id.replace(/-/g, '')}-${Date.now()}`;
 
-  // 첫 결제 실행
   const result = await payWithBillingKey({
     paymentId,
     billingKey,
@@ -84,7 +80,6 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  // 결제 금액 검증
   if (result.paymentId) {
     const payment = await getPayment(result.paymentId);
     if (payment.amount?.total !== amount) {
@@ -93,7 +88,6 @@ export async function POST(req: NextRequest) {
     }
   }
 
-  // 쿠폰 사용 처리
   if (couponId) {
     const db = adminDb();
     await db.from('coupon_usages').insert({ coupon_id: couponId, user_id: user.id });
@@ -102,7 +96,6 @@ export async function POST(req: NextRequest) {
 
   const db = adminDb();
 
-  // 다음 결제일 계산
   const now = new Date();
   const nextBillingAt = new Date(now);
   if (cycle === 'yearly') {
@@ -111,7 +104,6 @@ export async function POST(req: NextRequest) {
     nextBillingAt.setMonth(nextBillingAt.getMonth() + 1);
   }
 
-  // 빌링키, 플랜, 결제 주기 저장
   const { error } = await db
     .from('profiles')
     .update({
@@ -129,7 +121,6 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'DB 저장 실패' }, { status: 500 });
   }
 
-  // 결제 내역 기록
   await db.from('payment_history').insert({
     user_id: user.id,
     payment_id: paymentId,

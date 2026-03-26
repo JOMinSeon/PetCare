@@ -49,7 +49,7 @@ export function HealthChart({ data }: { data: HealthLog[] }) {
   const axisStyle = { fontSize: 11, fill: 'var(--color-text-muted)' } as const;
 
   return (
-    <div className="space-y-6" aria-label={`건강 기록 차트`}>
+    <div className="space-y-6" aria-label="건강 기록 차트">
       {/* Weight chart */}
       <div style={{ minWidth: 0 }}>
         <h3 className="text-sm font-medium mb-3" style={{ color: 'var(--color-text-secondary)' }}>

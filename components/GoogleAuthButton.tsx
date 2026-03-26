@@ -22,7 +22,6 @@ const ALLOWED_ORIGINS = [
 ].filter(Boolean) as string[];
 
 function openExternalBrowser(url: string, isAndroid: boolean): boolean {
-  // URL 파싱 및 origin allowlist 검증
   let parsed: URL;
   try {
     parsed = new URL(url);
@@ -32,17 +31,14 @@ function openExternalBrowser(url: string, isAndroid: boolean): boolean {
   if (!ALLOWED_ORIGINS.includes(parsed.origin)) {
     return false;
   }
-  // 프래그먼트 제거 (intent URL 인젝션 방지)
   parsed.hash = '';
   const safeUrl = parsed.toString();
 
   if (isAndroid) {
-    // Android: Intent URL로 기본 브라우저(Chrome) 강제 실행
     const host = safeUrl.replace(/^https?:\/\//, '');
     window.location.href = `intent://${host}#Intent;scheme=https;action=android.intent.action.VIEW;end`;
     return true;
   } else {
-    // iOS: window.open으로 Safari 탈출 시도 (최신 카카오톡 등에서 동작)
     const opened = window.open(safeUrl, '_blank', 'noopener,noreferrer');
     return !!opened;
   }
@@ -93,38 +89,25 @@ export function GoogleAuthButton({ mode = 'login', className = '' }: GoogleAuthB
       const origin = process.env.NEXT_PUBLIC_SITE_URL || window.location.origin;
       const redirectUrl = `${origin}/auth/callback`;
 
-      // 프로덕션 환경에서 redirectUrl hostname 검증 (open redirect 방지)
       if (process.env.NODE_ENV === 'production' && process.env.NEXT_PUBLIC_SITE_URL) {
         const allowedHost = new URL(process.env.NEXT_PUBLIC_SITE_URL).hostname;
         const redirectHost = new URL(redirectUrl).hostname;
         if (redirectHost !== allowedHost) {
-          if (process.env.NODE_ENV !== 'production') {
-            console.error('Blocked redirect to disallowed host:', redirectHost);
-          }
           return;
         }
       }
 
-      const { error } = await supabase.auth.signInWithOAuth({
+      await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: { redirectTo: redirectUrl },
       });
-
-      if (error) {
-        if (process.env.NODE_ENV !== 'production') {
-          console.error('Google sign-in error:', error);
-        }
-      }
-    } catch (error) {
-      if (process.env.NODE_ENV !== 'production') {
-        console.error('Unexpected error:', error);
-      }
+    } catch {
+      // sign-in errors are surfaced via Supabase redirect
     } finally {
       setLoading(false);
     }
   };
 
-  // 인앱 브라우저: 외부 브라우저 탈출 UI
   if (browser.inApp) {
     if (showCopyFallback) {
       return (
@@ -158,7 +141,6 @@ export function GoogleAuthButton({ mode = 'login', className = '' }: GoogleAuthB
     );
   }
 
-  // 일반 브라우저
   return (
     <button
       onClick={handleGoogleSignIn}

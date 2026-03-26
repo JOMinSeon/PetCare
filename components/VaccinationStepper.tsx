@@ -36,7 +36,7 @@ export function VaccinationStepper({ species, petId }: { species: string; petId:
         .from('pet_vaccinations')
         .select('vaccine_name')
         .eq('pet_id', petId);
-      if (error) { console.error('백신 기록 불러오기 실패:', error.message); return; }
+      if (error) { setSaveError('백신 기록을 불러오지 못했습니다.'); return; }
       if (data) setCompleted(new Set(data.map((r: { vaccine_name: string }) => r.vaccine_name)));
     };
     load();

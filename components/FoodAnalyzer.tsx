@@ -84,7 +84,6 @@ export function FoodAnalyzer({ petInfo }: { petInfo: PetInfo }) {
   const inputRef = useRef<HTMLInputElement>(null);
   const resultRef = useRef<HTMLDivElement>(null);
 
-  // 분석 완료 시 결과 섹션으로 자동 스크롤
   useEffect(() => {
     if (analysis) {
       resultRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });

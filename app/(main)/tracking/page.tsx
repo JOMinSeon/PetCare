@@ -4,7 +4,6 @@ import { useRouter } from 'next/navigation';
 import { getInitialTrackingData, getHealthLogs, saveHealthLogFromTracking } from '@/app/actions/health';
 import { Scale, Flame, TrendingUp, TrendingDown, Minus, Plus, ChevronDown } from 'lucide-react';
 
-// Recharts를 lazy load하여 초기 번들 크기 감소
 const TrackingCharts = lazy(() => import('@/components/TrackingCharts'));
 
 interface Pet {
