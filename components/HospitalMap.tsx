@@ -155,7 +155,8 @@ export function HospitalMap({
       }
     };
 
-    const geocoder = new window.kakao!.maps.services.Geocoder();
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const geocoder = new (window.kakao!.maps as any).services.Geocoder();
 
     hospitals.forEach((hospital) => {
       if (hospital.latitude && hospital.longitude) {
@@ -163,7 +164,7 @@ export function HospitalMap({
         addMarker(hospital, position);
       } else if (hospital.address) {
         geocoder.addressSearch(hospital.address, (result, status) => {
-          if (status === window.kakao!.maps.services.Status.OK && result.length > 0) {
+          if (status === 'OK' && result.length > 0) {
             const position = new window.kakao!.maps.LatLng(
               parseFloat(result[0].y),
               parseFloat(result[0].x)
