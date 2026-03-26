@@ -149,17 +149,17 @@ export function HospitalSearch({ onSelectHospital }: Props) {
               placeholder="병원명 또는 주소로 검색"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="w-full pl-10 pr-4 py-2.5 rounded-xl md:rounded-r-none border"
+              className="w-full pl-10 pr-4 py-2.5 rounded-l-xl rounded-r-none border"
               style={{ borderColor: 'var(--color-border)' }}
             />
           </div>
           <button
             type="submit"
-            className="hidden md:flex items-center gap-1.5 px-5 py-2.5 rounded-r-xl font-semibold text-white ripple flex-shrink-0"
+            className="flex items-center gap-1.5 px-4 py-2.5 rounded-r-xl font-semibold text-white ripple flex-shrink-0 text-sm"
             style={{ background: 'linear-gradient(135deg, var(--color-primary-500), var(--color-secondary-600))' }}
           >
             <Search size={16} />
-            검색
+            <span className="hidden sm:inline">검색</span>
           </button>
         </div>
 
@@ -215,13 +215,6 @@ export function HospitalSearch({ onSelectHospital }: Props) {
           </div>
         </div>
 
-        <button
-          type="submit"
-          className="w-full md:hidden py-2.5 rounded-xl font-semibold text-white ripple"
-          style={{ background: 'linear-gradient(135deg, var(--color-primary-500), var(--color-secondary-600))' }}
-        >
-          검색
-        </button>
       </form>
 
       {loading && (
