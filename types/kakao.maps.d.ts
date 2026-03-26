@@ -70,5 +70,26 @@ declare namespace kakao {
     namespace event {
       function addListener(target: Marker | Map, type: string, handler: () => void): void;
     }
+
+    namespace services {
+      enum Status {
+        OK = 'OK',
+        ZERO_RESULT = 'ZERO_RESULT',
+        ERROR = 'ERROR',
+      }
+
+      interface AddressResult {
+        x: string;
+        y: string;
+        address_name: string;
+      }
+
+      class Geocoder {
+        addressSearch(
+          address: string,
+          callback: (result: AddressResult[], status: Status) => void
+        ): void;
+      }
+    }
   }
 }
