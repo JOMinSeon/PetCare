@@ -141,16 +141,26 @@ export function HospitalSearch({ onSelectHospital }: Props) {
   return (
     <div className="space-y-4">
       <form onSubmit={handleSearch} className="flex flex-col gap-3">
-        <div className="relative">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
-          <input
-            type="text"
-            placeholder="병원명 또는 주소로 검색"
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="w-full pl-10 pr-4 py-2.5 rounded-xl border"
-            style={{ borderColor: 'var(--color-border)' }}
-          />
+        <div className="flex">
+          <div className="relative flex-1">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
+            <input
+              type="text"
+              placeholder="병원명 또는 주소로 검색"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="w-full pl-10 pr-4 py-2.5 rounded-xl md:rounded-r-none border"
+              style={{ borderColor: 'var(--color-border)' }}
+            />
+          </div>
+          <button
+            type="submit"
+            className="hidden md:flex items-center gap-1.5 px-5 py-2.5 rounded-r-xl font-semibold text-white ripple flex-shrink-0"
+            style={{ background: 'linear-gradient(135deg, var(--color-primary-500), var(--color-secondary-600))' }}
+          >
+            <Search size={16} />
+            검색
+          </button>
         </div>
 
         <div className="flex flex-wrap gap-2">
@@ -207,7 +217,7 @@ export function HospitalSearch({ onSelectHospital }: Props) {
 
         <button
           type="submit"
-          className="w-full md:w-[50px] md:mx-auto py-2.5 rounded-xl font-semibold text-white ripple"
+          className="w-full md:hidden py-2.5 rounded-xl font-semibold text-white ripple"
           style={{ background: 'linear-gradient(135deg, var(--color-primary-500), var(--color-secondary-600))' }}
         >
           검색
@@ -242,55 +252,109 @@ export function HospitalSearch({ onSelectHospital }: Props) {
       )}
 
       {viewMode === 'map' && (
-        <div className="space-y-4">
-          {locationError && (
-            <p className="text-sm text-center py-2" style={{ color: 'var(--color-warning)' }}>
-              {locationError}
-            </p>
-          )}
-          <HospitalMap
-            hospitals={hospitals}
-            onSelectHospital={handleMapHospitalSelect}
-            selectedHospitalId={selectedHospital?.id}
-            center={userLocation || undefined}
-          />
-          {!loading && !error && hospitals.length === 0 && (
-            <p className="text-sm text-center" style={{ color: 'var(--color-text-muted)' }}>
-              검색 결과가 없습니다
-            </p>
-          )}
-          {selectedHospital && (
-            <div className="card rounded-xl p-4 space-y-3 border-2 border-primary"
-              style={{ borderColor: 'var(--color-primary-200)', background: 'var(--color-primary-50)' }}>
-              <div className="flex items-start justify-between">
-                <div>
-                  <h3 className="font-bold" style={{ color: 'var(--color-text-primary)' }}>
-                    {selectedHospital.name}
-                  </h3>
-                  <p className="text-xs mt-0.5" style={{ color: 'var(--color-text-muted)' }}>
-                    {selectedHospital.address}
-                  </p>
-                </div>
-                {selectedHospital.distance !== undefined && (
-                  <span className="text-xs font-medium px-2 py-1 rounded-full"
-                    style={{ background: 'var(--color-primary-100)', color: 'var(--color-primary-600)' }}>
-                    {formatDistance(selectedHospital.distance)}
-                  </span>
-                )}
-              </div>
-              <button
-                onClick={() => handleMapHospitalSelect(selectedHospital)}
-                className="w-full py-2 rounded-lg text-sm font-medium text-white"
-                style={{ background: 'var(--color-primary-500)' }}
+        <div className="flex flex-col md:flex-row gap-3">
+          {/* 데스크탑 전용 사이드바: 병원 목록 */}
+          <div className="hidden md:flex md:flex-col md:w-72 md:flex-shrink-0 md:max-h-[calc(100vh-300px)] md:overflow-y-auto gap-2">
+            {hospitals.map((hospital) => (
+              <div
+                key={`sidebar-${hospital.id}`}
+                className="card card-hover rounded-xl p-3 cursor-pointer transition-all"
+                style={selectedHospital?.id === hospital.id ? {
+                  border: '2px solid var(--color-primary-400)',
+                  background: 'var(--color-primary-50)',
+                } : { border: '1px solid var(--color-border)' }}
+                onClick={() => handleMapHospitalSelect(hospital)}
               >
-                예약하기
-              </button>
-            </div>
-          )}
+                <div className="flex items-start justify-between gap-2">
+                  <div className="flex-1 min-w-0">
+                    <h3 className="font-semibold text-sm truncate" style={{ color: 'var(--color-text-primary)' }}>
+                      {hospital.name}
+                    </h3>
+                    <p className="text-xs truncate mt-0.5" style={{ color: 'var(--color-text-muted)' }}>
+                      <MapPin size={10} className="inline mr-0.5" />
+                      {hospital.address}
+                    </p>
+                  </div>
+                  {hospital.distance !== undefined && (
+                    <span className="text-xs font-medium px-1.5 py-0.5 rounded-full flex-shrink-0"
+                      style={{ background: 'var(--color-primary-50)', color: 'var(--color-primary-600)' }}>
+                      {formatDistance(hospital.distance)}
+                    </span>
+                  )}
+                </div>
+                <div className="flex flex-wrap gap-1 mt-1.5">
+                  {hospital.is_24h && (
+                    <span className="text-xs px-1.5 py-0.5 rounded-full bg-red-50 text-red-600">24시간</span>
+                  )}
+                  {hospital.departments?.slice(0, 2).map((dept) => (
+                    <span key={dept} className="text-xs px-1.5 py-0.5 rounded-full"
+                      style={{ background: 'var(--color-surface-2)', color: 'var(--color-text-secondary)' }}>
+                      {dept}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            ))}
+            {!loading && !error && hospitals.length === 0 && (
+              <div className="p-6 text-center">
+                <MapPin className="mx-auto mb-2 text-gray-300" size={32} />
+                <p className="text-sm" style={{ color: 'var(--color-text-muted)' }}>검색 결과가 없습니다</p>
+              </div>
+            )}
+          </div>
+
+          {/* 지도 영역 */}
+          <div className="flex-1 min-w-0 space-y-3">
+            {locationError && (
+              <p className="text-sm text-center py-2" style={{ color: 'var(--color-warning)' }}>
+                {locationError}
+              </p>
+            )}
+            <HospitalMap
+              hospitals={hospitals}
+              onSelectHospital={handleMapHospitalSelect}
+              selectedHospitalId={selectedHospital?.id}
+              center={userLocation || undefined}
+              className="h-[50vh] md:h-[calc(100vh-300px)] md:min-h-[500px]"
+            />
+            {!loading && !error && hospitals.length === 0 && (
+              <p className="text-sm text-center md:hidden" style={{ color: 'var(--color-text-muted)' }}>
+                검색 결과가 없습니다
+              </p>
+            )}
+            {selectedHospital && (
+              <div className="card rounded-xl p-4 space-y-3"
+                style={{ border: '2px solid var(--color-primary-200)', background: 'var(--color-primary-50)' }}>
+                <div className="flex items-start justify-between">
+                  <div>
+                    <h3 className="font-bold" style={{ color: 'var(--color-text-primary)' }}>
+                      {selectedHospital.name}
+                    </h3>
+                    <p className="text-xs mt-0.5" style={{ color: 'var(--color-text-muted)' }}>
+                      {selectedHospital.address}
+                    </p>
+                  </div>
+                  {selectedHospital.distance !== undefined && (
+                    <span className="text-xs font-medium px-2 py-1 rounded-full"
+                      style={{ background: 'var(--color-primary-100)', color: 'var(--color-primary-600)' }}>
+                      {formatDistance(selectedHospital.distance)}
+                    </span>
+                  )}
+                </div>
+                <button
+                  onClick={() => handleMapHospitalSelect(selectedHospital)}
+                  className="w-full py-2 rounded-lg text-sm font-medium text-white"
+                  style={{ background: 'var(--color-primary-500)' }}
+                >
+                  예약하기
+                </button>
+              </div>
+            )}
+          </div>
         </div>
       )}
 
-      <div className="space-y-3">
+      <div className={`space-y-3${viewMode === 'map' ? ' md:hidden' : ''}`}>
         {hospitals.map((hospital) => (
           <div
             key={hospital.id}

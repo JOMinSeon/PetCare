@@ -109,7 +109,7 @@ export default function HospitalsPage() {
         className="px-6 py-5 border-b"
         style={{ background: 'var(--color-surface)', borderColor: 'var(--color-border)' }}
       >
-        <div className="max-w-3xl mx-auto">
+        <div className="max-w-3xl md:max-w-5xl mx-auto">
           <h1 className="text-xl font-bold" style={{ color: 'var(--color-text-primary)' }}>동물병원 검색</h1>
           <p className="text-sm mt-0.5" style={{ color: 'var(--color-text-muted)' }}>
             내 주변 제휴 병원을 검색하고 예약을 관리하세요
@@ -117,7 +117,7 @@ export default function HospitalsPage() {
         </div>
       </div>
 
-      <div className="max-w-3xl mx-auto px-6 py-6">
+      <div className="max-w-3xl md:max-w-5xl mx-auto px-6 py-6">
         <div className="flex gap-2 mb-6">
           <button
             onClick={() => setActiveTab('search')}

@@ -61,7 +61,7 @@ export function HospitalMap({
   onSelectHospital,
   selectedHospitalId,
   center,
-  className = '',
+  className = 'h-[50vh] md:h-[calc(65vh)] min-h-[300px]',
 }: Props) {
   const mapRef = useRef<HTMLDivElement>(null);
   const [mapLoaded, setMapLoaded] = useState(false);
@@ -217,7 +217,7 @@ export function HospitalMap({
   if (error) {
     return (
       <div className={`flex items-center justify-center rounded-xl ${className}`}
-        style={{ background: 'var(--color-surface-2)', border: '1px solid var(--color-border)', height: 400 }}>
+        style={{ background: 'var(--color-surface-2)', border: '1px solid var(--color-border)' }}>
         <div className="text-center p-4">
           <MapPin className="mx-auto mb-2 text-gray-400" size={32} />
           <p className="text-sm" style={{ color: 'var(--color-text-muted)' }}>{error}</p>
@@ -231,16 +231,7 @@ export function HospitalMap({
       <div
         ref={mapRef}
         className={`rounded-xl overflow-hidden ${className}`}
-        style={{ height: '400px', minHeight: '400px' }}
       />
-      <style jsx>{`
-        @media (min-width: 768px) {
-          div.rounded-xl.overflow-hidden {
-            height: 70vh !important;
-            min-height: 500px !important;
-          }
-        }
-      `}</style>
       {!mapLoaded && (
         <div className="absolute inset-0 flex items-center justify-center rounded-xl"
           style={{ background: 'var(--color-surface-2)' }}>
