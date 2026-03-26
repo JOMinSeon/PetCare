@@ -16,15 +16,34 @@ function detectInAppBrowser(): { inApp: boolean; isAndroid: boolean; isIOS: bool
   return { inApp, isAndroid, isIOS };
 }
 
+const ALLOWED_ORIGINS = [
+  process.env.NEXT_PUBLIC_SITE_URL,
+  typeof window !== 'undefined' ? window.location.origin : undefined,
+].filter(Boolean) as string[];
+
 function openExternalBrowser(url: string, isAndroid: boolean): boolean {
+  // URL 파싱 및 origin allowlist 검증
+  let parsed: URL;
+  try {
+    parsed = new URL(url);
+  } catch {
+    return false;
+  }
+  if (!ALLOWED_ORIGINS.includes(parsed.origin)) {
+    return false;
+  }
+  // 프래그먼트 제거 (intent URL 인젝션 방지)
+  parsed.hash = '';
+  const safeUrl = parsed.toString();
+
   if (isAndroid) {
     // Android: Intent URL로 기본 브라우저(Chrome) 강제 실행
-    const host = url.replace(/^https?:\/\//, '');
+    const host = safeUrl.replace(/^https?:\/\//, '');
     window.location.href = `intent://${host}#Intent;scheme=https;action=android.intent.action.VIEW;end`;
     return true;
   } else {
     // iOS: window.open으로 Safari 탈출 시도 (최신 카카오톡 등에서 동작)
-    const opened = window.open(url, '_blank');
+    const opened = window.open(safeUrl, '_blank', 'noopener,noreferrer');
     return !!opened;
   }
 }
@@ -74,14 +93,32 @@ export function GoogleAuthButton({ mode = 'login', className = '' }: GoogleAuthB
       const origin = process.env.NEXT_PUBLIC_SITE_URL || window.location.origin;
       const redirectUrl = `${origin}/auth/callback`;
 
+      // 프로덕션 환경에서 redirectUrl hostname 검증 (open redirect 방지)
+      if (process.env.NODE_ENV === 'production' && process.env.NEXT_PUBLIC_SITE_URL) {
+        const allowedHost = new URL(process.env.NEXT_PUBLIC_SITE_URL).hostname;
+        const redirectHost = new URL(redirectUrl).hostname;
+        if (redirectHost !== allowedHost) {
+          if (process.env.NODE_ENV !== 'production') {
+            console.error('Blocked redirect to disallowed host:', redirectHost);
+          }
+          return;
+        }
+      }
+
       const { error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: { redirectTo: redirectUrl },
       });
 
-      if (error) console.error('Google sign-in error:', error);
+      if (error) {
+        if (process.env.NODE_ENV !== 'production') {
+          console.error('Google sign-in error:', error);
+        }
+      }
     } catch (error) {
-      console.error('Unexpected error:', error);
+      if (process.env.NODE_ENV !== 'production') {
+        console.error('Unexpected error:', error);
+      }
     } finally {
       setLoading(false);
     }
