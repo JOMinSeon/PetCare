@@ -207,7 +207,7 @@ export function HospitalSearch({ onSelectHospital }: Props) {
 
         <button
           type="submit"
-          className="w-full py-2.5 rounded-xl font-semibold text-white ripple"
+          className="w-full md:w-[50px] md:mx-auto py-2.5 rounded-xl font-semibold text-white ripple"
           style={{ background: 'linear-gradient(135deg, var(--color-primary-500), var(--color-secondary-600))' }}
         >
           검색
