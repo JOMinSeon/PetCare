@@ -163,7 +163,7 @@ export function HospitalMap({
         const position = new window.kakao!.maps.LatLng(hospital.latitude, hospital.longitude);
         addMarker(hospital, position);
       } else if (hospital.address) {
-        geocoder.addressSearch(hospital.address, (result, status) => {
+        geocoder.addressSearch(hospital.address, (result: kakao.maps.services.AddressResult[], status: kakao.maps.services.Status) => {
           if (status === 'OK' && result.length > 0) {
             const position = new window.kakao!.maps.LatLng(
               parseFloat(result[0].y),
