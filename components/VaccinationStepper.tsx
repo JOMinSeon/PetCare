@@ -44,10 +44,11 @@ export function VaccinationStepper({ species, petId }: { species: string; petId:
 
   const toggle = async (vaccineName: string) => {
     if (toggling) return;
+    const isDone = completed.has(vaccineName);
+    if (isDone && !window.confirm('접종 완료 표시를 취소하시겠어요?')) return;
     setToggling(vaccineName);
     setSaveError('');
     const supabase = getBrowserDb();
-    const isDone = completed.has(vaccineName);
     if (isDone) {
       const { error } = await supabase
         .from('pet_vaccinations')

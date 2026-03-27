@@ -11,6 +11,7 @@ const TABS = [
 export function PetDetailTabs({ activeTab, petId }: { activeTab: string; petId: string }) {
   return (
     <div
+      role="tablist"
       className="flex border-b"
       style={{ background: 'var(--color-surface)', borderColor: 'var(--color-border)' }}
     >
@@ -20,6 +21,8 @@ export function PetDetailTabs({ activeTab, petId }: { activeTab: string; petId: 
           <Link
             key={key}
             href={`/pets/${petId}?tab=${key}`}
+            role="tab"
+            aria-selected={active}
             className="flex flex-1 items-center justify-center gap-1.5 py-3 text-sm font-medium border-b-2 transition-colors"
             style={{
               borderColor: active ? 'var(--color-primary-500)' : 'transparent',

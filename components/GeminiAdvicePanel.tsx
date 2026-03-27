@@ -82,7 +82,16 @@ export function GeminiAdvicePanel({ petId }: { petId: string }) {
                 }
               >
                 {m.parts.map((part, i) =>
-                  part.type === 'text' ? <span key={i}>{part.text}</span> : null
+                  part.type === 'text' ? (
+                    <span key={i}>
+                      {part.text.split('\n').map((line, j, arr) => (
+                        <span key={j}>
+                          {line}
+                          {j < arr.length - 1 && <br />}
+                        </span>
+                      ))}
+                    </span>
+                  ) : null
                 )}
               </div>
             </div>

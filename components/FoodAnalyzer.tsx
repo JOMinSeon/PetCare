@@ -161,8 +161,9 @@ export function FoodAnalyzer({ petInfo }: { petInfo: PetInfo }) {
   };
 
   return (
+    <div className="md:flex md:gap-6">
     <div
-      className="rounded-xl border overflow-hidden"
+      className="rounded-xl border overflow-hidden md:w-1/2"
       style={{ background: 'var(--color-surface)', borderColor: 'var(--color-border)' }}
     >
       {/* Header */}
@@ -273,19 +274,20 @@ export function FoodAnalyzer({ petInfo }: { petInfo: PetInfo }) {
           )}
         </button>
 
-        {/* ── Analysis Result ── */}
-        {analysis && (
-          <div ref={resultRef}>
-            <AnalysisDisplay result={analysis} />
-          </div>
-        )}
-
         {/* Disclaimer */}
         <div className="flex items-start gap-2 text-xs" style={{ color: 'var(--color-text-muted)' }}>
           <AlertTriangle size={12} className="mt-0.5 flex-shrink-0" />
           <span>분석 결과는 AI 추정값이며, 건강 문제가 있는 반려동물은 수의사 상담을 권장합니다.</span>
         </div>
       </form>
+    </div>
+
+    {/* ── Analysis Result ── */}
+    {analysis && (
+      <div ref={resultRef} className="md:w-1/2 mt-4 md:mt-0">
+        <AnalysisDisplay result={analysis} />
+      </div>
+    )}
     </div>
   );
 }

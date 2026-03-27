@@ -44,11 +44,19 @@ export function PetTypeOnboarding() {
         <div className="grid grid-cols-3 gap-3">
           {PET_TYPES.map(({ value, label, emoji, desc }) => {
             const isSelected = selected === value;
+            const isDisabled = value === 'other';
             return (
               <button
                 key={value}
-                onClick={() => handleSelect(value)}
-                className="rounded-2xl border-2 p-4 text-center space-y-2 transition-all hover:-translate-y-0.5 hover:shadow-md"
+                onClick={() => {
+                  if (isDisabled) return;
+                  handleSelect(value);
+                }}
+                className={`rounded-2xl border-2 p-4 text-center space-y-2 transition-all${
+                  isDisabled
+                    ? ' opacity-50 cursor-not-allowed pointer-events-none'
+                    : ' hover:-translate-y-0.5 hover:shadow-md'
+                }`}
                 style={{
                   background: isSelected ? 'var(--color-primary-50)' : 'var(--color-bg)',
                   borderColor: isSelected ? 'var(--color-primary-500)' : 'var(--color-border)',
@@ -64,6 +72,14 @@ export function PetTypeOnboarding() {
                 <p className="text-xs leading-snug" style={{ color: 'var(--color-text-muted)' }}>
                   {desc}
                 </p>
+                {isDisabled && (
+                  <span
+                    className="inline-block text-[10px] px-1.5 py-0.5 rounded-full border"
+                    style={{ color: 'var(--color-text-muted)', borderColor: 'var(--color-border)' }}
+                  >
+                    곧 지원 예정
+                  </span>
+                )}
               </button>
             );
           })}

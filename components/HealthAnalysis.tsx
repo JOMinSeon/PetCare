@@ -4,17 +4,17 @@ import { Sparkles, AlertTriangle, CheckCircle, TrendingUp, TrendingDown, Minus, 
 import type { HealthAnalysisResult } from '@/app/api/health-analysis/route';
 
 const TREND_CONFIG = {
-  improving: { label: '호전 중', icon: TrendingUp,   color: '#16a34a', bg: '#f0fdf4' },
-  stable:    { label: '안정적', icon: Minus,          color: '#2563eb', bg: '#eff6ff' },
-  declining: { label: '주의 필요', icon: TrendingDown, color: '#dc2626', bg: '#fef2f2' },
-  insufficient: { label: '데이터 부족', icon: BarChart2, color: '#9ca3af', bg: '#f9fafb' },
+  improving:    { label: '호전 중',    icon: TrendingUp,   color: 'var(--color-success)', bg: 'var(--food-ok-bg)' },
+  stable:       { label: '안정적',    icon: Minus,          color: 'var(--color-info)',    bg: 'var(--color-surface-2)' },
+  declining:    { label: '주의 필요', icon: TrendingDown, color: 'var(--color-danger)',  bg: 'var(--food-bad-bg)' },
+  insufficient: { label: '데이터 부족', icon: BarChart2, color: 'var(--color-text-muted)', bg: 'var(--color-surface-2)' },
 };
 
 function ScoreRing({ score }: { score: number }) {
   const radius = 44;
   const circ = 2 * Math.PI * radius;
   const progress = (score / 100) * circ;
-  const color = score >= 75 ? '#16a34a' : score >= 50 ? '#f59e0b' : '#dc2626';
+  const color = score >= 75 ? 'var(--color-success)' : score >= 50 ? 'var(--color-warning)' : 'var(--color-danger)';
 
   return (
     <div className="relative w-28 h-28 flex-shrink-0">
@@ -75,7 +75,7 @@ export function HealthAnalysis({ petId, hasLogs }: { petId: string; hasLogs: boo
         <div className="flex items-start gap-3 mb-4">
           <div
             className="flex h-10 w-10 items-center justify-center rounded-xl flex-shrink-0"
-            style={{ background: 'linear-gradient(135deg, #f0fdf4, #dcfce7)' }}
+            style={{ background: 'var(--color-surface-2)' }}
           >
             <Sparkles size={20} style={{ color: 'var(--color-primary-500)' }} />
           </div>
@@ -92,7 +92,7 @@ export function HealthAnalysis({ petId, hasLogs }: { petId: string; hasLogs: boo
         {!hasLogs && (
           <div
             className="rounded-xl p-3 mb-4 flex items-center gap-2 text-sm"
-            style={{ background: '#fefce8', color: '#92400e', border: '1px solid #fde68a' }}
+            style={{ background: 'var(--food-warn-bg)', color: 'var(--food-warn-text)', border: '1px solid var(--color-border)' }}
           >
             <AlertTriangle size={15} />
             건강 기록이 없으면 분석 정확도가 낮을 수 있어요. 체중을 먼저 기록해보세요.
@@ -103,7 +103,7 @@ export function HealthAnalysis({ petId, hasLogs }: { petId: string; hasLogs: boo
           onClick={analyze}
           disabled={loading}
           className="w-full rounded-xl py-3 text-sm font-bold text-white transition-all hover:opacity-90 disabled:opacity-50 flex items-center justify-center gap-2"
-          style={{ background: 'linear-gradient(135deg, #2D6A4F, #52B788)' }}
+          style={{ background: 'linear-gradient(135deg, var(--color-secondary-600), var(--color-secondary-500))' }}
         >
           {loading ? (
             <>
@@ -119,7 +119,7 @@ export function HealthAnalysis({ petId, hasLogs }: { petId: string; hasLogs: boo
         </button>
 
         {error && (
-          <p className="mt-3 text-sm text-center" style={{ color: '#dc2626' }}>{error}</p>
+          <p className="mt-3 text-sm text-center" style={{ color: 'var(--color-danger)' }}>{error}</p>
         )}
       </div>
 
@@ -166,16 +166,16 @@ export function HealthAnalysis({ petId, hasLogs }: { petId: string; hasLogs: boo
           {result.alerts.length > 0 && (
             <div
               className="rounded-2xl border p-5 space-y-2"
-              style={{ background: '#fef2f2', borderColor: '#fecaca' }}
+              style={{ background: 'var(--food-bad-bg)', borderColor: 'var(--food-bad-border)' }}
             >
-              <h3 className="font-semibold text-sm flex items-center gap-1.5" style={{ color: '#991b1b' }}>
+              <h3 className="font-semibold text-sm flex items-center gap-1.5" style={{ color: 'var(--food-bad-text)' }}>
                 <AlertTriangle size={15} />
                 이상 징후
               </h3>
               <ul className="space-y-1.5">
                 {result.alerts.map((alert, i) => (
-                  <li key={i} className="flex items-start gap-2 text-sm" style={{ color: '#dc2626' }}>
-                    <span className="mt-1 w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ background: '#dc2626' }} />
+                  <li key={i} className="flex items-start gap-2 text-sm" style={{ color: 'var(--food-bad-text)' }}>
+                    <span className="mt-1 w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ background: 'var(--food-bad-dot)' }} />
                     {alert}
                   </li>
                 ))}
@@ -190,7 +190,7 @@ export function HealthAnalysis({ petId, hasLogs }: { petId: string; hasLogs: boo
               style={{ background: 'var(--color-surface)', borderColor: 'var(--color-border)' }}
             >
               <h3 className="font-semibold text-sm flex items-center gap-1.5" style={{ color: 'var(--color-text-primary)' }}>
-                <CheckCircle size={15} style={{ color: '#16a34a' }} />
+                <CheckCircle size={15} style={{ color: 'var(--color-success)' }} />
                 맞춤형 케어 조언
               </h3>
               <ul className="space-y-2">

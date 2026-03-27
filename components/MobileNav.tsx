@@ -1,15 +1,13 @@
 'use client';
 import Link from 'next/link';
-import { Home, Scale, Utensils, Calendar, Users, Settings, Map as MapIcon } from 'lucide-react';
+import { Home, Scale, Utensils, Map as MapIcon, Settings } from 'lucide-react';
 import { usePathname } from 'next/navigation';
 
 const mobileTabs = [
   { href: '/pets',              icon: Home,     label: '홈' },
   { href: '/tracking',          icon: Scale,    label: '체중' },
   { href: '/analyze-food',      icon: Utensils, label: 'AI분석' },
-  { href: '/hospitals?view=map',icon: MapIcon,  label: '지도' },
-  { href: '/calendar',          icon: Calendar, label: '캘린더' },
-  { href: '/community',         icon: Users,    label: '커뮤니티' },
+  { href: '/hospitals?view=map',icon: MapIcon,  label: '병원' },
   { href: '/settings',          icon: Settings, label: '설정' },
 ];
 
@@ -37,7 +35,7 @@ export function MobileNav() {
               }}
             >
               <Icon size={18} aria-hidden="true" />
-              <span className="text-[10px] font-semibold leading-none tracking-tight">{label}</span>
+              <span className="text-[11px] font-semibold leading-none tracking-tight">{label}</span>
             </Link>
           );
         })}

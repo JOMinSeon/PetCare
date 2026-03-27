@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { Search, MapPin, Phone, Clock, Calendar, X, Map as MapIcon, List } from 'lucide-react';
 import { HospitalMap, getCurrentLocation } from './HospitalMap';
@@ -124,7 +124,6 @@ export function HospitalSearch({ onSelectHospital }: Props) {
 
   const handleMapHospitalSelect = (hospital: Hospital) => {
     setSelectedHospital(hospital);
-    setShowBooking(true);
   };
 
   const formatDistance = (km?: number) => {
@@ -335,7 +334,7 @@ export function HospitalSearch({ onSelectHospital }: Props) {
                   )}
                 </div>
                 <button
-                  onClick={() => handleMapHospitalSelect(selectedHospital)}
+                  onClick={() => setShowBooking(true)}
                   className="w-full py-2 rounded-lg text-sm font-medium text-white"
                   style={{ background: 'var(--color-primary-500)' }}
                 >
@@ -406,6 +405,51 @@ export function HospitalSearch({ onSelectHospital }: Props) {
         ))}
       </div>
 
+      {/* 모바일 바텀시트: 지도에서 병원 선택 시 표시 */}
+      <div
+        className={`md:hidden fixed bottom-0 left-0 right-0 z-40 transition-transform duration-300${
+          viewMode === 'map' && selectedHospital ? ' translate-y-0' : ' translate-y-full'
+        }`}
+        style={{ background: 'var(--color-surface)' }}
+      >
+        <div className="rounded-t-2xl px-4 pt-3 pb-6 space-y-3">
+          {/* 드래그 핸들 */}
+          <div className="w-10 h-1 rounded-full bg-gray-300 mx-auto mb-3" />
+
+          {selectedHospital && (
+            <>
+              <div className="flex items-start justify-between gap-3">
+                <div className="flex-1 min-w-0">
+                  <h3 className="font-bold text-base truncate" style={{ color: 'var(--color-text-primary)' }}>
+                    {selectedHospital.name}
+                  </h3>
+                  <p className="text-xs mt-0.5 truncate" style={{ color: 'var(--color-text-muted)' }}>
+                    <MapPin size={11} className="inline mr-0.5" />
+                    {selectedHospital.address}
+                  </p>
+                </div>
+                <button
+                  onClick={() => setSelectedHospital(null)}
+                  className="flex-shrink-0 p-1 rounded-full"
+                  style={{ color: 'var(--color-text-muted)' }}
+                  aria-label="닫기"
+                >
+                  <X size={18} />
+                </button>
+              </div>
+
+              <button
+                onClick={() => setShowBooking(true)}
+                className="w-full py-3 rounded-xl text-sm font-semibold text-white"
+                style={{ background: 'linear-gradient(135deg, var(--color-primary-500), var(--color-secondary-600))' }}
+              >
+                예약하기
+              </button>
+            </>
+          )}
+        </div>
+      </div>
+
       {showBooking && selectedHospital && (
         <HospitalBookingModal
           hospital={selectedHospital}
@@ -427,6 +471,54 @@ function HospitalBookingModal({ hospital, onClose }: { hospital: Hospital; onClo
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  const modalRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const previouslyFocused = document.activeElement as HTMLElement | null;
+    const FOCUSABLE_SELECTOR =
+      'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])';
+
+    const focusableElements = modalRef.current
+      ? Array.from(modalRef.current.querySelectorAll<HTMLElement>(FOCUSABLE_SELECTOR))
+      : [];
+
+    if (focusableElements.length > 0) {
+      focusableElements[0].focus();
+    }
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key !== 'Tab') return;
+
+      const elements = modalRef.current
+        ? Array.from(modalRef.current.querySelectorAll<HTMLElement>(FOCUSABLE_SELECTOR))
+        : [];
+
+      if (elements.length === 0) return;
+
+      const first = elements[0];
+      const last = elements[elements.length - 1];
+
+      if (e.shiftKey) {
+        if (document.activeElement === first) {
+          e.preventDefault();
+          last.focus();
+        }
+      } else {
+        if (document.activeElement === last) {
+          e.preventDefault();
+          first.focus();
+        }
+      }
+    };
+
+    document.addEventListener('keydown', handleKeyDown);
+
+    return () => {
+      document.removeEventListener('keydown', handleKeyDown);
+      previouslyFocused?.focus();
+    };
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -469,7 +561,7 @@ function HospitalBookingModal({ hospital, onClose }: { hospital: Hospital; onClo
     return (
       <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
         <div className="absolute inset-0 bg-black/50" onClick={onClose} />
-        <div className="relative bg-white rounded-2xl p-6 max-w-sm w-full space-y-4 animate-fade-in">
+        <div ref={modalRef} className="relative rounded-2xl p-6 max-w-sm w-full space-y-4 animate-fade-in" style={{ background: 'var(--color-surface)' }}>
           <div className="text-center">
             <div className="w-16 h-16 mx-auto rounded-full flex items-center justify-center mb-4"
               style={{ background: 'var(--color-primary-100)' }}>
@@ -498,12 +590,12 @@ function HospitalBookingModal({ hospital, onClose }: { hospital: Hospital; onClo
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       <div className="absolute inset-0 bg-black/50" onClick={onClose} />
-      <div className="relative bg-white rounded-2xl p-6 max-w-md w-full space-y-4 animate-fade-in max-h-[90vh] overflow-y-auto">
+      <div ref={modalRef} className="relative rounded-2xl p-6 max-w-md w-full space-y-4 animate-fade-in max-h-[90vh] overflow-y-auto" style={{ background: 'var(--color-surface)' }}>
         <div className="flex items-center justify-between">
           <h3 className="text-lg font-bold" style={{ color: 'var(--color-text-primary)' }}>
             {hospital.name}
           </h3>
-          <button onClick={onClose} className="p-1 rounded-full hover:bg-gray-100">
+          <button onClick={onClose} className="p-1 rounded-full" style={{ color: 'var(--color-text-muted)' }}>
             <X size={20} />
           </button>
         </div>
@@ -572,7 +664,7 @@ function HospitalBookingModal({ hospital, onClose }: { hospital: Hospital; onClo
             <textarea
               value={chiefComplaint}
               onChange={(e) => setChiefComplaint(e.target.value)}
-              placeholder="어떤方面的问题으로 내원하시나요?"
+              placeholder="어떤 증상으로 내원하시나요? (예: 구토, 식욕 저하, 다리를 절어요)"
               rows={3}
               className="w-full px-3 py-2.5 rounded-xl border resize-none"
               style={{ borderColor: 'var(--color-border)' }}
