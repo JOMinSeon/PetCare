@@ -9,6 +9,20 @@ export default function LoginForm() {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [anonymousLoading, setAnonymousLoading] = useState(false);
+
+  const handleAnonymousLogin = async () => {
+    setAnonymousLoading(true);
+    setError('');
+    const supabase = getBrowserDb();
+    const { error } = await supabase.auth.signInAnonymously();
+    if (error) {
+      setError('비회원 로그인에 실패했습니다.');
+      setAnonymousLoading(false);
+    } else {
+      window.location.href = '/landing';
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -36,6 +50,14 @@ export default function LoginForm() {
       </div>
 
       <GoogleAuthButton mode="login" />
+
+      <button
+        onClick={handleAnonymousLogin}
+        disabled={anonymousLoading}
+        className="w-full rounded-lg border border-gray-300 bg-gray-50 py-2.5 px-3 text-sm font-medium text-gray-700 hover:bg-gray-100 disabled:opacity-50 transition-colors"
+      >
+        {anonymousLoading ? '비회원 로그인 중...' : '비회원으로 로그인'}
+      </button>
 
       <div className="relative">
         <div className="absolute inset-0 flex items-center">
