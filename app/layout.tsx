@@ -33,6 +33,13 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="ko" suppressHydrationWarning>
+      <head>
+        <script
+          async
+          src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9434023098844146"
+          crossOrigin="anonymous"
+        />
+      </head>
       <body
         className={`${notoSansKR.variable} ${dmSans.variable} ${geistMono.variable} antialiased`}
       >

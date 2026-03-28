@@ -1,0 +1,48 @@
+{
+    "files.autoSave": "afterDelay",
+    "chat.mcp.gallery.enabled": true,
+    "workbench.editor.autoLockGroups": {
+        "workbench.editor.chatSession": true
+    },
+    "claudeCode.preferredLocation": "panel",
+    "claudeCode.selectedModel": "minimax-m2.7",
+    "claudeCode.environmentVariables": [],
+    "[javascriptreact]": {
+        "editor.defaultFormatter": "rvest.vs-code-prettier-eslint"
+    },
+    "editor.formatOnSave": true,
+    "github.copilot.chat.anthropic.useMessagesApi": false,
+    "workbench.editor.empty.hint": "hidden",
+    "explorer.confirmDelete": false,
+    "terminal.integrated.initialHint": false,
+    "security.allowedUNCHosts": [
+        "wsl.localhost"
+    ],
+    "workbench.startupEditor": "none",
+    "terminal.integrated.profiles.windows": {
+        "PowerShell": {
+            "path": "C:\\WINDOWS\\System32\\WindowsPowerShell\\v1.0\\powershell.exe"
+        },
+        "Command Prompt": {
+            "path": [
+                "${env:windir}\\Sysnative\\cmd.exe",
+                "${env:windir}\\System32\\cmd.exe"
+            ],
+            "args": [],
+            "icon": "terminal-cmd"
+        },
+        "Git Bash": {
+            "source": "Git Bash",
+            "icon": "terminal-git-bash"
+        },
+        "Ubuntu (WSL)": {
+            "path": "C:\\WINDOWS\\System32\\wsl.exe",
+            "args": [
+                "-d",
+                "Ubuntu"
+            ]
+        }
+    },
+    "terminal.integrated.defaultProfile.windows": "PowerShell",
+    "git.autofetch": true
+}
