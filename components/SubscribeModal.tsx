@@ -11,6 +11,12 @@ interface Props {
   onClose: () => void;
 }
 
+interface Agreements {
+  terms: boolean;
+  privacy: boolean;
+  autoPay: boolean;
+}
+
 export default function SubscribeModal({ planId, onClose }: Props) {
   const router = useRouter();
   const plan = PLAN_MAP[planId] ?? PLAN_MAP['premium'];
@@ -18,12 +24,15 @@ export default function SubscribeModal({ planId, onClose }: Props) {
   const [userId, setUserId] = useState('');
   const [userEmail, setUserEmail] = useState('');
   const [phone, setPhone] = useState('');
-  const [hasPhone, setHasPhone] = useState(true);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const [initDone, setInitDone] = useState(false);
 
-  const [agreements, setAgreements] = useState({ terms: false, privacy: false, autoPay: false });
+  const [agreements, setAgreements] = useState<Agreements>({
+    terms: false,
+    privacy: false,
+    autoPay: false,
+  });
   const allAgreed = Object.values(agreements).every(Boolean);
 
   const nextBillingDate = (() => {
@@ -43,19 +52,6 @@ export default function SubscribeModal({ planId, onClose }: Props) {
       const user = session.user;
       setUserId(user.id);
       setUserEmail(user.email ?? '');
-
-      const { data } = await supabase
-        .from('profiles')
-        .select('phone')
-        .eq('user_id', user.id)
-        .single();
-
-      if (data?.phone) {
-        setPhone(data.phone);
-        setHasPhone(true);
-      } else {
-        setHasPhone(false);
-      }
       setInitDone(true);
     };
     init();
@@ -65,26 +61,32 @@ export default function SubscribeModal({ planId, onClose }: Props) {
     setAgreements({ terms: checked, privacy: checked, autoPay: checked });
   };
 
-  const handleSubmit = async () => {
-    if (!userId) return;
-    if (!phone) { setError('휴대폰 번호를 입력해 주세요.'); return; }
-    if (!allAgreed) { setError('필수 약관에 모두 동의해 주세요.'); return; }
+  const handleCardRegistration = async () => {
+    if (!userId || !phone) {
+      setError('휴대폰 번호를 입력해 주세요.');
+      return;
+    }
+    if (!allAgreed) {
+      setError('필수 약관에 모두 동의해 주세요.');
+      return;
+    }
 
     setError('');
     setLoading(true);
 
     try {
       const supabase = getBrowserDb();
-      if (phone) {
-        await supabase.from('profiles').upsert({ user_id: userId, phone }, { onConflict: 'user_id' });
-      }
+      await supabase.from('profiles').upsert(
+        { user_id: userId, phone },
+        { onConflict: 'user_id' }
+      );
 
       const issueResponse = await PortOne.requestIssueBillingKey({
         storeId: process.env.NEXT_PUBLIC_PORTONE_STORE_ID!,
         channelKey: process.env.NEXT_PUBLIC_PORTONE_CHANNEL_KEY!,
         billingKeyMethod: 'CARD',
         issueId: `issue-${userId.replace(/-/g, '')}-${Date.now()}`,
-        issueName: `${plan.label} 구독 카드 등록`,
+        issueName: `${plan.label} 플랜 구독`,
         customer: {
           customerId: userId.replace(/-/g, ''),
           email: userEmail,
@@ -109,35 +111,24 @@ export default function SubscribeModal({ planId, onClose }: Props) {
         return;
       }
 
-      const storeRes = await fetch('/api/portone/billing-key', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ billingKey, planId: plan.id }),
-      });
-
-      if (!storeRes.ok) {
-        const { error: msg } = await storeRes.json();
-        setError(msg || '카드 정보 저장에 실패했습니다.');
-        setLoading(false);
-        return;
-      }
-
       const subRes = await fetch('/api/portone/subscribe', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ billingKey, planId: plan.id }),
       });
 
+      const result = await subRes.json();
+
       if (!subRes.ok) {
-        const { error: msg } = await subRes.json();
-        setError(msg || '구독 신청에 실패했습니다.');
+        setError(result.error || '구독 신청에 실패했습니다.');
         setLoading(false);
         return;
       }
 
       onClose();
       router.push('/settings?payment=success');
-    } catch {
+    } catch (e) {
+      console.error('Subscription error:', e);
       setError('결제 중 오류가 발생했습니다.');
       setLoading(false);
     }
@@ -176,7 +167,6 @@ export default function SubscribeModal({ planId, onClose }: Props) {
           </div>
         ) : (
           <div className="px-6 py-6 space-y-5">
-
             <div
               className="rounded-2xl border-2 p-4 space-y-2"
               style={{ background: 'var(--color-primary-50)', borderColor: 'var(--color-primary-500)' }}
@@ -191,6 +181,7 @@ export default function SubscribeModal({ planId, onClose }: Props) {
               <div>
                 <label className="block text-xs font-medium mb-1" style={{ color: 'var(--color-text-muted)' }}>이메일</label>
                 <input
+                  type="email"
                   value={userEmail}
                   readOnly
                   className="w-full rounded-xl border px-4 py-2.5 text-sm outline-none"
@@ -199,8 +190,7 @@ export default function SubscribeModal({ planId, onClose }: Props) {
               </div>
               <div>
                 <label className="block text-xs font-medium mb-1" style={{ color: 'var(--color-text-muted)' }}>
-                  휴대폰 번호
-                  {!hasPhone && <span className="ml-1 font-normal" style={{ color: '#dc2626' }}>* 결제에 필요합니다</span>}
+                  휴대폰 번호 <span style={{ color: '#dc2626' }}>* 결제에 필요합니다</span>
                 </label>
                 <input
                   type="tel"
@@ -210,7 +200,7 @@ export default function SubscribeModal({ planId, onClose }: Props) {
                   className="w-full rounded-xl border px-4 py-2.5 text-sm outline-none transition-all focus:border-[var(--color-primary-500)]"
                   style={{
                     background: 'var(--color-bg)',
-                    borderColor: !hasPhone && !phone ? '#fca5a5' : 'var(--color-border)',
+                    borderColor: !phone ? '#fca5a5' : 'var(--color-border)',
                     color: 'var(--color-text-primary)',
                   }}
                 />
@@ -282,19 +272,18 @@ export default function SubscribeModal({ planId, onClose }: Props) {
 
             <div className="space-y-2 pb-2">
               <button
-                onClick={handleSubmit}
-                disabled={loading || !allAgreed}
+                onClick={handleCardRegistration}
+                disabled={loading || !allAgreed || !phone}
                 className="w-full rounded-xl py-4 font-bold text-white transition-all disabled:opacity-50 flex items-center justify-center gap-2"
                 style={{ background: 'var(--color-primary-500)' }}
               >
                 <CreditCard size={18} />
-                {loading ? '처리 중...' : 'KG이니시스 결제창에서 결제'}
+                {loading ? '처리 중...' : 'KG이니시스 결제창에서 카드 등록'}
               </button>
               <p className="text-center text-xs" style={{ color: 'var(--color-text-muted)' }}>
                 카드 정보는 KG이니시스 보안 창에서 안전하게 입력합니다 · 언제든 취소 가능
               </p>
             </div>
-
           </div>
         )}
       </div>
