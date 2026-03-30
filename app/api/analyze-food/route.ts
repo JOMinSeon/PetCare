@@ -144,7 +144,7 @@ export async function POST(req: Request) {
         user_id: user.id,
         ai_monthly_usage: sameMonth ? usage + 1 : 1,
         ai_usage_reset_month: currentMonth,
-      });
+      }, { onConflict: 'user_id' });
     }
     const image = formData.get('image') as File | null;
     const ingredientsText = formData.get('ingredientsText') as string | null;

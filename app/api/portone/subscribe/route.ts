@@ -22,6 +22,16 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('subscription_plan, subscription_status')
+      .eq('user_id', user.id)
+      .single();
+
+    if (profile?.subscription_status === 'active' && profile?.subscription_plan === planId) {
+      return NextResponse.json({ error: '이미 구독 중입니다.' }, { status: 409 });
+    }
+
     const { data: billingData, error: billingError } = await supabase
       .from('billing_keys')
       .select('billing_key')
@@ -29,12 +39,28 @@ export async function POST(req: NextRequest) {
       .eq('status', 'active')
       .single();
 
+    console.log('billing key lookup:', { userId: user.id, billingError, billingData: billingData?.billing_key?.slice(0, 20) });
+
     if (billingError || !billingData) {
       return NextResponse.json({ error: 'No active billing key found' }, { status: 400 });
     }
 
-    const orderId = `order-${user.id.replace(/-/g, '')}-${Date.now()}`;
+    const idempotencyKey = `${user.id}-${planId}-${Math.floor(Date.now() / 1000)}`;
+    const orderId = `order-${user.id.replace(/-/g, '')}-${idempotencyKey}`;
     const orderName = `${plan.label} 플랜 구독`;
+
+    const { data: existingPayment } = await supabase
+      .from('payment_history')
+      .select('id')
+      .eq('user_id', user.id)
+      .eq('plan', planId)
+      .eq('status', 'success')
+      .order('created_at', { ascending: false })
+      .limit(1);
+
+    if (existingPayment && existingPayment.length > 0) {
+      return NextResponse.json({ error: '이미 구독 중입니다.' }, { status: 409 });
+    }
 
     const paymentResult = await requestPayment(
       billingData.billing_key,
@@ -43,8 +69,15 @@ export async function POST(req: NextRequest) {
       orderName
     );
 
-    if (paymentResult.error) {
-      return NextResponse.json({ error: paymentResult.error.message || '결제 처리 중 오류가 발생했습니다.' }, { status: 400 });
+    console.log('PortOne payment result:', JSON.stringify(paymentResult));
+
+    if (paymentResult.status === 406) {
+      console.error('PortOne 406:', paymentResult.body);
+      return NextResponse.json({ error: paymentResult.body?.message || '결제가 거절되었습니다.' }, { status: 406 });
+    }
+
+    if (paymentResult.body?.error) {
+      return NextResponse.json({ error: paymentResult.body?.error?.message || '결제 처리 중 오류가 발생했습니다.' }, { status: 400 });
     }
 
     const { error: updateError } = await supabase
@@ -62,7 +95,7 @@ export async function POST(req: NextRequest) {
 
     const { error: historyError } = await supabase.from('payment_history').insert({
       user_id: user.id,
-      payment_id: paymentResult.transactionId || orderId,
+      payment_id: paymentResult.body.transactionId || orderId,
       plan: planId,
       amount: plan.monthlyPrice,
       status: 'success',
@@ -75,7 +108,7 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json({
       success: true,
-      transactionId: paymentResult.transactionId,
+      transactionId: paymentResult.body.transactionId,
     });
   } catch (error) {
     console.error('Subscribe API error:', error);

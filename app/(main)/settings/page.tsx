@@ -114,7 +114,7 @@ function SettingsContent() {
 
   const upsertProfile = async (patch: Record<string, unknown>) => {
     const supabase = getBrowserDb();
-    await supabase.from('profiles').upsert({ user_id: userId, ...patch });
+    await supabase.from('profiles').upsert({ user_id: userId, ...patch }, { onConflict: 'user_id' });
   };
 
   const saveProfile = async () => {

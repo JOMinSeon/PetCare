@@ -5,15 +5,6 @@ import { cookies } from 'next/headers';
 const PORTONE_API_SECRET = process.env.PORTONE_API_SECRET!;
 const PORTONE_API_URL = 'https://api.portone.io';
 
-export async function issueBillingKey(billingKey: string) {
-  const res = await fetch(`${PORTONE_API_URL}/v2/billing-key/${billingKey}`, {
-    headers: {
-      'Authorization': `PortOne ${PORTONE_API_SECRET}`,
-    },
-  });
-  return res.json();
-}
-
 export async function requestPayment(billingKey: string, amount: number, orderId: string, orderName: string) {
   const res = await fetch(`${PORTONE_API_URL}/v2/payment/billing`, {
     method: 'POST',
@@ -29,30 +20,8 @@ export async function requestPayment(billingKey: string, amount: number, orderId
       currency: 'KRW',
     }),
   });
-  return res.json();
-}
-
-export async function cancelPayment(transactionId: string, reason?: string) {
-  const res = await fetch(`${PORTONE_API_URL}/v2/payment/${transactionId}/cancel`, {
-    method: 'POST',
-    headers: {
-      'Authorization': `PortOne ${PORTONE_API_SECRET}`,
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({
-      reason,
-    }),
-  });
-  return res.json();
-}
-
-export async function getPaymentStatus(paymentId: string) {
-  const res = await fetch(`${PORTONE_API_URL}/v2/payment/${paymentId}`, {
-    headers: {
-      'Authorization': `PortOne ${PORTONE_API_SECRET}`,
-    },
-  });
-  return res.json();
+  const body = await res.json();
+  return { status: res.status, body };
 }
 
 export async function getServerDb() {
@@ -74,13 +43,5 @@ export async function getServerDb() {
         },
       },
     }
-  );
-}
-
-export function getAdminDb() {
-  return createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!,
-    { auth: { persistSession: false } }
   );
 }

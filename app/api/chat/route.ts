@@ -44,7 +44,7 @@ export async function POST(req: Request) {
         user_id: user.id,
         ai_monthly_usage: sameMonth ? usage + 1 : 1,
         ai_usage_reset_month: currentMonth,
-      });
+      }, { onConflict: 'user_id' });
     }
 
     const { messages, petId } = await req.json();

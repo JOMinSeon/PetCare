@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getServerDb, cancelPayment } from '@/lib/portone';
+import { getServerDb } from '@/lib/portone';
 
 export async function POST(req: NextRequest) {
   try {
@@ -18,21 +18,6 @@ export async function POST(req: NextRequest) {
 
     if (!profile || profile.subscription_plan === 'free') {
       return NextResponse.json({ error: 'No active subscription' }, { status: 400 });
-    }
-
-    const { data: billingData } = await supabase
-      .from('billing_keys')
-      .select('billing_key')
-      .eq('user_id', user.id)
-      .eq('status', 'active')
-      .single();
-
-    if (billingData) {
-      try {
-        await cancelPayment(billingData.billing_key, 'Subscription cancelled by user');
-      } catch (e) {
-        console.error('Failed to cancel with PortOne:', e);
-      }
     }
 
     const { error: updateError } = await supabase

@@ -3,7 +3,18 @@ import { getServerDb } from '@/lib/portone';
 
 export async function POST(req: NextRequest) {
   try {
-    const { billingKey, planId } = await req.json();
+    let billingKey: string | undefined;
+    let planId: string | undefined;
+
+    try {
+      const body = await req.json();
+      billingKey = body.billingKey;
+      planId = body.planId;
+    } catch {
+      return NextResponse.json({ error: 'Invalid JSON body' }, { status: 400 });
+    }
+
+    console.log('billing-key route:', { billingKey: billingKey?.slice(0, 20), planId });
 
     if (!billingKey || !planId) {
       return NextResponse.json({ error: 'billingKey and planId are required' }, { status: 400 });
@@ -13,6 +24,7 @@ export async function POST(req: NextRequest) {
     const { data: { user }, error: authError } = await supabase.auth.getUser();
 
     if (authError || !user) {
+      console.error('billing-key auth error:', authError);
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
@@ -26,6 +38,7 @@ export async function POST(req: NextRequest) {
     });
 
     if (insertError) {
+      console.error('billing-key insert error:', insertError);
       return NextResponse.json({ error: 'Failed to store billing key' }, { status: 500 });
     }
 
@@ -36,25 +49,4 @@ export async function POST(req: NextRequest) {
   }
 }
 
-export async function GET(req: NextRequest) {
-  try {
-    const { searchParams } = new URL(req.url);
-    const billingKey = searchParams.get('billingKey');
 
-    if (!billingKey) {
-      return NextResponse.json({ error: 'billingKey is required' }, { status: 400 });
-    }
-
-    const response = await fetch(`https://api.portone.io/v2/billing-key/${billingKey}`, {
-      headers: {
-        'Authorization': `PortOne ${process.env.PORTONE_API_SECRET}`,
-      },
-    });
-
-    const data = await response.json();
-    return NextResponse.json(data);
-  } catch (error) {
-    console.error('Billing key verification error:', error);
-    return NextResponse.json({ error: 'Failed to verify billing key' }, { status: 500 });
-  }
-}

@@ -35,16 +35,12 @@ export default function SubscribeModal({ planId, onClose }: Props) {
   useEffect(() => {
     const init = async () => {
       const supabase = getBrowserDb();
-      const { data: { user }, error: authError } = await supabase.auth.getUser();
-      if (authError?.code === 'refresh_token_not_found') {
-        await supabase.auth.signOut();
+      const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+      if (sessionError || !session) {
         router.replace('/auth/login');
         return;
       }
-      if (!user) {
-        router.replace('/auth/login');
-        return;
-      }
+      const user = session.user;
       setUserId(user.id);
       setUserEmail(user.email ?? '');
 
@@ -80,7 +76,7 @@ export default function SubscribeModal({ planId, onClose }: Props) {
     try {
       if (!hasPhone) {
         const supabase = getBrowserDb();
-        await supabase.from('profiles').upsert({ user_id: userId, phone });
+        await supabase.from('profiles').upsert({ user_id: userId, phone }, { onConflict: 'user_id' });
       }
 
       const issueResponse = await PortOne.requestIssueBillingKey({
