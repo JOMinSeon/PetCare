@@ -76,6 +76,8 @@ export default function SubscribeModal({ planId, onClose }: Props) {
         { onConflict: 'user_id' }
       );
 
+      const isValidEmail = (email: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+
       const issueResponse = await PortOne.requestIssueBillingKey({
         storeId: process.env.NEXT_PUBLIC_PORTONE_STORE_ID!,
         channelKey: process.env.NEXT_PUBLIC_PORTONE_CHANNEL_KEY!,
@@ -84,7 +86,7 @@ export default function SubscribeModal({ planId, onClose }: Props) {
         issueName: `${plan.label} 플랜 구독`,
         customer: {
           customerId: userId.replace(/-/g, ''),
-          email: userEmail,
+          ...(isValidEmail(userEmail) && { email: userEmail }),
           phoneNumber: phone,
         },
       });
