@@ -18,7 +18,7 @@ export async function requestPayment(billingKey: string, amount: number, orderId
   const res = await fetch(`${PORTONE_API_URL}/v2/payment/billing`, {
     method: 'POST',
     headers: {
-      'Authorization': `Portone ${PORTONE_API_SECRET}`,
+      'Authorization': `PortOne ${PORTONE_API_SECRET}`,
       'Content-Type': 'application/json',
     },
     body: JSON.stringify({

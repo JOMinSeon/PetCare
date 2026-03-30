@@ -44,7 +44,7 @@ export async function POST(req: NextRequest) {
     );
 
     if (paymentResult.error) {
-      return NextResponse.json({ error: paymentResult.error.message }, { status: 400 });
+      return NextResponse.json({ error: paymentResult.error.message || '결제 처리 중 오류가 발생했습니다.' }, { status: 400 });
     }
 
     const { error: updateError } = await supabase
