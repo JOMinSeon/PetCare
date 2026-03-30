@@ -1,149 +1,86 @@
-const BASE_URL = 'https://api.portone.io';
+import { createClient } from '@supabase/supabase-js';
+import { createServerClient } from '@supabase/ssr';
+import { cookies } from 'next/headers';
 
-function authHeader(): string {
-  return `PortOne ${process.env.PORTONE_API_SECRET}`;
-}
+const PORTONE_API_SECRET = process.env.PORTONE_API_SECRET!;
+const PORTONE_API_URL = 'https://api.portone.io';
 
-async function getAccessToken(): Promise<string> {
-  const res = await fetch(`${BASE_URL}/login/api-secret`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ apiSecret: process.env.PORTONE_API_SECRET }),
+export async function issueBillingKey(billingKey: string) {
+  const res = await fetch(`${PORTONE_API_URL}/v2/billing-key/${billingKey}`, {
+    headers: {
+      'Authorization': `PortOne ${PORTONE_API_SECRET}`,
+    },
   });
-  const data = await res.json();
-  return data.accessToken as string;
+  return res.json();
 }
 
-/** 빌링키로 결제 실행 */
-export async function payWithBillingKey(params: {
-  paymentId: string;
-  billingKey: string;
-  orderName: string;
-  amount: number;
-  customerId: string;
-}) {
-  const res = await fetch(`${BASE_URL}/payments/${params.paymentId}/billing-key`, {
+export async function requestPayment(billingKey: string, amount: number, orderId: string, orderName: string) {
+  const res = await fetch(`${PORTONE_API_URL}/v2/payment/billing`, {
     method: 'POST',
     headers: {
+      'Authorization': `Portone ${PORTONE_API_SECRET}`,
       'Content-Type': 'application/json',
-      Authorization: authHeader(),
     },
     body: JSON.stringify({
-      billingKey: params.billingKey,
-      orderName: params.orderName,
-      amount: { total: params.amount },
+      billingKey,
+      amount,
+      orderId,
+      orderName,
       currency: 'KRW',
-      customer: { customerId: params.customerId },
     }),
   });
-  return res.json() as Promise<{
-    status?: string;
-    txId?: string;
-    paymentId?: string;
-    message?: string;
-    code?: string;
-  }>;
-}
-
-/** 빌링키 삭제 */
-export async function deleteBillingKey(billingKey: string) {
-  const res = await fetch(`${BASE_URL}/billing-keys/${billingKey}`, {
-    method: 'DELETE',
-    headers: { Authorization: authHeader() },
-  });
   return res.json();
 }
 
-/** 결제 취소 */
-export async function cancelPayment(params: {
-  paymentId: string;
-  reason: string;
-  amount?: number;
-}) {
-  const body: Record<string, unknown> = { reason: params.reason };
-  if (params.amount !== undefined) {
-    body.amount = params.amount;
-  }
-
-  const res = await fetch(`${BASE_URL}/payments/${params.paymentId}/cancel`, {
+export async function cancelPayment(transactionId: string, reason?: string) {
+  const res = await fetch(`${PORTONE_API_URL}/v2/payment/${transactionId}/cancel`, {
     method: 'POST',
     headers: {
+      'Authorization': `PortOne ${PORTONE_API_SECRET}`,
       'Content-Type': 'application/json',
-      Authorization: authHeader(),
-    },
-    body: JSON.stringify(body),
-  });
-  return res.json();
-}
-
-/** 결제 단건 조회 */
-export async function getPayment(paymentId: string) {
-  const res = await fetch(`${BASE_URL}/payments/${paymentId}`, {
-    headers: { Authorization: authHeader() },
-  });
-  return res.json() as Promise<{
-    status?: string;
-    amount?: { total?: number };
-    customer?: { customerId?: string };
-    code?: string;
-  }>;
-}
-
-/** 빌링키 단건 조회 (소유권 검증용) */
-export async function getBillingKey(billingKey: string) {
-  const res = await fetch(`${BASE_URL}/billing-keys/${billingKey}`, {
-    headers: { Authorization: authHeader() },
-  });
-  return res.json() as Promise<{
-    billingKey?: string;
-    customer?: { customerId?: string };
-    status?: string;
-    code?: string;
-  }>;
-}
-
-/** 카드 정보로 빌링키 직접 발급 (비인증 결제) */
-export async function issueBillingKeyWithCard(params: {
-  customerId: string;
-  email: string;
-  phoneNumber: string;
-  cardNumber: string;
-  expiryYear: string;
-  expiryMonth: string;
-  birthOrBusinessRegistrationNumber: string;
-  passwordTwoDigits: string;
-}) {
-  const res = await fetch(`${BASE_URL}/billing-keys`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: authHeader(),
     },
     body: JSON.stringify({
-      channelKey: process.env.NEXT_PUBLIC_PORTONE_CHANNEL_KEY,
-      customer: {
-        id: params.customerId,
-        email: params.email,
-        phoneNumber: params.phoneNumber,
-      },
-      method: {
-        card: {
-          credential: {
-            number: params.cardNumber.replace(/\D/g, ''),
-            expiryYear: params.expiryYear,
-            expiryMonth: params.expiryMonth,
-            birthOrBusinessRegistrationNumber: params.birthOrBusinessRegistrationNumber,
-            passwordTwoDigits: params.passwordTwoDigits,
-          },
+      reason,
+    }),
+  });
+  return res.json();
+}
+
+export async function getPaymentStatus(paymentId: string) {
+  const res = await fetch(`${PORTONE_API_URL}/v2/payment/${paymentId}`, {
+    headers: {
+      'Authorization': `PortOne ${PORTONE_API_SECRET}`,
+    },
+  });
+  return res.json();
+}
+
+export async function getServerDb() {
+  const cookieStore = await cookies();
+  return createServerClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    {
+      cookies: {
+        getAll() {
+          return cookieStore.getAll();
+        },
+        setAll(cookiesToSet) {
+          try {
+            cookiesToSet.forEach(({ name, value, options }) =>
+              cookieStore.set(name, value, options)
+            );
+          } catch {}
         },
       },
-    }),
-  });
-  return res.json() as Promise<{
-    billingKey?: string;
-    code?: string;
-    message?: string;
-  }>;
+    }
+  );
 }
 
-export { getAccessToken };
+export function getAdminDb() {
+  return createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!,
+    { auth: { persistSession: false } }
+  );
+}
