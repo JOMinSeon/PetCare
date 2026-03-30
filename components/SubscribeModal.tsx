@@ -100,7 +100,8 @@ export default function SubscribeModal({ planId, onClose }: Props) {
         issueName: `${plan.label} 플랜 구독`,
         customer: {
           customerId: userId.replace(/-/g, ''),
-          ...(userName && { name: userName }),
+          // @ts-expect-error - PortOne SDK types incomplete
+          name: userName.trim() || undefined,
           ...(isValidEmail(userEmail) && { email: userEmail }),
           phoneNumber: phone,
         },
