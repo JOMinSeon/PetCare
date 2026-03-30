@@ -24,9 +24,11 @@ export async function POST(req: NextRequest) {
 
     const { data: profile } = await supabase
       .from('profiles')
-      .select('subscription_plan, subscription_status')
+      .select('subscription_plan, subscription_status, phone')
       .eq('user_id', user.id)
       .single();
+
+    const billingKeyCustomerId = user.id.replace(/-/g, '');
 
     if (profile?.subscription_status === 'active' && profile?.subscription_plan === planId) {
       return NextResponse.json({ error: '이미 구독 중입니다.' }, { status: 409 });
@@ -66,7 +68,10 @@ export async function POST(req: NextRequest) {
       billingData.billing_key,
       plan.monthlyPrice,
       orderId,
-      orderName
+      orderName,
+      billingKeyCustomerId,
+      user.email ?? undefined,
+      profile?.phone ?? undefined
     );
 
     console.log('PortOne payment result:', JSON.stringify(paymentResult));

@@ -5,7 +5,15 @@ import { cookies } from 'next/headers';
 const PORTONE_API_SECRET = process.env.PORTONE_API_SECRET!;
 const PORTONE_API_URL = 'https://api.portone.io';
 
-export async function requestPayment(billingKey: string, amount: number, orderId: string, orderName: string) {
+export async function requestPayment(
+  billingKey: string,
+  amount: number,
+  orderId: string,
+  orderName: string,
+  customerId?: string,
+  customerEmail?: string,
+  customerPhone?: string
+) {
   const res = await fetch(`${PORTONE_API_URL}/v2/payment/billing`, {
     method: 'POST',
     headers: {
@@ -18,6 +26,11 @@ export async function requestPayment(billingKey: string, amount: number, orderId
       orderId,
       orderName,
       currency: 'KRW',
+      customer: customerId ? {
+        id: customerId,
+        email: customerEmail,
+        phoneNumber: customerPhone,
+      } : undefined,
     }),
   });
   const body = await res.json();
