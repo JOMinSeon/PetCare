@@ -43,8 +43,13 @@ export async function POST(req: NextRequest) {
 
     console.log('billing key lookup:', { userId: user.id, billingError, billingData: billingData?.billing_key?.slice(0, 20) });
 
-    if (billingError || !billingData) {
-      return NextResponse.json({ error: 'No active billing key found' }, { status: 400 });
+    if (billingError) {
+      console.error('Billing key lookup error:', billingError);
+      return NextResponse.json({ error: '빌링키 조회 중 오류가 발생했습니다.' }, { status: 400 });
+    }
+
+    if (!billingData) {
+      return NextResponse.json({ error: '등록된 카드가 없습니다. 다시 카드 등록을 진행해 주세요.' }, { status: 400 });
     }
 
     const idempotencyKey = `${user.id}-${planId}-${Math.floor(Date.now() / 1000)}`;

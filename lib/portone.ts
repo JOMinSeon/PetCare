@@ -14,6 +14,12 @@ export async function requestPayment(
   customerEmail?: string,
   customerPhone?: string
 ) {
+  const customer = customerId ? {
+    id: customerId,
+    ...(customerEmail && { email: customerEmail }),
+    ...(customerPhone && { phoneNumber: customerPhone }),
+  } : undefined;
+
   const res = await fetch(`${PORTONE_API_URL}/v2/payment/billing`, {
     method: 'POST',
     headers: {
@@ -26,11 +32,7 @@ export async function requestPayment(
       orderId,
       orderName,
       currency: 'KRW',
-      customer: customerId ? {
-        id: customerId,
-        email: customerEmail,
-        phoneNumber: customerPhone,
-      } : undefined,
+      ...(customer && { customer }),
     }),
   });
   const body = await res.json();
