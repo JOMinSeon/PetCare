@@ -3,7 +3,8 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Check, ArrowLeft, Sparkles } from 'lucide-react';
 import { getBrowserDb } from '@/lib/supabase-browser';
-import { PLANS, formatPrice, type BillingCycle } from '@/lib/plans';
+import { PLANS, formatPrice, type BillingCycle, type PlanId } from '@/lib/plans';
+import SubscribeModal from '@/components/SubscribeModal';
 
 const PLAN_ORDER = ['free', 'premium', 'clinic'];
 
@@ -13,6 +14,7 @@ export default function PlansPage() {
   const [currentCycle, setCurrentCycle] = useState<BillingCycle>('monthly');
   const [billingCycle, setBillingCycle] = useState<BillingCycle>('monthly');
   const [loading, setLoading] = useState(true);
+  const [modalPlanId, setModalPlanId] = useState<PlanId | null>(null);
 
   useEffect(() => {
     const init = async () => {
@@ -220,7 +222,7 @@ export default function PlansPage() {
                 </button>
               ) : (
                 <button
-                  onClick={() => router.push(`/subscribe?planId=${plan.id}&cycle=${billingCycle}`)}
+                  onClick={() => setModalPlanId(plan.id as PlanId)}
                   className="w-full rounded-xl py-2.5 text-sm font-bold text-white transition-all hover:opacity-90"
                   style={{ background: isClinic ? 'var(--color-accent-500)' : 'var(--color-primary-500)' }}
                 >
@@ -235,6 +237,14 @@ export default function PlansPage() {
           VAT 포함 · 자동 갱신 · KG이니시스 안전 결제
         </p>
       </div>
+
+      {modalPlanId && (
+        <SubscribeModal
+          planId={modalPlanId}
+          initialCycle={billingCycle}
+          onClose={() => setModalPlanId(null)}
+        />
+      )}
     </div>
   );
 }

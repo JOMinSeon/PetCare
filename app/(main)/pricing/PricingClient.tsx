@@ -1,9 +1,10 @@
 'use client';
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { PLANS, type BillingCycle } from '@/lib/plans';
+import { PLANS, type BillingCycle, type PlanId } from '@/lib/plans';
 import { BillingToggle } from '@/components/pricing/BillingToggle';
 import { PricingCard } from '@/components/pricing/PricingCard';
+import SubscribeModal from '@/components/SubscribeModal';
 
 interface Props {
   currentPlanId?: string;
@@ -13,13 +14,14 @@ interface Props {
 export default function PricingClient({ currentPlanId, currentCycle }: Props) {
   const router = useRouter();
   const [cycle, setCycle] = useState<BillingCycle>('monthly');
+  const [modalPlanId, setModalPlanId] = useState<PlanId | null>(null);
 
   const handleSelect = (planId: string) => {
     if (planId === 'free') {
       router.push('/auth/login');
       return;
     }
-    router.push(`/subscribe?planId=${planId}&cycle=${cycle}`);
+    setModalPlanId(planId as PlanId);
   };
 
   return (
@@ -37,6 +39,14 @@ export default function PricingClient({ currentPlanId, currentCycle }: Props) {
           />
         ))}
       </div>
+
+      {modalPlanId && (
+        <SubscribeModal
+          planId={modalPlanId}
+          initialCycle={cycle}
+          onClose={() => setModalPlanId(null)}
+        />
+      )}
     </>
   );
 }

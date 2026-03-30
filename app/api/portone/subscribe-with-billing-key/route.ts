@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 import { getServerDb } from '@/lib/supabase-server';
-import { issueBillingKeyWithCard, payWithBillingKey, getPayment, deleteBillingKey } from '@/lib/portone';
+import { payWithBillingKey, getPayment, deleteBillingKey, getBillingKey } from '@/lib/portone';
 import { getPlanAmount, getOrderName, type PlanId, type BillingCycle } from '@/lib/plans';
 
 const VALID_PLANS: PlanId[] = ['premium', 'clinic'];
@@ -18,49 +18,33 @@ export async function POST(req: NextRequest) {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
-  const {
-    cardNumber, expiryYear, expiryMonth,
-    birthOrBusiness, passwordTwoDigits,
-    planId, billingCycle, couponCode, changeCard,
-  } = await req.json();
+  const { billingKey, planId, billingCycle, couponCode, changeCard } = await req.json();
 
-  if (!cardNumber || !expiryYear || !expiryMonth || !birthOrBusiness || !passwordTwoDigits) {
-    return NextResponse.json({ error: '카드 정보를 모두 입력해 주세요.' }, { status: 400 });
+  if (!billingKey) {
+    return NextResponse.json({ error: '빌링키가 없습니다.' }, { status: 400 });
   }
 
-  // 사용자 전화번호 조회
+  // 빌링키 소유권 검증
+  const billingKeyInfo = await getBillingKey(billingKey);
+  if (
+    billingKeyInfo.code ||
+    billingKeyInfo.customer?.customerId !== user.id.replace(/-/g, '')
+  ) {
+    return NextResponse.json({ error: '유효하지 않은 빌링키입니다.' }, { status: 400 });
+  }
+
   const { data: profile } = await supabase
     .from('profiles')
-    .select('phone, nicepay_bid')
+    .select('nicepay_bid')
     .eq('user_id', user.id)
     .single();
-
-  // 빌링키 발급
-  const issueResult = await issueBillingKeyWithCard({
-    customerId: user.id.replace(/-/g, ''),
-    email: user.email ?? '',
-    phoneNumber: profile?.phone ?? '',
-    cardNumber,
-    expiryYear,
-    expiryMonth,
-    birthOrBusinessRegistrationNumber: birthOrBusiness,
-    passwordTwoDigits,
-  });
-
-  if (!issueResult.billingKey || issueResult.code) {
-    return NextResponse.json(
-      { error: issueResult.message || '카드 등록에 실패했습니다.' },
-      { status: 400 }
-    );
-  }
-
-  const billingKey = issueResult.billingKey;
 
   // 카드 변경 모드: 결제 없이 빌링키만 교체
   if (changeCard) {
     const db = adminDb();
-    if (profile?.nicepay_bid && profile.nicepay_bid !== billingKey) {
-      await deleteBillingKey(profile.nicepay_bid);
+    const oldBillingKey = profile?.nicepay_bid;
+    if (oldBillingKey && oldBillingKey !== billingKey) {
+      await deleteBillingKey(oldBillingKey).catch(() => null);
     }
     const { error } = await db
       .from('profiles')
@@ -72,11 +56,11 @@ export async function POST(req: NextRequest) {
 
   // 구독 결제 모드
   const cycle: BillingCycle = billingCycle === 'yearly' ? 'yearly' : 'monthly';
-  if (!planId || !VALID_PLANS.includes(planId)) {
+  if (!planId || !VALID_PLANS.includes(planId as PlanId)) {
     return NextResponse.json({ error: 'Invalid plan' }, { status: 400 });
   }
 
-  const baseAmount = getPlanAmount(planId, cycle);
+  const baseAmount = getPlanAmount(planId as PlanId, cycle);
 
   // 쿠폰 할인 적용
   let couponDiscount = 0;
@@ -102,7 +86,7 @@ export async function POST(req: NextRequest) {
   }
 
   const amount = Math.max(0, baseAmount - couponDiscount);
-  const orderName = getOrderName(planId, cycle);
+  const orderName = getOrderName(planId as PlanId, cycle);
   const paymentId = `pay-${planId}-${cycle}-${user.id.replace(/-/g, '')}-${Date.now()}`;
 
   const result = await payWithBillingKey({ paymentId, billingKey, orderName, amount, customerId: user.id });

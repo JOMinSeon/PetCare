@@ -6,6 +6,8 @@ import {
   RefreshCw, X, ChevronRight, Receipt,
 } from 'lucide-react';
 import { getBrowserDb } from '@/lib/supabase-browser';
+import SubscribeModal from '@/components/SubscribeModal';
+import type { PlanId } from '@/lib/plans';
 
 const PLAN_LABELS: Record<string, string> = {
   free: '무료',
@@ -43,6 +45,7 @@ function SubscriptionContent() {
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
   const [history, setHistory] = useState<PaymentRecord[]>([]);
   const [historyLoading, setHistoryLoading] = useState(false);
+  const [showChangeCardModal, setShowChangeCardModal] = useState(false);
 
   useEffect(() => {
     const card = searchParams.get('card');
@@ -214,7 +217,7 @@ function SubscriptionContent() {
                 {retrying ? '결제 중...' : '현재 카드로 재결제'}
               </button>
               <button
-                onClick={() => router.push(`/subscribe?planId=${plan}&changeCard=true`)}
+                onClick={() => setShowChangeCardModal(true)}
                 className="flex-1 rounded-xl py-2 text-xs font-semibold transition-opacity hover:opacity-80"
                 style={{
                   background: 'var(--color-surface)',
@@ -293,7 +296,7 @@ function SubscriptionContent() {
               style={{ background: 'var(--color-surface)', borderColor: 'var(--color-border)' }}
             >
               <button
-                onClick={() => router.push(`/subscribe?planId=${plan}&changeCard=true`)}
+                onClick={() => setShowChangeCardModal(true)}
                 className="flex items-center gap-3 w-full px-5 py-4 text-sm text-left transition-opacity hover:opacity-70"
                 style={{ color: 'var(--color-text-primary)' }}
               >
@@ -418,6 +421,15 @@ function SubscriptionContent() {
           를 확인하세요
         </p>
       </div>
+
+      {/* Card change modal */}
+      {showChangeCardModal && (
+        <SubscribeModal
+          planId={plan as PlanId}
+          changeCard
+          onClose={() => setShowChangeCardModal(false)}
+        />
+      )}
 
       {/* Cancel confirmation modal */}
       {showCancelModal && (
