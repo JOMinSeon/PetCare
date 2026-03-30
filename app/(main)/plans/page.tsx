@@ -3,18 +3,14 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Check, ArrowLeft, Sparkles } from 'lucide-react';
 import { getBrowserDb } from '@/lib/supabase-browser';
-import { PLANS, formatPrice, type BillingCycle, type PlanId } from '@/lib/plans';
-import SubscribeModal from '@/components/SubscribeModal';
+import { PLANS, formatPrice, type BillingCycle } from '@/lib/plans';
 
 const PLAN_ORDER = ['free', 'premium', 'clinic'];
 
 export default function PlansPage() {
   const router = useRouter();
   const [currentPlan, setCurrentPlan] = useState('free');
-  const [currentCycle, setCurrentCycle] = useState<BillingCycle>('monthly');
-  const [billingCycle, setBillingCycle] = useState<BillingCycle>('monthly');
   const [loading, setLoading] = useState(true);
-  const [modalPlanId, setModalPlanId] = useState<PlanId | null>(null);
 
   useEffect(() => {
     const init = async () => {
@@ -24,19 +20,14 @@ export default function PlansPage() {
       if (!user) { router.replace('/auth/login'); return; }
       const { data } = await supabase
         .from('profiles')
-        .select('subscription_plan, billing_cycle')
+        .select('subscription_plan')
         .eq('user_id', user.id)
         .single();
       if (data?.subscription_plan) setCurrentPlan(data.subscription_plan);
-      const cycle: BillingCycle = data?.billing_cycle === 'yearly' ? 'yearly' : 'monthly';
-      setCurrentCycle(cycle);
-      setBillingCycle(cycle);
       setLoading(false);
     };
     init();
   }, [router]);
-
-  const isYearly = billingCycle === 'yearly';
 
   if (loading) return null;
 
@@ -77,49 +68,14 @@ export default function PlansPage() {
           </p>
         </div>
 
-        {/* Billing cycle toggle */}
-        <div className="flex items-center justify-center gap-3">
-          <span
-            className="text-sm font-medium"
-            style={{ color: isYearly ? 'var(--color-text-muted)' : 'var(--color-text-primary)' }}
-          >
-            월간
-          </span>
-          <button
-            onClick={() => setBillingCycle(isYearly ? 'monthly' : 'yearly')}
-            className="relative inline-flex h-7 w-12 items-center overflow-hidden rounded-full transition-colors"
-            style={{ background: isYearly ? 'var(--color-primary-500)' : 'var(--color-border)' }}
-            aria-label="결제 주기 전환"
-          >
-            <span
-              className="inline-block h-5 w-5 rounded-full bg-white shadow transition-transform"
-              style={{ transform: isYearly ? 'translateX(22px)' : 'translateX(2px)' }}
-            />
-          </button>
-          <span
-            className="text-sm font-medium"
-            style={{ color: isYearly ? 'var(--color-text-primary)' : 'var(--color-text-muted)' }}
-          >
-            연간
-          </span>
-          {isYearly && (
-            <span
-              className="rounded-full px-2 py-0.5 text-xs font-bold"
-              style={{ background: 'var(--color-accent-400)', color: '#fff' }}
-            >
-              2개월 무료
-            </span>
-          )}
-        </div>
-
         {/* Plan cards */}
         {PLANS.map((plan) => {
-          const isCurrent = currentPlan === plan.id && currentCycle === billingCycle;
+          const isCurrent = currentPlan === plan.id;
           const isClinic = plan.id === 'clinic';
           const isPremium = plan.id === 'premium';
           const isFree = plan.id === 'free';
 
-          const displayPrice = isYearly ? plan.monthlyEquivalent : plan.monthlyPrice;
+          const displayPrice = plan.monthlyPrice;
 
           return (
             <div
@@ -177,17 +133,7 @@ export default function PlansPage() {
                   {!isFree && (
                     <span className="text-sm" style={{ color: 'var(--color-text-muted)' }}>/월</span>
                   )}
-                  {isYearly && !isFree && (
-                    <span className="ml-1 text-xs line-through" style={{ color: 'var(--color-text-muted)' }}>
-                      {formatPrice(plan.monthlyPrice)}
-                    </span>
-                  )}
                 </div>
-                {isYearly && !isFree && (
-                  <p className="text-xs" style={{ color: 'var(--color-text-muted)' }}>
-                    연 {formatPrice(plan.yearlyPrice)} 일괄 청구
-                  </p>
-                )}
               </div>
 
               {/* Features */}
@@ -222,7 +168,7 @@ export default function PlansPage() {
                 </button>
               ) : (
                 <button
-                  onClick={() => setModalPlanId(plan.id as PlanId)}
+                  onClick={() => router.push(`/subscribe?planId=${plan.id}`)}
                   className="w-full rounded-xl py-2.5 text-sm font-bold text-white transition-all hover:opacity-90"
                   style={{ background: isClinic ? 'var(--color-accent-500)' : 'var(--color-primary-500)' }}
                 >
@@ -237,14 +183,6 @@ export default function PlansPage() {
           VAT 포함 · 자동 갱신 · KG이니시스 안전 결제
         </p>
       </div>
-
-      {modalPlanId && (
-        <SubscribeModal
-          planId={modalPlanId}
-          initialCycle={billingCycle}
-          onClose={() => setModalPlanId(null)}
-        />
-      )}
     </div>
   );
 }

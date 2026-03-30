@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 import { getServerDb } from '@/lib/supabase-server';
-import { payWithBillingKey, getBillingKey, getPayment } from '@/lib/portone';
+import { payWithBillingKey, getBillingKey, getPayment, deleteBillingKey } from '@/lib/portone';
 import { getPlanAmount, getOrderName, type PlanId, type BillingCycle } from '@/lib/plans';
 
 const VALID_PLANS: PlanId[] = ['premium', 'clinic'];
@@ -20,10 +20,33 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
-  const { billingKey, planId, billingCycle, couponCode } = await req.json();
+  const { billingKey, planId, billingCycle, couponCode, changeCard } = await req.json();
   const cycle: BillingCycle = billingCycle === 'yearly' ? 'yearly' : 'monthly';
 
-  if (!billingKey || !planId || !VALID_PLANS.includes(planId)) {
+  if (!billingKey) {
+    return NextResponse.json({ error: '빌링키가 필요합니다.' }, { status: 400 });
+  }
+
+  const { data: profile } = await supabase
+    .from('profiles')
+    .select('phone, nicepay_bid')
+    .eq('user_id', user.id)
+    .single();
+
+  if (changeCard) {
+    const db = adminDb();
+    if (profile?.nicepay_bid && profile.nicepay_bid !== billingKey) {
+      await deleteBillingKey(profile.nicepay_bid);
+    }
+    const { error } = await db
+      .from('profiles')
+      .update({ nicepay_bid: billingKey })
+      .eq('user_id', user.id);
+    if (error) return NextResponse.json({ error: 'DB 저장 실패' }, { status: 500 });
+    return NextResponse.json({ success: true });
+  }
+
+  if (!planId || !VALID_PLANS.includes(planId)) {
     return NextResponse.json({ error: 'Invalid request' }, { status: 400 });
   }
 
@@ -70,7 +93,7 @@ export async function POST(req: NextRequest) {
     billingKey,
     orderName,
     amount,
-    customerId: user.id,
+    customerId: user.id.replace(/-/g, ''),
   });
 
   if (result.code || result.status === 'FAILED') {

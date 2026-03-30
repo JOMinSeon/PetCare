@@ -1,23 +1,21 @@
 'use client';
 import { Check } from 'lucide-react';
-import { formatPrice, type Plan, type BillingCycle } from '@/lib/plans';
+import { formatPrice, type Plan } from '@/lib/plans';
 
 interface Props {
   plan: Plan;
-  cycle: BillingCycle;
   currentPlanId?: string;
-  currentCycle?: BillingCycle;
+  currentCycle?: string;
   onSelect: (planId: string) => void;
 }
 
-export function PricingCard({ plan, cycle, currentPlanId, currentCycle, onSelect }: Props) {
-  const isYearly = cycle === 'yearly';
-  const isCurrent = currentPlanId === plan.id && currentCycle === cycle;
+export function PricingCard({ plan, currentPlanId, currentCycle, onSelect }: Props) {
+  const isCurrent = currentPlanId === plan.id;
   const isClinic = plan.id === 'clinic';
   const isPremium = plan.id === 'premium';
   const isFree = plan.id === 'free';
 
-  const displayPrice = isYearly ? plan.monthlyEquivalent : plan.monthlyPrice;
+  const displayPrice = plan.monthlyPrice;
 
   return (
     <div
@@ -87,20 +85,7 @@ export function PricingCard({ plan, cycle, currentPlanId, currentCycle, onSelect
               /월
             </span>
           )}
-          {isYearly && !isFree && (
-            <span
-              className="ml-1 text-xs line-through"
-              style={{ color: 'var(--color-text-muted)' }}
-            >
-              {formatPrice(plan.monthlyPrice)}
-            </span>
-          )}
         </div>
-        {isYearly && !isFree && (
-          <p className="text-xs" style={{ color: 'var(--color-text-muted)' }}>
-            연 {formatPrice(plan.yearlyPrice)} 일괄 청구
-          </p>
-        )}
       </div>
 
       {/* Features */}

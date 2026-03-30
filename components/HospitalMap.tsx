@@ -19,6 +19,7 @@ function loadKakaoSDK(): Promise<void> {
 
     const existingScript = document.getElementById('kakao-map-sdk') as HTMLScriptElement | null;
     if (existingScript) {
+      // 이미 삽입됐지만 아직 로딩 중
       existingScript.addEventListener('load', () => resolve(), { once: true });
       existingScript.addEventListener('error', () => reject(new Error('SDK 로드 실패')), { once: true });
       return;
@@ -60,14 +61,15 @@ export function HospitalMap({
   onSelectHospital,
   selectedHospitalId,
   center,
-  className = 'h-[50vh] md:h-[calc(65vh)] min-h-[300px]',
+  className = '',
 }: Props) {
   const mapRef = useRef<HTMLDivElement>(null);
   const [mapLoaded, setMapLoaded] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const markersRef = useRef<kakao.maps.Marker[]>([]);
   const mapInstanceRef = useRef<kakao.maps.Map | null>(null);
-  const currentLocationMarkerRef = useRef<kakao.maps.CustomOverlay | null>(null);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const currentLocationMarkerRef = useRef<any>(null);
 
   useEffect(() => {
     if (!mapRef.current) return;
@@ -153,7 +155,8 @@ export function HospitalMap({
       }
     };
 
-    const geocoder = new kakao.maps.services.Geocoder();
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const geocoder = new (window.kakao!.maps as any).services.Geocoder();
 
     hospitals.forEach((hospital) => {
       if (hospital.latitude && hospital.longitude) {
@@ -214,7 +217,7 @@ export function HospitalMap({
   if (error) {
     return (
       <div className={`flex items-center justify-center rounded-xl ${className}`}
-        style={{ background: 'var(--color-surface-2)', border: '1px solid var(--color-border)' }}>
+        style={{ background: 'var(--color-surface-2)', border: '1px solid var(--color-border)', height: 400 }}>
         <div className="text-center p-4">
           <MapPin className="mx-auto mb-2 text-gray-400" size={32} />
           <p className="text-sm" style={{ color: 'var(--color-text-muted)' }}>{error}</p>
@@ -228,6 +231,7 @@ export function HospitalMap({
       <div
         ref={mapRef}
         className={`rounded-xl overflow-hidden ${className}`}
+        style={{ height: '400px', minHeight: '400px' }}
       />
       {!mapLoaded && (
         <div className="absolute inset-0 flex items-center justify-center rounded-xl"
