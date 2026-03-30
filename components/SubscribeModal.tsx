@@ -176,7 +176,7 @@ export default function SubscribeModal({ planId, onClose }: Props) {
 
         {!initDone ? (
           <div className="flex items-center justify-center py-20">
-            <div className="h-6 w-6 rounded-full border-2 border-t-transparent animate-spin" style={{ borderColor: 'var(--color-primary-500)', borderTopColor: 'transparent' }} />
+            <div className="h-6 w-6 rounded-full animate-spin" style={{ border: '2px solid var(--color-primary-500)', borderTopColor: 'transparent' }} />
           </div>
         ) : (
           <div className="px-6 py-6 space-y-5">
