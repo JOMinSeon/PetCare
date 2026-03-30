@@ -51,19 +51,6 @@ export async function POST(req: NextRequest) {
     const orderId = `order-${user.id.replace(/-/g, '')}-${idempotencyKey}`;
     const orderName = `${plan.label} 플랜 구독`;
 
-    const { data: existingPayment } = await supabase
-      .from('payment_history')
-      .select('id')
-      .eq('user_id', user.id)
-      .eq('plan', planId)
-      .eq('status', 'success')
-      .order('created_at', { ascending: false })
-      .limit(1);
-
-    if (existingPayment && existingPayment.length > 0) {
-      return NextResponse.json({ error: '이미 구독 중입니다.' }, { status: 409 });
-    }
-
     const paymentResult = await requestPayment(
       billingData.billing_key,
       plan.monthlyPrice,
