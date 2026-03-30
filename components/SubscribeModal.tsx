@@ -63,6 +63,7 @@ export default function SubscribeModal({ planId, onClose }: Props) {
 
   const handleSubmit = async () => {
     if (!userId) return;
+    if (!userEmail) { setError('이메일을 입력해 주세요.'); return; }
     if (!phone) { setError('휴대폰 번호를 입력해 주세요.'); return; }
     if (!allAgreed) { setError('필수 약관에 모두 동의해 주세요.'); return; }
 
@@ -189,13 +190,20 @@ export default function SubscribeModal({ planId, onClose }: Props) {
 
             <div className="space-y-3">
               <div>
-                <label className="block text-xs font-medium mb-1" style={{ color: 'var(--color-text-muted)' }}>이메일</label>
+                <label className="block text-xs font-medium mb-1" style={{ color: 'var(--color-text-muted)' }}>
+                  이메일 <span style={{ color: '#dc2626' }}>* 결제에 필요합니다</span>
+                </label>
                 <input
                   type="email"
                   value={userEmail}
-                  readOnly
-                  className="w-full rounded-xl border px-4 py-2.5 text-sm outline-none"
-                  style={{ background: 'var(--color-bg)', borderColor: 'var(--color-border)', color: 'var(--color-text-muted)', cursor: 'default' }}
+                  onChange={(e) => setUserEmail(e.target.value)}
+                  placeholder="example@email.com"
+                  className="w-full rounded-xl border px-4 py-2.5 text-sm outline-none transition-all focus:border-[var(--color-primary-500)]"
+                  style={{
+                    background: 'var(--color-bg)',
+                    borderColor: !userEmail ? '#fca5a5' : 'var(--color-border)',
+                    color: 'var(--color-text-primary)',
+                  }}
                 />
               </div>
               <div>
@@ -283,7 +291,7 @@ export default function SubscribeModal({ planId, onClose }: Props) {
             <div className="space-y-2 pb-2">
               <button
                 onClick={handleSubmit}
-                disabled={loading || !allAgreed || !phone}
+                disabled={loading || !allAgreed || !userEmail || !phone}
                 className="w-full rounded-xl py-4 font-bold text-white transition-all disabled:opacity-50 flex items-center justify-center gap-2"
                 style={{ background: 'var(--color-primary-500)' }}
               >
