@@ -74,8 +74,8 @@ export default function SubscribeModal({ planId, onClose }: Props) {
     setLoading(true);
 
     try {
-      if (!hasPhone) {
-        const supabase = getBrowserDb();
+      const supabase = getBrowserDb();
+      if (phone) {
         await supabase.from('profiles').upsert({ user_id: userId, phone }, { onConflict: 'user_id' });
       }
 
