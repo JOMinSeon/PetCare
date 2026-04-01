@@ -1,7 +1,7 @@
 'use client';
 import { useState, useEffect, Suspense } from 'react';
-import { Bell, CreditCard, User, Shield, ChevronRight, Check, LogOut, X, AlertCircle } from 'lucide-react';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { Bell, User, Shield, ChevronRight, Check, LogOut, X } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 import { getBrowserDb } from '@/lib/supabase-browser';
 
 interface ToggleProps {
@@ -26,15 +26,8 @@ function Toggle({ checked, onChange }: ToggleProps) {
   );
 }
 
-const PLAN_OPTIONS = [
-  { id: 'free',    label: '무료',    price: '₩0/월',       features: ['반려동물 1마리', 'AI 건강 상담 5회/월', '기본 건강 기록', '예방접종 알림', '커뮤니티 이용'] },
-  { id: 'premium', label: '프리미엄', price: '₩14,900/월',  features: ['반려동물 3마리', 'AI 상담 무제한', '수의사 원격 상담 3회/월', '건강 리포트 PDF 월 1회', '체중/식이 관리'] },
-  { id: 'clinic',  label: '병원용',  price: '₩49,000/월',  features: ['반려동물 무제한', 'AI 상담 무제한', 'EMR 연동', '수의사 원격 상담 무제한', '병원 연동 API', '전담 매니저'] },
-];
-
 function SettingsContent() {
   const router = useRouter();
-  const searchParams = useSearchParams();
   const [authChecked, setAuthChecked] = useState(false);
   const [userId, setUserId] = useState('');
   const [userEmail, setUserEmail] = useState('');
@@ -46,29 +39,12 @@ function SettingsContent() {
     community: false,
     marketing: false,
   });
-  const [currentPlan, setCurrentPlan] = useState('free');
-  const [planStartedAt, setPlanStartedAt] = useState<string | null>(null);
-  const [aiUsage, setAiUsage] = useState(0);
   const [savedProfile, setSavedProfile] = useState(false);
-  const [paymentMsg, setPaymentMsg] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
 
-  // 비밀번호 변경
   const [showPwModal, setShowPwModal] = useState(false);
   const [newPassword, setNewPassword] = useState('');
   const [pwSaving, setPwSaving] = useState(false);
   const [pwMessage, setPwMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
-
-  // 결제 결과 처리 (리다이렉트 후)
-  useEffect(() => {
-    const payment = searchParams.get('payment');
-    if (payment === 'success') {
-      setPaymentMsg({ type: 'success', text: '결제가 완료되었습니다. 플랜이 업그레이드되었어요!' });
-      router.replace('/settings');
-    } else if (payment === 'failed') {
-      setPaymentMsg({ type: 'error', text: '결제에 실패했습니다. 다시 시도해 주세요.' });
-      router.replace('/settings');
-    }
-  }, [searchParams, router]);
 
   useEffect(() => {
     const init = async () => {
@@ -99,10 +75,6 @@ function SettingsContent() {
           community: data.notif_community,
           marketing: data.notif_marketing,
         });
-        setCurrentPlan(data.subscription_plan ?? 'free');
-        setPlanStartedAt(data.plan_started_at ?? null);
-        const currentMonth = new Date().toISOString().slice(0, 7);
-        setAiUsage(data.ai_usage_reset_month === currentMonth ? (data.ai_monthly_usage ?? 0) : 0);
       } else {
         setNickname(user.email?.split('@')[0] ?? '보호자');
       }
@@ -132,16 +104,6 @@ function SettingsContent() {
       notif_community: newNotifs.community,
       notif_marketing: newNotifs.marketing,
     });
-  };
-
-  const getNextBillingDate = (startedAt: string | null): string => {
-    if (!startedAt) return '';
-    const start = new Date(startedAt);
-    const now = new Date();
-    const next = new Date(start);
-    next.setMonth(next.getMonth() + 1);
-    while (next <= now) next.setMonth(next.getMonth() + 1);
-    return next.toLocaleDateString('ko-KR', { year: 'numeric', month: 'long', day: 'numeric' });
   };
 
   const changePassword = async () => {
@@ -174,7 +136,6 @@ function SettingsContent() {
 
   return (
     <div className="min-h-screen pb-24 md:pb-8" style={{ background: 'var(--color-bg)' }}>
-      {/* Header */}
       <div
         className="px-6 py-5 border-b"
         style={{ background: 'var(--color-surface)', borderColor: 'var(--color-border)' }}
@@ -186,26 +147,6 @@ function SettingsContent() {
       </div>
 
       <div className="max-w-2xl mx-auto px-6 py-6 space-y-6">
-        {/* 결제 결과 메시지 */}
-        {paymentMsg && (
-          <div
-            className="flex items-center gap-3 rounded-xl px-4 py-3 text-sm"
-            style={{
-              background: paymentMsg.type === 'success' ? 'var(--color-primary-50)' : '#fef2f2',
-              color: paymentMsg.type === 'success' ? 'var(--color-primary-600)' : '#dc2626',
-              border: `1px solid ${paymentMsg.type === 'success' ? 'var(--color-primary-200)' : '#fecaca'}`,
-            }}
-          >
-            {paymentMsg.type === 'error' && <AlertCircle size={16} style={{ flexShrink: 0 }} />}
-            {paymentMsg.type === 'success' && <Check size={16} style={{ flexShrink: 0 }} />}
-            <span className="flex-1">{paymentMsg.text}</span>
-            <button onClick={() => setPaymentMsg(null)}>
-              <X size={14} />
-            </button>
-          </div>
-        )}
-
-        {/* Profile */}
         <section className="space-y-3">
           <div className="flex items-center gap-2">
             <User size={15} style={{ color: 'var(--color-text-muted)' }} />
@@ -215,7 +156,6 @@ function SettingsContent() {
             className="rounded-2xl border p-5 space-y-4"
             style={{ background: 'var(--color-surface)', borderColor: 'var(--color-border)' }}
           >
-            {/* Avatar */}
             <div className="flex items-center gap-4">
               <div
                 className="flex h-16 w-16 items-center justify-center rounded-full text-3xl"
@@ -245,8 +185,7 @@ function SettingsContent() {
               </div>
               <div>
                 <label className="block text-xs font-medium mb-1.5" style={{ color: 'var(--color-text-muted)' }}>
-                  휴대폰 번호 <span style={{ color: 'var(--color-primary-500)' }}>*</span>
-                  <span className="ml-1 font-normal" style={{ color: 'var(--color-text-muted)' }}>(유료 구독 필수)</span>
+                  휴대폰 번호
                 </label>
                 <input
                   type="tel"
@@ -283,7 +222,6 @@ function SettingsContent() {
           </div>
         </section>
 
-        {/* Notifications */}
         <section className="space-y-3">
           <div className="flex items-center gap-2">
             <Bell size={15} style={{ color: 'var(--color-text-muted)' }} />
@@ -313,64 +251,6 @@ function SettingsContent() {
           </div>
         </section>
 
-        {/* Subscription */}
-        <section className="space-y-3">
-          <div className="flex items-center gap-2">
-            <CreditCard size={15} style={{ color: 'var(--color-text-muted)' }} />
-            <h2 className="text-sm font-semibold" style={{ color: 'var(--color-text-primary)' }}>구독 & 결제</h2>
-          </div>
-          <div
-            className="rounded-2xl border p-5 space-y-3"
-            style={{ background: 'var(--color-surface)', borderColor: 'var(--color-border)' }}
-          >
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="font-semibold" style={{ color: 'var(--color-text-primary)' }}>
-                  {PLAN_OPTIONS.find((p) => p.id === currentPlan)?.label ?? '무료'} 플랜
-                </p>
-                <p className="text-xs mt-0.5" style={{ color: 'var(--color-text-muted)' }}>
-                  {currentPlan === 'free'
-                    ? `이번 달 AI 상담 ${aiUsage} / 5회`
-                    : planStartedAt
-                    ? `다음 결제일: ${getNextBillingDate(planStartedAt)}`
-                    : ''}
-                </p>
-              </div>
-              <span
-                className="rounded-full px-3 py-1 text-xs font-semibold"
-                style={{
-                  background: currentPlan !== 'free' ? 'var(--color-primary-50)' : 'var(--color-bg)',
-                  color: currentPlan !== 'free' ? 'var(--color-primary-600)' : 'var(--color-text-muted)',
-                  border: `1px solid ${currentPlan !== 'free' ? 'var(--color-primary-200)' : 'var(--color-border)'}`,
-                }}
-              >
-                {currentPlan !== 'free' ? '구독 중' : '무료'}
-              </span>
-            </div>
-            <div className="flex gap-2">
-              <button
-                onClick={() => router.push('/plans')}
-                className="flex-1 rounded-xl py-2.5 text-sm font-medium transition-all hover:opacity-80"
-                style={{ background: 'var(--color-primary-500)', color: '#fff' }}
-              >
-                플랜 보기
-              </button>
-              <button
-                onClick={() => router.push('/subscription')}
-                className="flex-1 rounded-xl py-2.5 text-sm font-medium transition-all hover:opacity-80"
-                style={{
-                  background: 'var(--color-bg)',
-                  color: 'var(--color-text-secondary)',
-                  border: '1px solid var(--color-border)',
-                }}
-              >
-                구독 관리
-              </button>
-            </div>
-          </div>
-        </section>
-
-        {/* Account */}
         <section className="space-y-3">
           <div className="flex items-center gap-2">
             <Shield size={15} style={{ color: 'var(--color-text-muted)' }} />
@@ -400,7 +280,6 @@ function SettingsContent() {
 
       </div>
 
-      {/* 비밀번호 변경 모달 */}
       {showPwModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
           <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={() => setShowPwModal(false)} />
@@ -453,7 +332,6 @@ function SettingsContent() {
       )}
 
       <div className="max-w-2xl mx-auto px-6 pb-6">
-        {/* Logout */}
         <button
           onClick={handleLogout}
           className="w-full rounded-2xl border py-4 text-sm font-medium transition-all hover:opacity-80"
