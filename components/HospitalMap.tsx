@@ -231,7 +231,7 @@ export function HospitalMap({
       <div
         ref={mapRef}
         className={`rounded-xl overflow-hidden ${className}`}
-        style={{ height: '400px', minHeight: '400px' }}
+        style={{ height: '600px', minHeight: '600px' }}
       />
       {!mapLoaded && (
         <div className="absolute inset-0 flex items-center justify-center rounded-xl"
