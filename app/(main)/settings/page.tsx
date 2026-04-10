@@ -1,6 +1,6 @@
-'use client';
+﻿'use client';
 import { useState, useEffect, Suspense } from 'react';
-import { Bell, User, Shield, ChevronRight, Check, LogOut, X } from 'lucide-react';
+import { Bell, User, Shield, ChevronRight, Check, LogOut, X, CreditCard } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { getBrowserDb } from '@/lib/supabase-browser';
 
@@ -46,6 +46,9 @@ function SettingsContent() {
   const [pwSaving, setPwSaving] = useState(false);
   const [pwMessage, setPwMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
 
+  const [subscriptionPlan, setSubscriptionPlan] = useState<string>('free');
+  const [subscriptionStatus, setSubscriptionStatus] = useState<string>('inactive');
+
   useEffect(() => {
     const init = async () => {
       const supabase = getBrowserDb();
@@ -75,6 +78,8 @@ function SettingsContent() {
           community: data.notif_community,
           marketing: data.notif_marketing,
         });
+        setSubscriptionPlan(data.subscription_plan ?? 'free');
+        setSubscriptionStatus(data.subscription_status ?? 'inactive');
       } else {
         setNickname(user.email?.split('@')[0] ?? '보호자');
       }
@@ -132,6 +137,24 @@ function SettingsContent() {
     router.refresh();
   };
 
+  const getPlanLabel = (planId: string) => {
+    const labels: Record<string, string> = {
+      free: '무료',
+      premium: '프리미엄',
+      clinic: '병원용',
+    };
+    return labels[planId] || planId;
+  };
+
+  const getPlanPrice = (planId: string) => {
+    const prices: Record<string, string> = {
+      free: '무료',
+      premium: '₩30,000/월',
+      clinic: '₩99,000/월',
+    };
+    return prices[planId] || '';
+  };
+
   if (!authChecked) return null;
 
   return (
@@ -142,11 +165,45 @@ function SettingsContent() {
       >
         <div className="max-w-2xl mx-auto">
           <h1 className="text-xl font-bold" style={{ color: 'var(--color-text-primary)' }}>설정</h1>
-          <p className="text-sm" style={{ color: 'var(--color-text-muted)' }}>계정 및 앱 환경설정</p>
+          <p className="text-sm" style={{ color: 'var(--color-text-muted)' }}>계정 관리 및 설정</p>
         </div>
       </div>
 
       <div className="max-w-2xl mx-auto px-6 py-6 space-y-6">
+        <section className="space-y-3">
+          <div className="flex items-center gap-2">
+            <CreditCard size={15} style={{ color: 'var(--color-text-muted)' }} />
+            <h2 className="text-sm font-semibold" style={{ color: 'var(--color-text-primary)' }}>구독 관리</h2>
+          </div>
+          <div
+            className="rounded-2xl border p-5"
+            style={{ background: 'var(--color-surface)', borderColor: 'var(--color-border)' }}
+          >
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="font-semibold" style={{ color: 'var(--color-text-primary)' }}>{getPlanLabel(subscriptionPlan)}</p>
+                <p className="text-sm" style={{ color: 'var(--color-text-muted)' }}>{getPlanPrice(subscriptionPlan)}</p>
+              </div>
+              {subscriptionStatus === 'active' ? (
+                <span className="px-3 py-1 bg-green-100 text-green-700 rounded-full text-xs font-medium">
+                  활성
+                </span>
+              ) : (
+                <span className="px-3 py-1 bg-gray-100 text-gray-600 rounded-full text-xs font-medium">
+                  무료
+                </span>
+              )}
+            </div>
+            <button
+              onClick={() => router.push('/subscription')}
+              className="mt-4 w-full flex items-center justify-center gap-2 rounded-xl py-2.5 text-sm font-medium text-white transition-all"
+              style={{ background: 'var(--color-primary-500)' }}
+            >
+              {subscriptionPlan === 'free' ? '플랜 Upgrade' : '구독 관리'}
+            </button>
+          </div>
+        </section>
+
         <section className="space-y-3">
           <div className="flex items-center gap-2">
             <User size={15} style={{ color: 'var(--color-text-muted)' }} />
@@ -161,7 +218,7 @@ function SettingsContent() {
                 className="flex h-16 w-16 items-center justify-center rounded-full text-3xl"
                 style={{ background: 'var(--color-primary-50)' }}
               >
-                🧑
+                😊
               </div>
               <div>
                 <p className="font-semibold" style={{ color: 'var(--color-text-primary)' }}>{nickname}</p>
@@ -185,7 +242,7 @@ function SettingsContent() {
               </div>
               <div>
                 <label className="block text-xs font-medium mb-1.5" style={{ color: 'var(--color-text-muted)' }}>
-                  휴대폰 번호
+                  전화번호
                 </label>
                 <input
                   type="tel"
@@ -213,7 +270,7 @@ function SettingsContent() {
               {savedProfile ? (
                 <>
                   <Check size={16} />
-                  저장되었어요!
+                  저장되었습니다
                 </>
               ) : (
                 '저장'
@@ -232,10 +289,10 @@ function SettingsContent() {
             style={{ background: 'var(--color-surface)', borderColor: 'var(--color-border)' }}
           >
             {([
-              { key: 'vaccination' as const, label: '예방접종 & 건강 일정',     desc: 'D-7, D-3, D-1 사전 알림' },
+              { key: 'vaccination' as const, label: '예방접종 & 건강 일정',     desc: 'D-7, D-3, D-1 일정 알림' },
               { key: 'weight'      as const, label: '체중 기록 리마인더',        desc: '매주 월요일 오전 9시' },
-              { key: 'community'   as const, label: '커뮤니티 댓글 알림',        desc: '내 글에 댓글이 달릴 때' },
-              { key: 'marketing'   as const, label: '펫헬스 소식 & 프로모션',    desc: '이벤트 및 신기능 안내' },
+              { key: 'community'   as const, label: '커뮤니티 알림',        desc: '좋아요, 댓글 알림' },
+              { key: 'marketing'   as const, label: '헬스팁 & 프로모션',    desc: '이벤트 정보 안내' },
             ] as { key: keyof typeof notifications; label: string; desc: string }[]).map(({ key, label, desc }) => (
               <div key={key} className="flex items-center justify-between px-5 py-4">
                 <div>
@@ -348,7 +405,7 @@ function SettingsContent() {
         </button>
 
         <p className="text-center text-xs" style={{ color: 'var(--color-text-muted)' }}>
-          펫헬스 v1.0.0 · claude-sonnet-4-6 기반 AI
+          펫케어 v1.0.0 · claude-sonnet-4-6 기반 AI
         </p>
       </div>
     </div>

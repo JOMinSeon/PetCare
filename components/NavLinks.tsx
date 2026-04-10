@@ -1,15 +1,16 @@
-'use client';
+﻿'use client';
 import Link from 'next/link';
-import { Settings } from 'lucide-react';
+import { Settings, Crown } from 'lucide-react';
 import { usePathname, useSearchParams } from 'next/navigation';
 
 const desktopLinks = [
-  { href: '/pets',         label: '내 반려동물' },
+  { href: '/pets',         label: '반려동물' },
   { href: '/tracking',     label: '체중 & 칼로리' },
   { href: '/analyze-food', label: 'AI 사료 분석' },
   { href: '/hospitals',    label: '동물병원' },
   { href: '/calendar',     label: '캘린더' },
   { href: '/community',    label: '커뮤니티' },
+  { href: '/pricing',      label: '플랜', icon: Crown },
 ];
 
 export function NavLinks() {
@@ -19,7 +20,7 @@ export function NavLinks() {
   return (
     <>
       <div className="flex items-center gap-1">
-        {desktopLinks.map(({ href, label }) => {
+        {desktopLinks.map(({ href, label, icon: Icon }) => {
           const [hrefPath, hrefQuery] = href.split('?');
           const currentQuery = searchParams.toString();
           const active = hrefQuery
@@ -30,12 +31,13 @@ export function NavLinks() {
               key={href}
               href={href}
               aria-current={active ? 'page' : undefined}
-              className="rounded-full px-3 py-1.5 text-sm font-medium transition-all"
+              className="flex items-center gap-1 rounded-full px-3 py-1.5 text-sm font-medium transition-all"
               style={{
                 background: active ? 'var(--color-primary-50)' : 'transparent',
                 color: active ? 'var(--color-primary-500)' : 'var(--color-text-secondary)',
               }}
             >
+              {Icon && <Icon size={14} />}
               {label}
             </Link>
           );
