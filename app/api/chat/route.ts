@@ -90,7 +90,7 @@ export async function POST(req: Request) {
     }
 
     const result = streamText({
-      model: vertex('gemma4:e4b'),
+      model: vertex('gemini-2.0-flash'),
       system: `당신은 반려동물 건강 전문가입니다.
         ${petSystemInfo}
         항상 수의사 상담을 권고하며, 근거 기반 조언을 제공하세요.`,
