@@ -1,12 +1,12 @@
 export const runtime = 'nodejs';
 
-import { createVertex } from '@ai-sdk/google-vertex';
+import { createGoogleGenerativeAI } from '@ai-sdk/google';
 import { generateText } from 'ai';
 import { getServerDb } from '@/lib/supabase-server';
 import { checkRateLimit } from '@/lib/rate-limit';
 
-const vertex = createVertex({
-  project: process.env.VERTEX_AI_PROJECT_ID,
+const google = createGoogleGenerativeAI({
+  apiKey: process.env.GEMINI_API_KEY,
 });
 
 const MAX_FILE_SIZE = 5 * 1024 * 1024;
@@ -191,7 +191,7 @@ export async function POST(req: Request) {
         const imageData = new Uint8Array(imageBytes);
 
         const { text } = await generateText({
-          model: vertex('gemma4'),
+          model: google('gemini-2.0-flash'),
           messages: [
             {
               role: 'user',
@@ -205,7 +205,7 @@ export async function POST(req: Request) {
         result = text;
       } else {
         const { text } = await generateText({
-          model: vertex('gemma4'),
+          model: google('gemini-2.0-flash'),
           messages: [
             {
               role: 'user',

@@ -1,10 +1,10 @@
-import { createVertex } from '@ai-sdk/google-vertex';
+import { createGoogleGenerativeAI } from '@ai-sdk/google';
 import { streamText } from 'ai';
 import { getServerDb } from '@/lib/supabase-server';
 import { checkRateLimit } from '@/lib/rate-limit';
 
-const vertex = createVertex({
-  project: process.env.VERTEX_AI_PROJECT_ID,
+const google = createGoogleGenerativeAI({
+  apiKey: process.env.GEMINI_API_KEY,
 });
 
 // 20 requests per minute per user
@@ -90,7 +90,7 @@ export async function POST(req: Request) {
     }
 
     const result = streamText({
-      model: vertex('gemma4'),
+      model: google('gemini-2.0-flash'),
       system: `당신은 반려동물 건강 전문가입니다.
         ${petSystemInfo}
         항상 수의사 상담을 권고하며, 근거 기반 조언을 제공하세요.`,
