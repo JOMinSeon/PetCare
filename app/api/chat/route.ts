@@ -65,6 +65,9 @@ export async function POST(req: Request) {
       return Response.json({ error: '메시지 수가 너무 많습니다.' }, { status: 400 });
     }
     const ALLOWED_ROLES = new Set(['user', 'assistant']);
+    
+    // AI SDK v6 UIMessage → CoreMessage 변환
+    const coreMessages: Array<{ role: string; content: string }> = [];
     for (const msg of messages) {
       if (!msg || typeof msg !== 'object') {
         return Response.json({ error: '잘못된 메시지 형식입니다.' }, { status: 400 });
@@ -73,14 +76,21 @@ export async function POST(req: Request) {
       if (!ALLOWED_ROLES.has(msg.role)) {
         return Response.json({ error: '허용되지 않는 메시지 역할입니다.' }, { status: 400 });
       }
-      // AI SDK v6 UIMessage: parts 배열 형식으로 길이 검증
+      // AI SDK v6 UIMessage: parts 배열에서 text 추출
+      let text = '';
       if (Array.isArray(msg.parts)) {
         for (const part of msg.parts) {
-          if (part?.type === 'text' && typeof part.text === 'string' && part.text.length > 4000) {
-            return Response.json({ error: '메시지가 너무 깁니다.' }, { status: 400 });
+          if (part?.type === 'text' && typeof part.text === 'string') {
+            if (part.text.length > 4000) {
+              return Response.json({ error: '메시지가 너무 깁니다.' }, { status: 400 });
+            }
+            text += part.text;
           }
         }
+      } else if (typeof msg.content === 'string') {
+        text = msg.content;
       }
+      coreMessages.push({ role: msg.role, content: text });
     }
 
     // #1 Prompt Injection 방지: 클라이언트 petContext 대신 서버에서 DB 조회
@@ -105,7 +115,7 @@ export async function POST(req: Request) {
       system: `당신은 반려동물 건강 전문가입니다.
         ${petSystemInfo}
         항상 수의사 상담을 권고하며, 근거 기반 조언을 제공하세요.`,
-      messages: messages as any,
+      messages: coreMessages,
     });
 
     console.log('[Chat API] Returning stream response');
