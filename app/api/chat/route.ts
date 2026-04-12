@@ -12,17 +12,22 @@ const RATE_LIMIT = 20;
 const RATE_WINDOW_MS = 60 * 1000;
 
 export async function POST(req: Request) {
+  console.log('[Chat API] Request received');
   try {
     const db = await getServerDb();
     const { data: { user } } = await db.auth.getUser();
+    console.log('[Chat API] User:', user?.id);
     if (!user) {
+      console.log('[Chat API] No user - returning 401');
       return Response.json({ error: '로그인이 필요합니다.' }, { status: 401 });
     }
 
     // #4 Rate limiting
     if (!checkRateLimit(`chat:${user.id}`, RATE_LIMIT, RATE_WINDOW_MS)) {
+      console.log('[Chat API] Rate limit exceeded');
       return Response.json({ error: '요청이 너무 많습니다. 잠시 후 다시 시도해주세요.' }, { status: 429 });
     }
+    console.log('[Chat API] Rate limit passed');
 
     // 플랜별 월 사용량 제한 (Free: 5회/월)
     const currentMonth = new Date().toISOString().slice(0, 7);
@@ -36,10 +41,12 @@ export async function POST(req: Request) {
       const sameMonth = profile?.ai_usage_reset_month === currentMonth;
       const usage = sameMonth ? (profile?.ai_monthly_usage ?? 0) : 0;
       if (usage >= 5) {
+        console.log('[Chat API] Monthly limit exceeded');
         return Response.json({
           error: 'AI 상담 월 5회 한도를 초과했습니다. 프리미엄 플랜으로 업그레이드하면 무제한으로 이용할 수 있어요.',
         }, { status: 429 });
       }
+      console.log('[Chat API] Monthly usage OK');
       await db.from('profiles').upsert({
         user_id: user.id,
         ai_monthly_usage: sameMonth ? usage + 1 : 1,
@@ -48,8 +55,10 @@ export async function POST(req: Request) {
     }
 
     const { messages, petId } = await req.json();
+    console.log('[Chat API] Received messages count:', messages?.length, 'petId:', petId);
 
     if (!messages || !Array.isArray(messages)) {
+      console.log('[Chat API] Invalid messages format');
       return Response.json({ error: '잘못된 요청입니다.' }, { status: 400 });
     }
     if (messages.length > 50) {
@@ -83,12 +92,14 @@ export async function POST(req: Request) {
         .eq('id', petId)
         .eq('user_id', user.id)
         .single();
+      console.log('[Chat API] Pet lookup:', pet ? 'found' : 'not found');
 
       if (pet) {
         petSystemInfo = `현재 반려동물 정보: 이름=${pet.name}, 종=${pet.species}, 나이=${pet.age}세, 체중=${pet.weight}kg, 중성화=${pet.neutered ? '예' : '아니오'}`;
       }
     }
 
+    console.log('[Chat API] Starting streamText');
     const result = streamText({
       model: google('gemini-2.0-flash'),
       system: `당신은 반려동물 건강 전문가입니다.
@@ -97,9 +108,10 @@ export async function POST(req: Request) {
       messages: messages as any,
     });
 
+    console.log('[Chat API] Returning stream response');
     return result.toUIMessageStreamResponse();
   } catch (error) {
-    console.error('Chat error:', error);
+    console.error('[Chat API] Error:', error);
     return Response.json({ error: '채팅 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.' }, { status: 500 });
   }
 }
