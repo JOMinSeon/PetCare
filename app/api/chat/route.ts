@@ -1,5 +1,5 @@
 import { createVertex } from '@ai-sdk/google-vertex';
-import { streamText, convertToModelMessages } from 'ai';
+import { streamText } from 'ai';
 import { getServerDb } from '@/lib/supabase-server';
 import { checkRateLimit } from '@/lib/rate-limit';
 
@@ -94,7 +94,7 @@ export async function POST(req: Request) {
       system: `당신은 반려동물 건강 전문가입니다.
         ${petSystemInfo}
         항상 수의사 상담을 권고하며, 근거 기반 조언을 제공하세요.`,
-      messages: await convertToModelMessages(messages),
+      messages: messages as any,
     });
 
     return result.toUIMessageStreamResponse();
