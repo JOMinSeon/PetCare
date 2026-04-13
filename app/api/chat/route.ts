@@ -29,7 +29,7 @@ export async function POST(req: Request) {
     }
     console.log('[Chat API] Rate limit passed');
 
-    // 플랜별 월 사용량 제한 (Free: 5회/월)
+    // 플랜별 월 사용량 제한 (Free: 30회/월)
     const currentMonth = new Date().toISOString().slice(0, 7);
     const { data: profile } = await db.from('profiles')
       .select('subscription_plan, ai_monthly_usage, ai_usage_reset_month, is_admin')
@@ -40,10 +40,10 @@ export async function POST(req: Request) {
     if (plan === 'free' && !profile?.is_admin) {
       const sameMonth = profile?.ai_usage_reset_month === currentMonth;
       const usage = sameMonth ? (profile?.ai_monthly_usage ?? 0) : 0;
-      if (usage >= 5) {
+      if (usage >= 30) {
         console.log('[Chat API] Monthly limit exceeded');
         return Response.json({
-          error: 'AI 상담 월 5회 한도를 초과했습니다. 프리미엄 플랜으로 업그레이드하면 무제한으로 이용할 수 있어요.',
+          error: 'AI 상담 월 30회 한도를 초과했습니다. 프리미엄 플랜으로 업그레이드하면 무제한으로 이용할 수 있어요.',
         }, { status: 429 });
       }
       console.log('[Chat API] Monthly usage OK');

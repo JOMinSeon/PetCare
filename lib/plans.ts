@@ -23,7 +23,7 @@ export const PLANS: Plan[] = [
     description: '기본 반려동물 관리',
     features: [
       '반려동물 1마리',
-      'AI 건강 상담 5회/월',
+      'AI 건강 상담 30회/월',
       '기본 건강 기록',
       '예방접종 알림',
       '커뮤니티 무료',
