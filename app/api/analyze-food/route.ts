@@ -191,7 +191,7 @@ export async function POST(req: Request) {
         const imageData = new Uint8Array(imageBytes);
 
         const { text } = await generateText({
-          model: google('gemini-2.0-flash'),
+          model: google('gemini-2.5-flash'),
           messages: [
             {
               role: 'user',
@@ -205,7 +205,7 @@ export async function POST(req: Request) {
         result = text;
       } else {
         const { text } = await generateText({
-          model: google('gemini-2.0-flash'),
+          model: google('gemini-2.5-flash'),
           messages: [
             {
               role: 'user',
