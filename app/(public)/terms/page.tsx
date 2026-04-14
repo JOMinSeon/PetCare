@@ -1,5 +1,11 @@
 import Link from 'next/link';
 import { PawPrint } from 'lucide-react';
+import type { Metadata } from 'next';
+
+export const metadata: Metadata = {
+  title: '이용약관',
+  description: '펫헬스 서비스 이용약관입니다.',
+};
 
 export default function TermsPage() {
   return (

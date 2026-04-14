@@ -1,3 +1,10 @@
+import type { Metadata } from 'next';
+
+export const metadata: Metadata = {
+  title: '환불 정책',
+  description: '펫헬스 환불 정책입니다.',
+};
+
 export default function RefundPage() {
   return (
     <div style={{ background: '#0D1117', minHeight: '100vh', color: '#e6edf3' }}>

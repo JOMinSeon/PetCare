@@ -1,5 +1,11 @@
 import Link from 'next/link';
 import { PawPrint, Building2, Phone, Mail, FileText, MapPin, Globe } from 'lucide-react';
+import type { Metadata } from 'next';
+
+export const metadata: Metadata = {
+  title: '사업자 정보',
+  description: '펫헬스 사업자 정보입니다.',
+};
 
 const INFO = [
   { icon: Building2, label: '상호명 (업체명)',        value: '코어넥스트' },
