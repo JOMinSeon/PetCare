@@ -1,5 +1,5 @@
 'use client';
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import {
   LineChart,
   Line,
@@ -21,8 +21,7 @@ interface HealthLog {
 }
 
 export function HealthChart({ data }: { data: HealthLog[] }) {
-  const [mounted, setMounted] = useState(false);
-  useEffect(() => { setMounted(true); }, []);
+  const [mounted] = useState(() => false);
 
   if (!mounted) return null;
 

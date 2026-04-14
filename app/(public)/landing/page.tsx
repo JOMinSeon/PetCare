@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import {
-  HeartPulse, Stethoscope, Calendar, CheckCircle,
+  HeartPulse, Stethoscope, Calendar,
   ArrowRight, Sparkles, Shield, Zap,
   PawPrint,
 } from 'lucide-react';

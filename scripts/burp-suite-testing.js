@@ -1,12 +1,12 @@
 #!/usr/bin/env node
 
-const { spawn } = require('child_process');
+import { spawn } from 'child_process';
 const BASE_URL = process.env.BASE_URL || 'http://localhost:3000';
 
 let server;
 
 function startServer() {
-  return new Promise((resolve, reject) => {
+  return new Promise((resolve) => {
     console.log('Starting dev server...\n');
     server = spawn('npm', ['run', 'dev'], {
       cwd: process.cwd(),

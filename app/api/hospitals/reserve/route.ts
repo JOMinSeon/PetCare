@@ -53,7 +53,7 @@ export async function POST(req: Request) {
   }
 }
 
-export async function GET(req: Request) {
+export async function GET() {
   try {
     const db = await getServerDb();
     const { data: { user } } = await db.auth.getUser();

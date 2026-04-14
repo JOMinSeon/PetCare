@@ -115,7 +115,7 @@ export async function POST(req: Request) {
       system: `당신은 반려동물 건강 전문가입니다.
         ${petSystemInfo}
         항상 수의사 상담을 권고하며, 근거 기반 조언을 제공하세요.`,
-      messages: coreMessages as any,
+      messages: coreMessages as Array<{ role: 'user' | 'assistant'; content: string }>,
     });
 
     console.log('[Chat API] Returning stream response');

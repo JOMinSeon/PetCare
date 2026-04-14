@@ -60,6 +60,7 @@ export default function AnalyzeFoodPage() {
     };
 
     fetchPets();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   if (loading) {

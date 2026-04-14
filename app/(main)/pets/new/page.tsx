@@ -1,6 +1,6 @@
 'use client';
 import { Suspense, useState } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useSearchParams } from 'next/navigation';
 import { ChevronLeft, ChevronRight, Check } from 'lucide-react';
 
 const STEPS = ['기본 정보', '나이 & 체중', '건강 상태', '완료'];
@@ -37,7 +37,6 @@ function SliderInput({
   unit: string;
 }) {
   const num = parseFloat(value) || 0;
-  const pct = Math.min(((num - min) / (max - min)) * 100, 100);
   const valid = value !== '' && num >= min && num <= max;
 
   return (
@@ -89,7 +88,6 @@ function SliderInput({
 }
 
 function NewPetPage() {
-  const router = useRouter();
   const searchParams = useSearchParams();
   const initialSpecies = ['dog', 'cat', 'other'].includes(searchParams.get('species') ?? '')
     ? (searchParams.get('species') as string)

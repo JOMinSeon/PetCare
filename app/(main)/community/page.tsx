@@ -253,7 +253,7 @@ export default function CommunityPage() {
             <button
               onClick={() => {
                 if (!userId) { router.push('/auth/login'); return; }
-                activeTab === 'feed' ? setShowWritePost(true) : setShowWriteQA(true);
+                if (activeTab === 'feed') { setShowWritePost(true); } else { setShowWriteQA(true); }
               }}
               className="flex items-center gap-1.5 rounded-xl px-4 py-2 text-sm font-medium text-white transition-opacity hover:opacity-80"
               style={{ background: 'var(--color-primary-500)' }}

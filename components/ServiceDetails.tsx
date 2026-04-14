@@ -85,10 +85,9 @@ const services: ServiceDetail[] = [
 
 interface ServiceDetailCardProps {
   service: ServiceDetail;
-  index: number;
 }
 
-function ServiceDetailCard({ service, index }: ServiceDetailCardProps) {
+function ServiceDetailCard({ service }: ServiceDetailCardProps) {
   const Icon = service.icon;
 
   return (
@@ -144,8 +143,8 @@ export function ServiceDetails() {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {services.map((service, index) => (
-            <ServiceDetailCard key={service.title} service={service} index={index} />
+          {services.map((service) => (
+            <ServiceDetailCard key={service.title} service={service} />
           ))}
         </div>
       </div>

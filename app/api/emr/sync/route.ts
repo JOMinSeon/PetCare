@@ -10,7 +10,7 @@ export async function POST(req: Request) {
       return Response.json({ error: '로그인이 필요합니다.' }, { status: 401 });
     }
 
-    const { hospital_id, last_sync_at } = await req.json();
+    const { hospital_id } = await req.json();
 
     if (!hospital_id) {
       return Response.json({ error: 'hospital_id가 필요합니다.' }, { status: 400 });

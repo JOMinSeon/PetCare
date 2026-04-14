@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import { useMemo } from 'react';
 import { HeartPulse, MessageCircle, TrendingUp, TrendingDown, Minus } from 'lucide-react';
 
 interface Pet {
@@ -87,15 +88,18 @@ export function PetCard({ pet }: { pet: Pet }) {
   const targetKcal    = latest ? Math.round(latest.mer) : null;
 
   // Health score: based on recency of logs
-  const daysSinceLast = latest
-    ? Math.floor((Date.now() - new Date(latest.recorded_at).getTime()) / 86400000)
-    : null;
-  const healthScore =
-    daysSinceLast === null ? 20 :
-    daysSinceLast === 0    ? 95 :
-    daysSinceLast === 1    ? 82 :
-    daysSinceLast <= 3     ? 68 :
-    daysSinceLast <= 7     ? 48 : 25;
+  const healthScore = useMemo(() => {
+    // eslint-disable-next-line react-hooks/purity
+    const now = Date.now();
+    const daysSinceLast = latest
+      ? Math.floor((now - new Date(latest.recorded_at).getTime()) / 86400000)
+      : null;
+    return daysSinceLast === null ? 20 :
+           daysSinceLast === 0    ? 95 :
+           daysSinceLast === 1    ? 82 :
+           daysSinceLast <= 3     ? 68 :
+           daysSinceLast <= 7     ? 48 : 25;
+  }, [latest]);
 
   const statusClass =
     healthScore >= 80 ? 'status-healthy' :

@@ -1,3 +1,5 @@
+import Image from 'next/image';
+
 interface TestimonialCardProps {
   name: string;
   role: string;
@@ -30,7 +32,7 @@ export function TestimonialCard({
           }}
         >
           {image ? (
-            <img src={image} alt={name} className="w-full h-full rounded-full object-cover" />
+            <Image src={image} alt={name} width={48} height={48} className="rounded-full object-cover" />
           ) : (
             name.charAt(0)
           )}

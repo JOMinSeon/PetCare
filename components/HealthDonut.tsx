@@ -1,5 +1,5 @@
 'use client';
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 
 function ComingSoonCard({ title }: { title: string }) {
   return (
@@ -28,8 +28,7 @@ function ComingSoonCard({ title }: { title: string }) {
 }
 
 export function HealthDonut() {
-  const [mounted, setMounted] = useState(false);
-  useEffect(() => { setMounted(true); }, []);
+  const [mounted] = useState(() => false);
   if (!mounted) return null;
 
   return (
