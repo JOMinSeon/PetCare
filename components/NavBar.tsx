@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import { Suspense } from 'react';
-import { PawPrint } from 'lucide-react';
+import { PawPrint, Phone } from 'lucide-react';
 import { NavLinks, SettingsLink } from './NavLinks';
 import { MobileNav } from './MobileNav';
 import { AuthButton } from './AuthButton';
@@ -32,7 +32,15 @@ export function NavBar() {
             <NavLinks />
           </Suspense>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-4">
+          <a
+            href="tel:050713057196"
+            className="flex items-center gap-2 text-sm font-semibold transition-opacity hover:opacity-80"
+            style={{ color: 'var(--color-secondary-600)' }}
+          >
+            <Phone size={14} />
+            0507-1305-7196
+          </a>
           <Suspense fallback={null}>
             <SettingsLink />
           </Suspense>

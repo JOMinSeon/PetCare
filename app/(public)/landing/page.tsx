@@ -5,6 +5,11 @@ import {
   PawPrint,
 } from 'lucide-react';
 import MobileMenu from './MobileMenu';
+import { TestimonialCard } from '@/components/TestimonialCard';
+import { PetGallery } from '@/components/PetGallery';
+import { ContactCTA } from '@/components/ContactCTA';
+import { ServiceDetails } from '@/components/ServiceDetails';
+import { StatsSection } from '@/components/StatsSection';
 
 export default function LandingPage() {
   return (
@@ -135,6 +140,9 @@ export default function LandingPage() {
         </div>
       </section>
 
+      {/* ── Stats Section ── */}
+      <StatsSection />
+
       {/* ── Features Section ── */}
       <section id="features" className="py-24 sm:py-32" style={{ background: 'var(--color-surface-2)' }}>
         <div className="mx-auto max-w-7xl px-6 lg:px-8">
@@ -230,6 +238,9 @@ export default function LandingPage() {
           </div>
         </div>
       </section>
+
+      {/* ── Service Details ── */}
+      <ServiceDetails />
 
       {/* ── How It Works ── */}
       <section id="how-it-works" className="py-24 sm:py-32" style={{ background: 'var(--color-bg)' }}>
@@ -394,6 +405,51 @@ export default function LandingPage() {
               카드 등록 없이 14일 무료 · 언제든지 취소 가능
             </p>
           </div>
+        </div>
+      </section>
+
+      {/* ── Testimonials Section ── */}
+      <section className="py-24 sm:py-32" style={{ background: 'var(--color-surface-2)' }}>
+        <div className="mx-auto max-w-7xl px-6 lg:px-8">
+          <div className="text-center mb-16">
+            <div className="section-badge mb-4">이용 후기</div>
+            <h2 className="text-3xl sm:text-4xl font-bold mb-4" style={{ color: 'var(--color-text-primary)' }}>
+              반려동물 부모들이 말해요
+            </h2>
+            <p className="text-lg max-w-2xl mx-auto" style={{ color: 'var(--color-text-secondary)' }}>
+              실제 이용자분들의 후기를 만나보세요
+            </p>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <TestimonialCard
+              name="김지은"
+              role="강아지 엄마"
+              content="반려동물 건강 기록 관리하듯 관리할 수 있어서 좋아요. 무엇보다 수의사 상담이 언제든 가능한 게 큰 장점이에요."
+              rating={5}
+            />
+            <TestimonialCard
+              name="이민수"
+              role="고양이 아빠"
+              content="급할 때 맨날 전화 상담 가능해서 안심해요. 사료 분석 기능도 정말 유용하고, 특히 알림이 꼼꼼한 점이 만족스러워요."
+              rating={5}
+            />
+            <TestimonialCard
+              name="박서연"
+              role="멀티펫 키우미"
+              content="여러 마리 관리하는데 하나씩 기록하기 편해요. 진료 예약도 한큐에 되고, 무엇보다UI가 깔끔해서 눈이 편안해요."
+              rating={5}
+            />
+          </div>
+        </div>
+      </section>
+
+      {/* ── Pet Gallery Section ── */}
+      <PetGallery />
+
+      {/* ── Contact CTA Section ── */}
+      <section className="py-16 sm:py-20" style={{ background: 'var(--color-bg)' }}>
+        <div className="mx-auto max-w-4xl px-6 lg:px-8">
+          <ContactCTA />
         </div>
       </section>
 
