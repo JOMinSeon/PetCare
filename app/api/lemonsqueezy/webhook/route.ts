@@ -6,6 +6,15 @@ import crypto from 'crypto';
 const WEBHOOK_SECRET = process.env.LEMONSQUEEZY_WEBHOOK_SECRET;
 const SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
+const ALLOWED_EVENTS = new Set([
+  'subscription_created',
+  'subscription_updated',
+  'subscription_cancelled',
+  'subscription_expired',
+  'subscription_payment_success',
+  'subscription_payment_failed',
+]);
+
 function verifySignature(payload: string, signature: string): boolean {
   if (!WEBHOOK_SECRET) return false;
   
@@ -21,6 +30,11 @@ export async function POST(req: NextRequest) {
     const headersList = await headers();
     const signature = headersList.get('x-signature');
     const eventName = headersList.get('x-event-name');
+
+    if (!eventName || !ALLOWED_EVENTS.has(eventName)) {
+      console.error('Unknown webhook event:', eventName);
+      return NextResponse.json({ error: 'Unknown event' }, { status: 400 });
+    }
 
     if (!signature || !verifySignature(body, signature)) {
       console.error('Invalid webhook signature');

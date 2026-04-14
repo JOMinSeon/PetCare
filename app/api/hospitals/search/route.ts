@@ -26,7 +26,8 @@ export async function GET(req: Request) {
     }
 
     if (search) {
-      query = query.or(`name.ilike.%${search}%,address.ilike.%${search}%`);
+      const escaped = search.replace(/\\/g, '\\\\').replace(/%/g, '\\%').replace(/_/g, '\\_');
+      query = query.or(`name.ilike.%${escaped}%,address.ilike.%${escaped}%`);
     }
 
     const { data: hospitals, error } = await query;
@@ -41,6 +42,10 @@ export async function GET(req: Request) {
     if (lat && lng) {
       const userLat = parseFloat(lat);
       const userLng = parseFloat(lng);
+
+      if (isNaN(userLat) || isNaN(userLng) || userLat < -90 || userLat > 90 || userLng < -180 || userLng > 180) {
+        return Response.json({ error: '유효하지 않은 좌표입니다.' }, { status: 400 });
+      }
 
       results = results.map(h => ({
         ...h,

@@ -1,4 +1,5 @@
 import { getServerDb } from '@/lib/supabase-server';
+import { randomBytes } from 'crypto';
 
 export async function POST(req: Request) {
   try {
@@ -24,6 +25,18 @@ export async function POST(req: Request) {
 
     if (!hospital) {
       return Response.json({ error: '유효하지 않은 병원입니다.' }, { status: 400 });
+    }
+
+    const { data: existingSync } = await db
+      .from('emr_sync_log')
+      .select('id')
+      .eq('user_id', user.id)
+      .eq('hospital_id', hospital_id)
+      .eq('status', 'pending')
+      .single();
+
+    if (existingSync) {
+      return Response.json({ error: '이미 동기화가 진행 중입니다.', sync_id: existingSync.id }, { status: 409 });
     }
 
     const syncToken = generateSyncToken();
@@ -57,10 +70,5 @@ export async function POST(req: Request) {
 }
 
 function generateSyncToken(): string {
-  const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-  let token = '';
-  for (let i = 0; i < 32; i++) {
-    token += chars.charAt(Math.floor(Math.random() * chars.length));
-  }
-  return token;
+  return randomBytes(24).toString('base64url');
 }
