@@ -19,7 +19,7 @@ export function NavLinks() {
   return (
     <>
       <div className="flex items-center gap-1">
-        {desktopLinks.map(({ href, label, icon: Icon }) => {
+        {desktopLinks.map(({ href, label }) => {
           const [hrefPath, hrefQuery] = href.split('?');
           const currentQuery = searchParams.toString();
           const active = hrefQuery
@@ -36,7 +36,6 @@ export function NavLinks() {
                 color: active ? 'var(--color-primary-500)' : 'var(--color-text-secondary)',
               }}
             >
-              {Icon && <Icon size={14} />}
               {label}
             </Link>
           );
