@@ -1,6 +1,6 @@
 ﻿'use client';
 import Link from 'next/link';
-import { Settings, Crown } from 'lucide-react';
+import { Settings } from 'lucide-react';
 import { usePathname, useSearchParams } from 'next/navigation';
 
 const desktopLinks = [
@@ -10,7 +10,6 @@ const desktopLinks = [
   { href: '/hospitals',    label: '동물병원' },
   { href: '/calendar',     label: '캘린더' },
   { href: '/community',    label: '커뮤니티' },
-  { href: '/pricing',      label: '플랜', icon: Crown },
 ];
 
 export function NavLinks() {

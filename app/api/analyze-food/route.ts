@@ -120,32 +120,7 @@ export async function POST(req: Request) {
       return Response.json({ error: '요청이 너무 많습니다. 잠시 후 다시 시도해주세요.' }, { status: 429 });
     }
 
-    // FormData 파싱과 프로필 조회를 병렬로 실행
-    const currentMonth = new Date().toISOString().slice(0, 7);
-    const [formData, { data: profile }] = await Promise.all([
-      req.formData(),
-      db.from('profiles')
-        .select('subscription_plan, ai_monthly_usage, ai_usage_reset_month, is_admin')
-        .eq('user_id', user.id)
-        .single(),
-    ]);
-
-    // 플랜별 월 사용량 제한 (Free: 30회/월, chat과 공유)
-    const plan = profile?.subscription_plan ?? 'free';
-    if (plan === 'free' && !profile?.is_admin) {
-      const sameMonth = profile?.ai_usage_reset_month === currentMonth;
-      const usage = sameMonth ? (profile?.ai_monthly_usage ?? 0) : 0;
-      if (usage >= 30) {
-        return Response.json({
-          error: 'AI 분석 월 30회 한도를 초과했습니다. 프리미엄 플랜으로 업그레이드하면 무제한으로 이용할 수 있어요.',
-        }, { status: 429 });
-      }
-      await db.from('profiles').upsert({
-        user_id: user.id,
-        ai_monthly_usage: sameMonth ? usage + 1 : 1,
-        ai_usage_reset_month: currentMonth,
-      }, { onConflict: 'user_id' });
-    }
+    const formData = await req.formData();
     const image = formData.get('image') as File | null;
     const ingredientsText = formData.get('ingredientsText') as string | null;
     const petInfoRaw = formData.get('petInfo') as string | null;

@@ -1,6 +1,6 @@
 ﻿'use client';
 import { useState, useEffect, Suspense } from 'react';
-import { Bell, User, Shield, ChevronRight, Check, LogOut, X, CreditCard } from 'lucide-react';
+import { Bell, User, Shield, ChevronRight, Check, LogOut, X } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { getBrowserDb } from '@/lib/supabase-browser';
 
@@ -46,9 +46,6 @@ function SettingsContent() {
   const [pwSaving, setPwSaving] = useState(false);
   const [pwMessage, setPwMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
 
-  const [subscriptionPlan, setSubscriptionPlan] = useState<string>('free');
-  const [subscriptionStatus, setSubscriptionStatus] = useState<string>('inactive');
-
   useEffect(() => {
     const init = async () => {
       const supabase = getBrowserDb();
@@ -78,8 +75,6 @@ function SettingsContent() {
           community: data.notif_community,
           marketing: data.notif_marketing,
         });
-        setSubscriptionPlan(data.subscription_plan ?? 'free');
-        setSubscriptionStatus(data.subscription_status ?? 'inactive');
       } else {
         setNickname(user.email?.split('@')[0] ?? '보호자');
       }
@@ -137,24 +132,6 @@ function SettingsContent() {
     router.refresh();
   };
 
-  const getPlanLabel = (planId: string) => {
-    const labels: Record<string, string> = {
-      free: '무료',
-      premium: '프리미엄',
-      clinic: '병원용',
-    };
-    return labels[planId] || planId;
-  };
-
-  const getPlanPrice = (planId: string) => {
-    const prices: Record<string, string> = {
-      free: '무료',
-      premium: '₩30,000/월',
-      clinic: '₩99,000/월',
-    };
-    return prices[planId] || '';
-  };
-
   if (!authChecked) return null;
 
   return (
@@ -170,40 +147,6 @@ function SettingsContent() {
       </div>
 
       <div className="max-w-2xl mx-auto px-6 py-6 space-y-6">
-        <section className="space-y-3">
-          <div className="flex items-center gap-2">
-            <CreditCard size={15} style={{ color: 'var(--color-text-muted)' }} />
-            <h2 className="text-sm font-semibold" style={{ color: 'var(--color-text-primary)' }}>구독 관리</h2>
-          </div>
-          <div
-            className="rounded-2xl border p-5"
-            style={{ background: 'var(--color-surface)', borderColor: 'var(--color-border)' }}
-          >
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="font-semibold" style={{ color: 'var(--color-text-primary)' }}>{getPlanLabel(subscriptionPlan)}</p>
-                <p className="text-sm" style={{ color: 'var(--color-text-muted)' }}>{getPlanPrice(subscriptionPlan)}</p>
-              </div>
-              {subscriptionStatus === 'active' ? (
-                <span className="px-3 py-1 bg-green-100 text-green-700 rounded-full text-xs font-medium">
-                  활성
-                </span>
-              ) : (
-                <span className="px-3 py-1 bg-gray-100 text-gray-600 rounded-full text-xs font-medium">
-                  무료
-                </span>
-              )}
-            </div>
-            <button
-              onClick={() => router.push('/subscription')}
-              className="mt-4 w-full flex items-center justify-center gap-2 rounded-xl py-2.5 text-sm font-medium text-white transition-all"
-              style={{ background: 'var(--color-primary-500)' }}
-            >
-              {subscriptionPlan === 'free' ? '플랜 Upgrade' : '구독 관리'}
-            </button>
-          </div>
-        </section>
-
         <section className="space-y-3">
           <div className="flex items-center gap-2">
             <User size={15} style={{ color: 'var(--color-text-muted)' }} />
