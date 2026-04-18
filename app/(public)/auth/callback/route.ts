@@ -29,7 +29,8 @@ export async function GET(request: NextRequest) {
 
     const { error } = await supabase.auth.exchangeCodeForSession(code);
     if (!error) {
-      return NextResponse.redirect(new URL('/', process.env.NEXT_PUBLIC_PETCARE_URL || 'https://petcare.pe.kr'));
+      const origin = requestUrl.protocol + '//' + requestUrl.host;
+    return NextResponse.redirect(new URL('/', origin));
     }
   }
 
