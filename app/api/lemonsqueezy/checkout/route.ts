@@ -74,6 +74,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ checkoutUrl });
   } catch (error) {
     console.error('Checkout API error:', error);
-    return NextResponse.json({ error: '서버 오류가 발생했습니다.' }, { status: 500 });
+    const message = error instanceof Error ? error.message : '서버 오류가 발생했습니다.';
+    return NextResponse.json({ error: message }, { status: 500 });
   }
 }
