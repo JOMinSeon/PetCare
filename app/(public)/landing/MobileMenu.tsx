@@ -43,7 +43,7 @@ export default function MobileMenu() {
               {[
                 { label: '기능', href: '#features' },
                 { label: '사용방법', href: '#how-it-works' },
-                { label: '요금', href: '/pricing' },
+                { label: '요금', href: '#' },
               ].map(({ label, href }) => (
                 <a
                   key={label}
