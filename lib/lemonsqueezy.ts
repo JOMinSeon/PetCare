@@ -1,13 +1,7 @@
-import { lemonSqueezySetup } from '@lemonsqueezy/lemonsqueezy.js';
 import type { PlanId, BillingCycle } from './plans';
 
 const STORE_ID = process.env.LEMONSQUEEZY_STORE_ID;
 const API_KEY = process.env.LEMONSQUEEZY_API_KEY;
-
-lemonSqueezySetup({
-  apiKey: API_KEY!,
-  onError: (error) => console.error('LemonSqueezy error:', error),
-});
 
 export interface CheckoutOptions {
   planId: PlanId;
@@ -30,8 +24,6 @@ export async function createLemonSqueezyCheckout(options: CheckoutOptions) {
   }
 
   const orderName = billingCycle === 'yearly' ? `${planId} 플랜 (연간)` : `${planId} 플랜`;
-
-  console.log('Creating checkout with:', { storeId: STORE_ID, variantId, orderName });
 
   const response = await fetch(`https://api.lemonsqueezy.com/v1/checkouts`, {
     method: 'POST',
@@ -84,15 +76,12 @@ export async function createLemonSqueezyCheckout(options: CheckoutOptions) {
 
   const result = await response.json();
 
-  console.log('Checkout response status:', response.status);
-  console.log('Checkout result:', JSON.stringify(result));
-
   if (!response.ok) {
-    throw new Error(result.errors?.[0]?.detail || 'Checkout creation failed');
+    const errorMessage = result.errors?.[0]?.detail || 'Checkout creation failed';
+    throw new Error(errorMessage);
   }
 
   return {
-    error: null,
     data: {
       data: {
         attributes: {
@@ -123,5 +112,3 @@ export async function cancelLemonSqueezySubscription(subscriptionId: string) {
   });
   return await response.json();
 }
-
-export { lemonSqueezySetup };
