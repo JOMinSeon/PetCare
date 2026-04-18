@@ -26,8 +26,11 @@ export async function POST(req: NextRequest) {
 
     const variantId = VARIANT_IDS[planId as PlanId];
     if (!variantId) {
-      return NextResponse.json({ error: '해당 플랜은 아직 구매할 수 없습니다.' }, { status: 400 });
+      console.error('Missing variantId for planId:', planId, 'VARIANT_IDS:', VARIANT_IDS);
+      return NextResponse.json({ error: '해당 플랜은 아직 구매할 수 없습니다. (variantId missing)' }, { status: 400 });
     }
+
+    console.log('Checkout request:', { planId, billingCycle, variantId });
 
     const supabase = await getServerDb();
 
