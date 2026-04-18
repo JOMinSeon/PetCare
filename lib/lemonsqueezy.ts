@@ -1,6 +1,5 @@
 import { lemonSqueezySetup, createCheckout, getSubscription, cancelSubscription } from '@lemonsqueezy/lemonsqueezy.js';
 import type { PlanId, BillingCycle } from './plans';
-import { PLAN_MAP, getOrderName } from './plans';
 
 const STORE_ID = process.env.LEMONSQUEEZY_STORE_ID;
 const API_KEY = process.env.LEMONSQUEEZY_API_KEY;
@@ -16,19 +15,19 @@ export interface CheckoutOptions {
   userId: string;
   userEmail: string;
   userName: string;
+  variantId: string;
 }
 
 export async function createLemonSqueezyCheckout(options: CheckoutOptions) {
-  const { planId, billingCycle, userId, userEmail, userName } = options;
-  const plan = PLAN_MAP[planId];
+  const { planId, billingCycle, userId, userEmail, userName, variantId } = options;
 
-  if (!plan.lemonsqueezyVariantId) {
+  if (!variantId) {
     throw new Error(`Plan ${planId} does not have a LemonSqueezy variant ID configured`);
   }
 
-  const orderName = getOrderName(planId, billingCycle);
+  const orderName = billingCycle === 'yearly' ? `${planId} 플랜 (연간)` : `${planId} 플랜`;
 
-  const checkout = await createCheckout(STORE_ID!, plan.lemonsqueezyVariantId, {
+  const checkout = await createCheckout(STORE_ID!, variantId, {
     checkoutData: {
       email: userEmail,
       name: userName,
@@ -40,7 +39,7 @@ export async function createLemonSqueezyCheckout(options: CheckoutOptions) {
     },
     productOptions: {
       name: orderName,
-      description: plan.description,
+      description: `${planId} 플랜`,
     },
     checkoutOptions: {
       embed: false,

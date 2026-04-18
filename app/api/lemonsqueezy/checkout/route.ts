@@ -2,6 +2,12 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getServerDb } from '@/lib/supabase-server';
 import { PLAN_MAP, type PlanId, type BillingCycle } from '@/lib/plans';
 
+const VARIANT_IDS: Record<PlanId, string | undefined> = {
+  free: undefined,
+  premium: process.env.LEMONSQUEEZY_PREMIUM_VARIANT_ID,
+  clinic: process.env.LEMONSQUEEZY_CLINIC_VARIANT_ID,
+};
+
 export async function POST(req: NextRequest) {
   try {
     const { planId, billingCycle } = await req.json();
@@ -16,6 +22,11 @@ export async function POST(req: NextRequest) {
 
     if (planId === 'free') {
       return NextResponse.json({ error: '무료 플랜은 체크아웃이 필요 없습니다.' }, { status: 400 });
+    }
+
+    const variantId = VARIANT_IDS[planId as PlanId];
+    if (!variantId) {
+      return NextResponse.json({ error: '해당 플랜은 아직 구매할 수 없습니다.' }, { status: 400 });
     }
 
     const supabase = await getServerDb();
@@ -43,6 +54,7 @@ export async function POST(req: NextRequest) {
       userId: user.id,
       userEmail,
       userName,
+      variantId,
     });
 
     if (checkout.error) {
