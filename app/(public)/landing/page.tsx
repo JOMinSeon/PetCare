@@ -517,7 +517,7 @@ export default function LandingPage() {
                 title: '제품',
                 links: [
                   { label: '기능', href: '#features' },
-                  { label: '요금', href: '#pricing' },
+                  { label: '요금', href: '/pricing' },
                   { label: '사용방법', href: '#how-it-works' },
                 ],
               },

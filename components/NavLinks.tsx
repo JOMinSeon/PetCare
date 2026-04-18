@@ -10,7 +10,8 @@ const desktopLinks = [
   { href: '/hospitals',    label: '동물병원' },
   { href: '/calendar',     label: '캘린더' },
   { href: '/community',    label: '커뮤니티' },
-  { href: '/subscription',  label: '구독' },
+  { href: '/pricing',      label: '요금제' },
+  { href: '/subscription', label: '구독' },
 ];
 
 export function NavLinks() {
