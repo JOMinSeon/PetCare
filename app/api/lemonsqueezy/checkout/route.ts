@@ -58,11 +58,17 @@ export async function POST(req: NextRequest) {
     });
 
     if (checkout.error) {
-      console.error('LemonSqueezy checkout error:', checkout.error);
-      return NextResponse.json({ error: '체크아웃 생성에 실패했습니다.' }, { status: 500 });
+      console.error('LemonSqueezy checkout error:', JSON.stringify(checkout.error));
+      return NextResponse.json({ error: checkout.error.message || '체크아웃 생성에 실패했습니다.' }, { status: 500 });
     }
 
-    return NextResponse.json({ checkoutUrl: checkout.data?.data.attributes.url });
+    const checkoutUrl = checkout.data?.data?.attributes?.url;
+    if (!checkoutUrl) {
+      console.error('No checkout URL in response:', JSON.stringify(checkout.data));
+      return NextResponse.json({ error: '체크아웃 URL을 생성하지 못했습니다.' }, { status: 500 });
+    }
+
+    return NextResponse.json({ checkoutUrl });
   } catch (error) {
     console.error('Checkout API error:', error);
     return NextResponse.json({ error: '서버 오류가 발생했습니다.' }, { status: 500 });
