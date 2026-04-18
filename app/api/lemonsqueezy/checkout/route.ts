@@ -60,11 +60,6 @@ export async function POST(req: NextRequest) {
       variantId,
     });
 
-    if (checkout.error) {
-      console.error('LemonSqueezy checkout error:', JSON.stringify(checkout.error));
-      return NextResponse.json({ error: checkout.error.message || '체크아웃 생성에 실패했습니다.' }, { status: 500 });
-    }
-
     const checkoutUrl = checkout.data?.data?.attributes?.url;
     if (!checkoutUrl) {
       console.error('No checkout URL in response:', JSON.stringify(checkout.data));
