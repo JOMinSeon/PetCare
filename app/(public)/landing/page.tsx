@@ -52,12 +52,6 @@ const testimonials = [
   },
 ];
 
-const plans = [
-  { name: '무료', price: '₩0', features: ['반려동물 1마리', 'AI 상담 30회/월', '기본 건강 기록'] },
-  { name: '프리미엄', price: '₩29,900', features: ['반려동물 3마리', 'AI 상담 무제한', '건강 리포트', '수의사 상담 3회'] },
-  { name: '병원용', price: '₩99,000', features: ['반려동물 무제한', 'AI 상담 무제한', 'EMR 연동', '전화 상담'] },
-];
-
 export default function LandingPage() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
@@ -77,7 +71,6 @@ export default function LandingPage() {
             <div className="hidden md:flex items-center gap-8">
               <a href="#features" className="text-gray-600 hover:text-orange-500 transition-colors">기능</a>
               <a href="#how-it-works" className="text-gray-600 hover:text-orange-500 transition-colors">사용방법</a>
-              <a href="#pricing" className="text-gray-600 hover:text-orange-500 transition-colors">요금제</a>
               <a href="#reviews" className="text-gray-600 hover:text-orange-500 transition-colors">후기</a>
             </div>
 
@@ -104,7 +97,6 @@ export default function LandingPage() {
             <div className="flex flex-col gap-4">
               <a href="#features" className="text-gray-600 py-2">기능</a>
               <a href="#how-it-works" className="text-gray-600 py-2">사용방법</a>
-              <a href="#pricing" className="text-gray-600 py-2">요금제</a>
               <a href="#reviews" className="text-gray-600 py-2">후기</a>
               <Link href="/auth/login" className="text-gray-600 py-2">로그인</Link>
             </div>
@@ -255,64 +247,6 @@ export default function LandingPage() {
                   <h3 className="text-xl font-bold text-gray-900 mb-3">{item.title}</h3>
                   <p className="text-gray-600">{item.desc}</p>
                 </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Pricing */}
-      <section id="pricing" className="py-20 px-4 sm:px-6 lg:px-8 bg-white">
-        <div className="max-w-7xl mx-auto">
-          <div className="text-center mb-16">
-            <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-4">
-              플랜을 선택하세요
-            </h2>
-            <p className="text-gray-600 text-lg">
-              반려동물의 상태에 맞는 최적의 플랜을 선택하세요
-            </p>
-          </div>
-
-          <div className="grid md:grid-cols-3 gap-8 max-w-5xl mx-auto">
-            {plans.map((plan, index) => (
-              <div
-                key={plan.name}
-                className={`rounded-3xl p-8 ${
-                  index === 1
-                    ? 'bg-orange-500 text-white ring-4 ring-orange-300 scale-105'
-                    : 'bg-white border border-gray-200'
-                }`}
-              >
-                {index === 1 && (
-                  <div className="inline-block bg-white text-orange-500 px-3 py-1 rounded-full text-xs font-bold mb-4">
-                    추천
-                  </div>
-                )}
-                <h3 className={`text-xl font-bold mb-2 ${index === 1 ? 'text-white' : 'text-gray-900'}`}>
-                  {plan.name}
-                </h3>
-                <div className={`text-4xl font-bold mb-6 ${index === 1 ? 'text-white' : 'text-gray-900'}`}>
-                  {plan.price}
-                  <span className={`text-sm font-normal ${index === 1 ? 'text-orange-100' : 'text-gray-500'}`}>/월</span>
-                </div>
-                <ul className="space-y-3 mb-8">
-                  {plan.features.map((feature) => (
-                    <li key={feature} className="flex items-center gap-3">
-                      <CheckCircle className={`w-5 h-5 ${index === 1 ? 'text-orange-200' : 'text-orange-500'}`} />
-                      <span className={index === 1 ? 'text-orange-100' : 'text-gray-600'}>{feature}</span>
-                    </li>
-                  ))}
-                </ul>
-                <Link
-                  href="/auth/signup"
-                  className={`block text-center py-3 rounded-full font-semibold transition-colors ${
-                    index === 1
-                      ? 'bg-white text-orange-500 hover:bg-orange-50'
-                      : 'bg-orange-500 text-white hover:bg-orange-600'
-                  }`}
-                >
-                  시작하기
-                </Link>
               </div>
             ))}
           </div>
