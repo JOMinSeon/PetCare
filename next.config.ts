@@ -1,7 +1,7 @@
 import type { NextConfig } from "next";
 
 const securityHeaders = [
-  { key: 'Content-Security-Policy', value: "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://pagead2.googlesyndication.com https://googleads.g.doubleclick.net https://dapi.kakao.com https://ep1.adtrafficquality.google https://t1.daumcdn.net https://*.lemonsqueezy.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: https: https://t1.daumcdn.net; font-src 'self' data:; connect-src 'self' https://*.supabase.co https://generativelanguage.googleapis.com https://dapi.kakao.com https://ep1.adtrafficquality.google https://t1.daumcdn.net https://*.lemonsqueezy.com; frame-src 'self' https://googleads.g.doubleclick.net https://www.google.com https://*.lemonsqueezy.com;" },
+  { key: 'Content-Security-Policy', value: "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://pagead2.googlesyndication.com https://googleads.g.doubleclick.net https://dapi.kakao.com https://ep1.adtrafficquality.google https://ep2.adtrafficquality.google https://t1.daumcdn.net https://*.lemonsqueezy.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: https: https://t1.daumcdn.net; font-src 'self' data:; connect-src 'self' https://*.supabase.co https://generativelanguage.googleapis.com https://dapi.kakao.com https://ep1.adtrafficquality.google https://ep2.adtrafficquality.google https://t1.daumcdn.net https://*.lemonsqueezy.com; frame-src 'self' https://googleads.g.doubleclick.net https://www.google.com https://*.lemonsqueezy.com;" },
   { key: 'X-Content-Type-Options', value: 'nosniff' },
   { key: 'X-Frame-Options', value: 'DENY' },
   { key: 'X-XSS-Protection', value: '1; mode=block' },
