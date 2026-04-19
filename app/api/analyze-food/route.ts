@@ -205,16 +205,21 @@ export async function POST(req: Request) {
     }
 
     // JSON 파싱 시도
-    const jsonMatch = result.match(/\{[\s\S]*\}/);
-    if (!jsonMatch) {
-      return Response.json({ error: '분석 결과를 파싱할 수 없습니다.' }, { status: 500 });
-    }
-
     let analysis: unknown;
+    const trimmed = result.trim();
+
     try {
-      analysis = JSON.parse(jsonMatch[0]);
+      analysis = JSON.parse(trimmed);
     } catch {
-      return Response.json({ error: '분석 결과 형식이 올바르지 않습니다.' }, { status: 500 });
+      const jsonMatch = trimmed.match(/\{[\s\S]*\}/);
+      if (!jsonMatch) {
+        return Response.json({ error: '분석 결과를 파싱할 수 없습니다.' }, { status: 500 });
+      }
+      try {
+        analysis = JSON.parse(jsonMatch[0]);
+      } catch {
+        return Response.json({ error: '분석 결과 형식이 올바르지 않습니다.' }, { status: 500 });
+      }
     }
     return Response.json({ analysis });
   } catch (error) {

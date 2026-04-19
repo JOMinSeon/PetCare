@@ -110,16 +110,21 @@ ${logSummary}
     }
 
     // JSON 파싱
-    const jsonMatch = text.match(/\{[\s\S]*\}/);
-    if (!jsonMatch) {
-      return Response.json({ error: '분석 결과를 처리할 수 없습니다.' }, { status: 500 });
-    }
-
     let result: HealthAnalysisResult;
+    const trimmed = text.trim();
+
     try {
-      result = JSON.parse(jsonMatch[0]);
+      result = JSON.parse(trimmed);
     } catch {
-      return Response.json({ error: '분석 결과 형식이 올바르지 않습니다.' }, { status: 500 });
+      const jsonMatch = trimmed.match(/\{[\s\S]*\}/);
+      if (!jsonMatch) {
+        return Response.json({ error: '분석 결과를 처리할 수 없습니다.' }, { status: 500 });
+      }
+      try {
+        result = JSON.parse(jsonMatch[0]);
+      } catch {
+        return Response.json({ error: '분석 결과 형식이 올바르지 않습니다.' }, { status: 500 });
+      }
     }
 
     if (
