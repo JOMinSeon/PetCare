@@ -100,7 +100,7 @@ async function understandSymptom(state: HealthConsultationState): Promise<Partia
 
 emergency: 생명이 위험할 수 있는 증상 (숨쉬기 어려움, 심한 출혈, 의식 잃음 등)
 concerning: 주의가 필요한 증상 (지속적 구토, 설사, 식욕부진 등)
-mild: 가벼운 증상 (간헐적 기침,轻微한 limp 등)
+mild: 가벼운 증상 (간헐적 기침, 가벼운 절름발이 등)
 unknown: 증상이 불명확하거나 추가 정보 필요
 `;
 
@@ -161,7 +161,7 @@ ${logSummary}
 JSON 형식으로 추천 사항을 제공하세요:
 {"recommendations": ["조언1", "조언2", ...], "summary": "종합 분석 요약"}
 
-${state.isEmergency ? '\n⚠️ 이 증상은 응급情况으로 판단됩니다. 즉시 수의사 상담을 권장합니다.' : ''}
+${state.isEmergency ? '\n⚠️ 이 증상은 응급 상황으로 판단됩니다. 즉시 수의사 상담을 권장합니다.' : ''}
 `;
 
   try {
@@ -188,7 +188,7 @@ async function generateResponse(state: HealthConsultationState): Promise<Partial
   let response = '';
 
   if (state.isEmergency) {
-    response = `🚨 **응급情况이 감지되었습니다!**
+    response = `🚨 **응급 상황이 감지되었습니다!**
 
 ${petName}님의 증상은 응급 상황을 나타낼 수 있습니다. 
 **즉시 수의사 상담을 받으시기를 권장합니다.**

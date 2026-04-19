@@ -65,7 +65,7 @@ export const diseases: Disease[] = [
     symptoms: ['vomiting', 'loss_of_appetite', 'bloating'],
     urgency: 'moderate',
     description: '위 점막의 염증으로 구토와 식욕부진을 일으킵니다.',
-    recommendation: '12시간 이상 금식 후 점진적 식이恢复正常. 증상이 지속되면 수의사 상담.',
+    recommendation: '12시간 이상 금식 후 점진적 식이 회복. 증상이 지속되면 수의사 상담.',
   },
   {
     id: 'intestinal_parasites',
@@ -77,7 +77,7 @@ export const diseases: Disease[] = [
   },
   {
     id: 'food_allergy',
-    name: '食物알레르기',
+    name: '음식 알레르기',
     symptoms: ['itching', 'skin_redness', 'hair_loss', 'licking'],
     urgency: 'moderate',
     description: '특정 음식 성분에 대한 알레르기 반응입니다.',
@@ -97,15 +97,15 @@ export const diseases: Disease[] = [
     symptoms: ['coughing', 'sneezing', 'nasal_discharge'],
     urgency: 'moderate',
     description: '전염성 호흡기 질환으로 기침과 재채기를 유발합니다.',
-    recommendation: '隔离 치료. 증상이 심하면 항생제 투여. 예방접종 확인.',
+    recommendation: '격리 치료. 증상이 심하면 항생제 투여. 예방접종 확인.',
   },
   {
     id: 'feline_upper_respiratory',
-    name: '猫 상호 호흡기 감염',
+    name: '고양이 상피 호흡기 감염',
     symptoms: ['sneezing', 'nasal_discharge', 'eye_discharge', 'lethargy'],
     urgency: 'moderate',
     description: '바이러스 또는 세균 감염으로 인한 상호 호흡기 질환입니다.',
-    recommendation: '보호성 치료. 식욕 유지 확인.严重한 경우 항생제.',
+    recommendation: '보호성 치료. 식욕 유지 확인. 심한 경우 항생제.',
   },
   {
     id: 'otitis_externa',
@@ -152,7 +152,7 @@ export const diseases: Disease[] = [
     name: '불안장애',
     symptoms: ['anxiety', 'hiding', 'abnormal_behavior', 'lethargy'],
     urgency: 'mild',
-    description: '스트레스나恐惧导致的 행동 변화입니다.',
+    description: '스트레스나 불안으로 인한 행동 변화입니다.',
     recommendation: '환경 개선 및 행동 치료. 심각한 경우 약물 치료.',
   },
 ];

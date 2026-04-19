@@ -40,19 +40,19 @@ const features = [
 const testimonials = [
   {
     name: '김지훈',
-    pet: '포메라니안 “뭉이”',
-    content: '반려동물 건강 관리에不安이 많았는데, 펫헬스 덕분에 훨씬 체계적으로 관리하게 됐어요.',
+    pet: '포메라니안 "뭉이"',
+    content: '반려동물 건강 관리에 불안이 많았는데, 펫헬스 덕분에 훨씬 체계적으로 관리하게 됐어요.',
     rating: 5,
   },
   {
     name: '이수진',
-    pet: '골든 리트리버 “돌이”',
-    content: 'AI 상담이 정말 유용해요. 밤에 무슨 일 생겼을 때 바로 물어볼 수 있어서心安합니다.',
+    pet: '골든 리트리버 "돌이"',
+    content: 'AI 상담이 정말 유용해요. 밤에 무슨 일 생겼을 때 바로 물어볼 수 있어서 안심합니다.',
     rating: 5,
   },
   {
     name: '박민수',
-    pet: '코코스피츠 “냥냥”',
+    pet: '코코스피츠 "냥냥"',
     content: '사료 분석 기능이 최고예요. 어떤 사료가 내 고양이에게 좋은지 바로 알 수 있어요.',
     rating: 5,
   },
@@ -129,7 +129,7 @@ export default function LandingPage() {
               <p className="text-lg text-gray-600 mb-8 leading-relaxed">
                 과학적 데이터와 AI 기술로 반려동물의 건강을 관리하고,
                 <br />
-                행복한 동행生活的을 만들어 드립니다.
+                행복한 동행 생활을 만들어 드립니다.
               </p>
               <div className="flex flex-col sm:flex-row gap-4">
                 <Link href="/auth/signup" className="bg-orange-500 hover:bg-orange-600 text-white px-8 py-4 rounded-full font-semibold flex items-center justify-center gap-2 transition-colors">
@@ -198,7 +198,7 @@ export default function LandingPage() {
               왜 펫헬스인가?
             </h2>
             <p className="text-gray-600 text-lg max-w-2xl mx-auto">
-              첨단 AI 기술과 전문 수의사团队的 역량을 결합하여
+              첨단 AI 기술과 전문 수의사 팀의 역량을 결합하여
               <br />
               반려동물 건강 관리의 새로운 기준을 만들어갑니다.
             </p>
@@ -302,7 +302,7 @@ export default function LandingPage() {
             지금 바로 반려동물의 건강을 관리하세요
           </h2>
           <p className="text-orange-100 text-lg mb-8">
-            첫 달 무료 체험期間中, 언제든 취소할 수 있습니다
+            첫 달 무료 체험 기간 중, 언제든 취소할 수 있습니다
           </p>
           <Link href="/auth/signup" className="inline-flex items-center gap-2 bg-white text-orange-500 px-8 py-4 rounded-full font-bold hover:bg-orange-50 transition-colors">
             무료로 시작하기 <ChevronRight size={18} />
@@ -324,7 +324,7 @@ export default function LandingPage() {
               <p className="text-sm leading-relaxed">
                 AI 기반 반려동물 건강 관리 서비스로,
                 <br />
-                더 행복한 동행生活的을 만들어갑니다.
+                더 행복한 동행 생활을 만들어갑니다.
               </p>
             </div>
             <div>
