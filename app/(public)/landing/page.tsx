@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { useState } from 'react';
-import { Menu, X, ChevronRight, Heart, Activity, Shield, Users, Star, CheckCircle, Phone, Mail, MapPin } from 'lucide-react';
+import { Menu, X, ChevronRight, Heart, Activity, Shield, Users, Star, CheckCircle, Phone, Mail, MapPin, Stethoscope } from 'lucide-react';
 
 const features = [
   {
@@ -10,6 +10,12 @@ const features = [
     title: 'AI 건강 모니터링',
     desc: '실시간으로 반려동물 건강 상태를 분석하고 이상 징후를 조기에 감지합니다.',
     color: '#FF6B6B',
+  },
+  {
+    icon: Stethoscope,
+    title: '증상 체크리스트',
+    desc: '반려동물의 증상을 선택하면 가능한 질병과 응급도를 확인하고 AI 상담을 연결합니다.',
+    color: '#FFA500',
   },
   {
     icon: Activity,

@@ -1,14 +1,14 @@
 'use client';
 import Link from 'next/link';
-import { Home, Scale, Utensils, Map as MapIcon, Settings } from 'lucide-react';
+import { Home, Scale, Utensils, Map as MapIcon, Stethoscope } from 'lucide-react';
 import { usePathname } from 'next/navigation';
 
 const mobileTabs = [
-  { href: '/pets',              icon: Home,     label: '홈' },
-  { href: '/tracking',          icon: Scale,    label: '체중' },
-  { href: '/analyze-food',      icon: Utensils, label: 'AI분석' },
-  { href: '/hospitals?view=map',icon: MapIcon,  label: '병원' },
-  { href: '/settings',          icon: Settings, label: '설정' },
+  { href: '/pets',                icon: Home,       label: '홈' },
+  { href: '/tracking',            icon: Scale,      label: '체중' },
+  { href: '/symptom-checker',     icon: Stethoscope, label: '증상' },
+  { href: '/analyze-food',        icon: Utensils,   label: 'AI분석' },
+  { href: '/hospitals?view=map', icon: MapIcon,    label: '병원' },
 ];
 
 export function MobileNav() {

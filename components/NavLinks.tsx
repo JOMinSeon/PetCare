@@ -4,12 +4,13 @@ import { Settings } from 'lucide-react';
 import { usePathname, useSearchParams } from 'next/navigation';
 
 const desktopLinks = [
-  { href: '/pets',         label: '반려동물' },
-  { href: '/tracking',     label: '체중 & 칼로리' },
-  { href: '/analyze-food', label: 'AI 사료 분석' },
-  { href: '/hospitals',    label: '동물병원' },
-  { href: '/calendar',     label: '캘린더' },
-  { href: '/community',    label: '커뮤니티' },
+  { href: '/pets',              label: '반려동물' },
+  { href: '/tracking',          label: '체중 & 칼로리' },
+  { href: '/symptom-checker',   label: '증상 체크' },
+  { href: '/analyze-food',      label: 'AI 사료 분석' },
+  { href: '/hospitals',         label: '동물병원' },
+  { href: '/calendar',          label: '캘린더' },
+  { href: '/community',         label: '커뮤니티' },
 ];
 
 export function NavLinks() {
