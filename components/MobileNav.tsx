@@ -15,7 +15,7 @@ export function MobileNav() {
   const pathname = usePathname();
 
   return (
-    <div className="floating-nav md:hidden w-[4.5rem]">
+    <div className="floating-nav md:hidden">
       <nav aria-label="모바일 메뉴" className="glass-nav flex items-center gap-0.5 px-2 py-2 rounded-full">
         {mobileTabs.map(({ href, icon: Icon, label }) => {
           const base = href.split('?')[0];
