@@ -1,6 +1,6 @@
 'use client';
 import Link from 'next/link';
-import { Home, Scale, Utensils, Map as MapIcon, Stethoscope } from 'lucide-react';
+import { Home, Scale, Utensils, Map as MapIcon, Stethoscope, MessageCircle } from 'lucide-react';
 import { usePathname } from 'next/navigation';
 
 const mobileTabs = [
@@ -9,6 +9,7 @@ const mobileTabs = [
   { href: '/symptom-checker',     icon: Stethoscope, label: '증상' },
   { href: '/analyze-food',        icon: Utensils,   label: 'AI분석' },
   { href: '/hospitals?view=map', icon: MapIcon,    label: '병원' },
+  { href: '/chat',                icon: MessageCircle, label: '채팅' },
 ];
 
 export function MobileNav() {

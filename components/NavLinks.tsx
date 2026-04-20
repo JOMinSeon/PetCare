@@ -9,6 +9,7 @@ const desktopLinks = [
   { href: '/symptom-checker',   label: '증상 체크' },
   { href: '/analyze-food',      label: 'AI 사료 분석' },
   { href: '/hospitals',         label: '동물병원' },
+  { href: '/chat',              label: '채팅' },
   { href: '/calendar',          label: '캘린더' },
   { href: '/community',         label: '커뮤니티' },
 ];

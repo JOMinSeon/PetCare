@@ -10,7 +10,7 @@ export function GeminiAdvicePanel({ petId }: { petId: string }) {
 
   const { messages, sendMessage, status } = useChat({
     transport: new DefaultChatTransport({
-      api: '/api/chat',
+      api: '/api/ai-chat',
       body: { petId },
     }),
   });
